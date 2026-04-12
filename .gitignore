@@ -1,0 +1,84 @@
+# ===================== SMA .gitignore =====================
+
+# --- OS Files ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.project
+.classpath
+.settings/
+
+# --- Node.js ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+venv/
+.env/
+env/
+
+# --- Environment & Secrets ---
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.cert
+secrets/
+config/local.*
+
+# --- Build & Output ---
+dist/
+build/
+out/
+target/
+*.min.js
+*.min.css
+*.map
+
+# --- Logs ---
+logs/
+*.log
+
+# --- Database ---
+*.sqlite
+*.db
+*.sql.bak
+
+# --- Testing ---
+coverage/
+.nyc_output/
+*.lcov
+
+# --- Docker ---
+docker-compose.override.yml
+
+# --- Temporary ---
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
