@@ -1,0 +1,753 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://azkia.dev/schemas/sma/lesson-schema.json",
+  "title": "SMA Lesson Preparation Schema / مخطط تحضير الدرس المعياري",
+  "description": "JSON Schema defining the 9-section standardized lesson preparation structure for the SMA platform. يُعرّف هيكل تحضير الدرس المعياري ذو الـ 9 أقسام لمنصة SMA.",
+  "type": "object",
+  "required": [
+    "header",
+    "learning_outcomes",
+    "warm_up",
+    "explore",
+    "explain",
+    "practice",
+    "assess",
+    "extend",
+    "metadata"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "header": {
+      "title": "Header / ترويسة الدرس",
+      "description": "Lesson header information including grade, unit, lesson identifiers, and school details. ترويسة الدرس تشمل الصف والوحدة ومعرّفات الدرس وبيانات المدرسة.",
+      "type": "object",
+      "required": [
+        "grade",
+        "track",
+        "unit_number",
+        "unit_name",
+        "lesson_id",
+        "lesson_title",
+        "lesson_title_en",
+        "periods",
+        "period_duration_minutes",
+        "competencies",
+        "values",
+        "school",
+        "semester",
+        "academic_year"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "grade": {
+          "type": "string",
+          "description": "Grade level. الصف الدراسي.",
+          "examples": ["11"]
+        },
+        "track": {
+          "type": "string",
+          "description": "Academic track (scientific/literary). المسار الأكاديمي (علمي/أدبي).",
+          "examples": ["أدبي", "علمي"]
+        },
+        "unit_number": {
+          "type": "integer",
+          "description": "Unit number within the curriculum. رقم الوحدة في المنهج.",
+          "minimum": 1
+        },
+        "unit_name": {
+          "type": "string",
+          "description": "Name of the unit. اسم الوحدة."
+        },
+        "lesson_id": {
+          "type": "string",
+          "description": "Unique lesson identifier in unit.lesson format. معرّف الدرس الفريد بصيغة وحدة.درس.",
+          "pattern": "^\\d+\\.\\d+$",
+          "examples": ["4.5", "1.1", "3.2"]
+        },
+        "lesson_title": {
+          "type": "string",
+          "description": "Lesson title in Arabic. عنوان الدرس بالعربية."
+        },
+        "lesson_title_en": {
+          "type": "string",
+          "description": "Lesson title in English. عنوان الدرس بالإنجليزية."
+        },
+        "periods": {
+          "type": "integer",
+          "description": "Number of class periods allocated for this lesson. عدد الحصص المخصّصة للدرس.",
+          "minimum": 1
+        },
+        "period_duration_minutes": {
+          "type": "integer",
+          "description": "Duration of each period in minutes. مدة كل حصة بالدقائق.",
+          "default": 45,
+          "minimum": 1
+        },
+        "competencies": {
+          "type": "array",
+          "description": "Educational competencies addressed by this lesson. الكفايات التعليمية التي يتناولها الدرس.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "values": {
+          "type": "array",
+          "description": "Educational values embedded in this lesson. القيم التربوية المُضمّنة في الدرس.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "school": {
+          "type": "string",
+          "description": "Name of the school. اسم المدرسة.",
+          "examples": ["مدرسة الشحانية الاعدادية الثانوية للبنين"]
+        },
+        "semester": {
+          "type": "integer",
+          "description": "Semester number. رقم الفصل الدراسي.",
+          "enum": [1, 2]
+        },
+        "academic_year": {
+          "type": "string",
+          "description": "Academic year in YYYY-YYYY format. العام الأكاديمي بصيغة YYYY-YYYY.",
+          "pattern": "^\\d{4}-\\d{4}$",
+          "examples": ["2025-2026"]
+        }
+      }
+    },
+    "learning_outcomes": {
+      "title": "Learning Outcomes / مخرجات التعلم",
+      "description": "Measurable learning outcomes with Bloom's taxonomy classification and QNCF alignment. مخرجات التعلم القابلة للقياس مع تصنيف بلوم وربط QNCF.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "text_ar",
+          "text_en",
+          "bloom_level",
+          "qncf_code",
+          "measurable"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the learning outcome. معرّف فريد لمخرج التعلم.",
+            "examples": ["LO-1", "LO-2"]
+          },
+          "text_ar": {
+            "type": "string",
+            "description": "Learning outcome text in Arabic. نص مخرج التعلم بالعربية."
+          },
+          "text_en": {
+            "type": "string",
+            "description": "Learning outcome text in English. نص مخرج التعلم بالإنجليزية."
+          },
+          "bloom_level": {
+            "type": "string",
+            "description": "Bloom's taxonomy level for this outcome. مستوى بلوم لهذا المخرج.",
+            "enum": [
+              "remember",
+              "understand",
+              "apply",
+              "analyze",
+              "evaluate",
+              "create"
+            ]
+          },
+          "qncf_code": {
+            "type": "string",
+            "description": "Qatar National Curriculum Framework code. كود الإطار الوطني القطري للمناهج."
+          },
+          "measurable": {
+            "type": "boolean",
+            "description": "Whether this outcome is measurable. هل المخرج قابل للقياس."
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "warm_up": {
+      "title": "Warm-Up / التهيئة",
+      "description": "Opening activity to activate prior knowledge — 10% of lesson time. نشاط افتتاحي لتنشيط المعرفة السابقة — 10% من وقت الدرس.",
+      "type": "object",
+      "required": [
+        "duration_percent",
+        "activity_description",
+        "prior_knowledge",
+        "student_activity_percent",
+        "bloom_level"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "duration_percent": {
+          "type": "number",
+          "description": "Percentage of total lesson time allocated to warm-up. نسبة وقت الدرس المخصّصة للتهيئة.",
+          "default": 10,
+          "minimum": 0,
+          "maximum": 100
+        },
+        "activity_description": {
+          "type": "string",
+          "description": "Description of the warm-up activity. وصف نشاط التهيئة."
+        },
+        "prior_knowledge": {
+          "type": "array",
+          "description": "List of prior knowledge concepts to activate. قائمة المعرفة السابقة المراد تنشيطها.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "student_activity_percent": {
+          "type": "number",
+          "description": "Percentage of warm-up time where students are active. نسبة وقت النشاط الطلابي خلال التهيئة.",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "bloom_level": {
+          "type": "string",
+          "description": "Bloom's taxonomy level targeted in the warm-up. مستوى بلوم المستهدف في التهيئة.",
+          "enum": [
+            "remember",
+            "understand",
+            "apply",
+            "analyze",
+            "evaluate",
+            "create"
+          ]
+        }
+      }
+    },
+    "explore": {
+      "title": "Explore / الاستكشاف",
+      "description": "Inquiry-based exploration activity where students discover concepts — 35% of lesson time. نشاط استقصائي حيث يكتشف الطالب المفهوم بنفسه — 35% من وقت الدرس.",
+      "type": "object",
+      "required": [
+        "duration_percent",
+        "activities",
+        "student_activity_percent"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "duration_percent": {
+          "type": "number",
+          "description": "Percentage of total lesson time allocated to exploration. نسبة وقت الدرس المخصّصة للاستكشاف.",
+          "default": 35,
+          "minimum": 0,
+          "maximum": 100
+        },
+        "activities": {
+          "type": "array",
+          "description": "List of exploration activities. قائمة أنشطة الاستكشاف.",
+          "items": {
+            "type": "object",
+            "required": [
+              "description",
+              "type",
+              "cra_stage",
+              "bloom_level",
+              "materials"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "Description of the activity. وصف النشاط."
+              },
+              "type": {
+                "type": "string",
+                "description": "Type of the exploration activity. نوع نشاط الاستكشاف.",
+                "enum": [
+                  "inquiry",
+                  "hands-on",
+                  "digital",
+                  "collaborative"
+                ]
+              },
+              "cra_stage": {
+                "type": "string",
+                "description": "CRA (Concrete-Representational-Abstract) stage. مرحلة CRA (ملموس-تمثيلي-مجرد).",
+                "enum": [
+                  "concrete",
+                  "representational",
+                  "abstract"
+                ]
+              },
+              "bloom_level": {
+                "type": "string",
+                "description": "Bloom's taxonomy level for this activity. مستوى بلوم لهذا النشاط.",
+                "enum": [
+                  "remember",
+                  "understand",
+                  "apply",
+                  "analyze",
+                  "evaluate",
+                  "create"
+                ]
+              },
+              "materials": {
+                "type": "array",
+                "description": "Materials needed for the activity. المواد اللازمة للنشاط.",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "student_activity_percent": {
+          "type": "number",
+          "description": "Percentage of exploration time where students are active. نسبة وقت النشاط الطلابي خلال الاستكشاف.",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "explain": {
+      "title": "Explain / الشرح",
+      "description": "Teacher-led explanation to formalize concepts after exploration — 10% of lesson time. شرح المعلم لتقنين المفاهيم بعد الاستكشاف — 10% من وقت الدرس.",
+      "type": "object",
+      "required": [
+        "duration_percent",
+        "key_concepts",
+        "definitions",
+        "teacher_notes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "duration_percent": {
+          "type": "number",
+          "description": "Percentage of total lesson time allocated to explanation. نسبة وقت الدرس المخصّصة للشرح.",
+          "default": 10,
+          "minimum": 0,
+          "maximum": 100
+        },
+        "key_concepts": {
+          "type": "array",
+          "description": "Key concepts to be explained. المفاهيم الأساسية المراد شرحها.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "definitions": {
+          "type": "array",
+          "description": "Formal definitions of terms. التعريفات الرسمية للمصطلحات.",
+          "items": {
+            "type": "object",
+            "required": [
+              "term_ar",
+              "term_en",
+              "definition"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "term_ar": {
+                "type": "string",
+                "description": "Term in Arabic. المصطلح بالعربية."
+              },
+              "term_en": {
+                "type": "string",
+                "description": "Term in English. المصطلح بالإنجليزية."
+              },
+              "definition": {
+                "type": "string",
+                "description": "Definition of the term. تعريف المصطلح."
+              }
+            }
+          }
+        },
+        "teacher_notes": {
+          "type": "string",
+          "description": "Notes for the teacher on how to deliver the explanation. ملاحظات للمعلم حول كيفية تقديم الشرح."
+        }
+      }
+    },
+    "practice": {
+      "title": "Practice / التدريب",
+      "description": "Differentiated practice exercises with CRA progression — 25% of lesson time. تمارين متمايزة مع تدرّج CRA — 25% من وقت الدرس.",
+      "type": "object",
+      "required": [
+        "duration_percent",
+        "differentiation",
+        "cra_progression"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "duration_percent": {
+          "type": "number",
+          "description": "Percentage of total lesson time allocated to practice. نسبة وقت الدرس المخصّصة للتدريب.",
+          "default": 25,
+          "minimum": 0,
+          "maximum": 100
+        },
+        "differentiation": {
+          "type": "object",
+          "description": "Differentiated practice for three student levels. التمارين المتمايزة لثلاثة مستويات من الطلاب.",
+          "required": [
+            "below_grade",
+            "at_grade",
+            "above_grade"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "below_grade": {
+              "type": "object",
+              "description": "Practice for students below grade level. تمارين للطلاب دون مستوى الصف.",
+              "required": [
+                "description",
+                "exercises",
+                "scaffolding_notes"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "type": "string",
+                  "description": "Description of the below-grade practice level. وصف مستوى التدريب دون الصف."
+                },
+                "exercises": {
+                  "type": "array",
+                  "description": "List of exercises for below-grade students. قائمة التمارين للطلاب دون مستوى الصف.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "scaffolding_notes": {
+                  "type": "string",
+                  "description": "Notes on scaffolding support for struggling students. ملاحظات حول الدعم التعليمي للطلاب المتعثرين."
+                }
+              }
+            },
+            "at_grade": {
+              "type": "object",
+              "description": "Practice for students at grade level. تمارين للطلاب في مستوى الصف.",
+              "required": [
+                "description",
+                "exercises"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "type": "string",
+                  "description": "Description of the at-grade practice level. وصف مستوى التدريب في مستوى الصف."
+                },
+                "exercises": {
+                  "type": "array",
+                  "description": "List of exercises for at-grade students. قائمة التمارين للطلاب في مستوى الصف.",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "above_grade": {
+              "type": "object",
+              "description": "Practice for students above grade level. تمارين للطلاب فوق مستوى الصف.",
+              "required": [
+                "description",
+                "exercises",
+                "challenge_notes"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "type": "string",
+                  "description": "Description of the above-grade practice level. وصف مستوى التدريب فوق الصف."
+                },
+                "exercises": {
+                  "type": "array",
+                  "description": "List of exercises for above-grade students. قائمة التمارين للطلاب فوق مستوى الصف.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "challenge_notes": {
+                  "type": "string",
+                  "description": "Notes on challenge extensions for advanced students. ملاحظات حول التحديات الإضافية للطلاب المتقدمين."
+                }
+              }
+            }
+          }
+        },
+        "cra_progression": {
+          "type": "array",
+          "description": "CRA progression stages used in practice. مراحل تدرّج CRA المستخدمة في التدريب.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "assess": {
+      "title": "Assess / التقويم",
+      "description": "Formative assessment with exit ticket and mastery threshold — 10% of lesson time. تقييم تكويني مع تذكرة خروج وعتبة إتقان — 10% من وقت الدرس.",
+      "type": "object",
+      "required": [
+        "duration_percent",
+        "exit_ticket",
+        "mastery_threshold",
+        "formative_strategies"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "duration_percent": {
+          "type": "number",
+          "description": "Percentage of total lesson time allocated to assessment. نسبة وقت الدرس المخصّصة للتقويم.",
+          "default": 10,
+          "minimum": 0,
+          "maximum": 100
+        },
+        "exit_ticket": {
+          "type": "array",
+          "description": "Exit ticket questions for formative assessment. أسئلة تذكرة الخروج للتقييم التكويني.",
+          "items": {
+            "type": "object",
+            "required": [
+              "question",
+              "bloom_level",
+              "expected_answer"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "question": {
+                "type": "string",
+                "description": "The exit ticket question. سؤال تذكرة الخروج."
+              },
+              "bloom_level": {
+                "type": "string",
+                "description": "Bloom's taxonomy level of the question. مستوى بلوم للسؤال.",
+                "enum": [
+                  "remember",
+                  "understand",
+                  "apply",
+                  "analyze",
+                  "evaluate",
+                  "create"
+                ]
+              },
+              "expected_answer": {
+                "type": "string",
+                "description": "Expected correct answer. الإجابة المتوقعة الصحيحة."
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "mastery_threshold": {
+          "type": "number",
+          "description": "Minimum percentage of correct answers to consider mastery achieved. الحد الأدنى لنسبة الإجابات الصحيحة لاعتبار الإتقان محققاً.",
+          "default": 80,
+          "minimum": 0,
+          "maximum": 100
+        },
+        "formative_strategies": {
+          "type": "array",
+          "description": "Formative assessment strategies used. استراتيجيات التقييم التكويني المستخدمة.",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "extend": {
+      "title": "Extend / الإثراء",
+      "description": "Enrichment activities and real-life Qatar connections — 10% of lesson time. أنشطة إثرائية وروابط بالحياة القطرية الواقعية — 10% من وقت الدرس.",
+      "type": "object",
+      "required": [
+        "duration_percent",
+        "enrichment_activities",
+        "real_life_connections"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "duration_percent": {
+          "type": "number",
+          "description": "Percentage of total lesson time allocated to enrichment. نسبة وقت الدرس المخصّصة للإثراء.",
+          "default": 10,
+          "minimum": 0,
+          "maximum": 100
+        },
+        "enrichment_activities": {
+          "type": "array",
+          "description": "Enrichment activities for advanced students. أنشطة إثرائية للطلاب المتقدمين.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "real_life_connections": {
+          "type": "array",
+          "description": "Connections to real life, preferably Qatar-specific contexts. روابط بالحياة الواقعية، ويُفضّل سياقات قطرية.",
+          "items": {
+            "type": "object",
+            "required": [
+              "context",
+              "description",
+              "location"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "context": {
+                "type": "string",
+                "description": "The real-life context or domain. السياق الحياتي الواقعي."
+              },
+              "description": {
+                "type": "string",
+                "description": "How the lesson concept connects to this context. كيف يرتبط مفهوم الدرس بهذا السياق."
+              },
+              "location": {
+                "type": "string",
+                "description": "Specific Qatar location or setting relevant to this connection. الموقع القطري المحدد المرتبط بهذا الربط.",
+                "examples": ["استاد لوسيل", "سوق واقف", "متحف قطر الوطني"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "title": "Metadata / البيانات الوصفية",
+      "description": "Lesson metadata including Bloom coverage, QNCF codes, misconceptions, prerequisites, and review status. البيانات الوصفية للدرس تشمل تغطية بلوم وأكواد QNCF والأخطاء الشائعة والمتطلبات السابقة وحالة المراجعة.",
+      "type": "object",
+      "required": [
+        "bloom_coverage",
+        "qncf_codes",
+        "misconceptions",
+        "prerequisites",
+        "tools",
+        "teacher_student_ratio",
+        "source_pages",
+        "last_updated",
+        "reviewed_by_advisor",
+        "advisor_confidence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "bloom_coverage": {
+          "type": "array",
+          "description": "Bloom's taxonomy levels covered in this lesson. مستويات بلوم المُغطّاة في هذا الدرس.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "remember",
+              "understand",
+              "apply",
+              "analyze",
+              "evaluate",
+              "create"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "qncf_codes": {
+          "type": "array",
+          "description": "All QNCF codes addressed in this lesson. جميع أكواد الإطار الوطني القطري المُغطّاة في الدرس.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "misconceptions": {
+          "type": "array",
+          "description": "Common misconceptions related to this lesson's concepts. الأخطاء المفاهيمية الشائعة المتعلقة بمفاهيم الدرس.",
+          "items": {
+            "type": "object",
+            "required": [
+              "misconception_ar",
+              "misconception_en",
+              "correction",
+              "frequency"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "misconception_ar": {
+                "type": "string",
+                "description": "The misconception in Arabic. الخطأ المفاهيمي بالعربية."
+              },
+              "misconception_en": {
+                "type": "string",
+                "description": "The misconception in English. الخطأ المفاهيمي بالإنجليزية."
+              },
+              "correction": {
+                "type": "string",
+                "description": "The correct understanding to replace the misconception. الفهم الصحيح لتصحيح الخطأ المفاهيمي."
+              },
+              "frequency": {
+                "type": "string",
+                "description": "How frequently this misconception is observed. مدى تكرار ملاحظة هذا الخطأ المفاهيمي.",
+                "enum": [
+                  "common",
+                  "occasional",
+                  "rare"
+                ]
+              }
+            }
+          }
+        },
+        "prerequisites": {
+          "type": "array",
+          "description": "Prerequisite knowledge or skills needed for this lesson. المعرفة أو المهارات المسبقة اللازمة لهذا الدرس.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tools": {
+          "type": "array",
+          "description": "Teaching tools and resources used in this lesson. الأدوات التعليمية والموارد المستخدمة في الدرس.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "teacher_student_ratio": {
+          "type": "object",
+          "description": "Time distribution ratio between teacher-directed and student-active segments. نسبة توزيع الوقت بين توجيه المعلم ونشاط الطالب. Teacher must be <= 15%, Student must be >= 85%.",
+          "required": [
+            "teacher_percent",
+            "student_percent"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "teacher_percent": {
+              "type": "number",
+              "description": "Percentage of lesson time for teacher-directed activity. Must be <= 15. نسبة وقت الدرس لتوجيه المعلم. يجب أن تكون <= 15.",
+              "minimum": 0,
+              "maximum": 15
+            },
+            "student_percent": {
+              "type": "number",
+              "description": "Percentage of lesson time for student-active engagement. Must be >= 85. نسبة وقت الدرس لنشاط الطالب. يجب أن تكون >= 85.",
+              "minimum": 85,
+              "maximum": 100
+            }
+          }
+        },
+        "source_pages": {
+          "type": "array",
+          "description": "Page numbers from the teacher's guide that this lesson is based on. أرقام الصفحات في دليل المعلم التي يستند إليها الدرس.",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "last_updated": {
+          "type": "string",
+          "description": "Date when the lesson was last updated, in ISO 8601 format. تاريخ آخر تحديث للدرس بصيغة ISO 8601.",
+          "format": "date"
+        },
+        "reviewed_by_advisor": {
+          "type": "boolean",
+          "description": "Whether the lesson has been reviewed by the pedagogical advisor. هل تمت مراجعة الدرس من قِبل المستشار التربوي."
+        },
+        "advisor_confidence": {
+          "type": "number",
+          "description": "Advisor's confidence score for this lesson preparation, from 0 (no confidence) to 1 (full confidence). درجة ثقة المستشار في هذا التحضير، من 0 (لا ثقة) إلى 1 (ثقة تامة).",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  }
+}
