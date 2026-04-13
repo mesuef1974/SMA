@@ -50,6 +50,12 @@ env/
 secrets/
 config/local.*
 
+# --- Next.js ---
+.next/
+next-env.d.ts
+*.tsbuildinfo
+.vercel/
+
 # --- Build & Output ---
 dist/
 build/
