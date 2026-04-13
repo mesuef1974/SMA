@@ -7,6 +7,7 @@ import {
   HelpCircle,
   ArrowLeft,
 } from 'lucide-react';
+import FeedbackForm from './feedback-form';
 import {
   Card,
   CardContent,
@@ -64,6 +65,23 @@ export default async function HelpPage({ params }: Props) {
 
         {/* FAQ Section */}
         <FAQSection t={t} />
+
+        {/* Contact / Feedback Section */}
+        <FeedbackForm
+          labels={{
+            contact: t('contact'),
+            contactDescription: t('contactDescription'),
+            nameLabel: t('nameLabel'),
+            typeLabel: t('typeLabel'),
+            typeBug: t('typeBug'),
+            typeSuggestion: t('typeSuggestion'),
+            typeQuestion: t('typeQuestion'),
+            messageLabel: t('messageLabel'),
+            submitFeedback: t('submitFeedback'),
+            feedbackSuccess: t('feedbackSuccess'),
+            feedbackError: t('feedbackError'),
+          }}
+        />
 
         {/* Footer */}
         <div className="rounded-xl border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-950">

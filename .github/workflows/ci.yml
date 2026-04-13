@@ -63,3 +63,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://fake:fake@localhost:5432/fake
           ANTHROPIC_API_KEY: sk-ant-fake-for-build
+
+      - name: Verify standalone output
+        run: |
+          test -f .next/standalone/server.js || (echo "ERROR: standalone server.js not found" && exit 1)
+          echo "Standalone output verified successfully"
