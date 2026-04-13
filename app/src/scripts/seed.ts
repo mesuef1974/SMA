@@ -11,8 +11,11 @@
  * Usage: pnpm db:seed
  */
 
+import bcrypt from 'bcryptjs';
+import { eq, and } from 'drizzle-orm';
 import { db } from '../db';
 import {
+  users,
   subjects,
   gradeLevels,
   chapters,
@@ -27,24 +30,48 @@ async function seed() {
   console.log('--- Seeding database ---\n');
 
   // -------------------------------------------------------------------------
+  // 0. Demo Teacher (S1-6)
+  // -------------------------------------------------------------------------
+  console.log('[0/6] Inserting demo teacher...');
+  const passwordHash = await bcrypt.hash('Sma2026!', 12);
+  const [teacher] = await db
+    .insert(users)
+    .values({
+      email: 'teacher@sma.qa',
+      passwordHash,
+      fullName: 'Sufian',
+      fullNameAr: 'أ. سفيان',
+      role: 'teacher',
+    })
+    .onConflictDoNothing({ target: users.email })
+    .returning();
+  if (teacher) {
+    console.log(`  -> teacher: ${teacher.id} (${teacher.fullNameAr})`);
+  } else {
+    console.log('  -> teacher already exists, skipped.');
+  }
+
+  // -------------------------------------------------------------------------
   // 1. Subject
   // -------------------------------------------------------------------------
   console.log('[1/6] Inserting subject...');
-  const [subject] = await db
+  const [insertedSubject] = await db
     .insert(subjects)
     .values({
       name: 'Mathematics',
       nameAr: 'الرياضيات',
       code: 'MATH',
     })
+    .onConflictDoNothing({ target: subjects.code })
     .returning();
+  const subject = insertedSubject ?? (await db.select().from(subjects).where(eq(subjects.code, 'MATH')))[0];
   console.log(`  -> subject: ${subject.id} (${subject.nameAr})`);
 
   // -------------------------------------------------------------------------
   // 2. Grade Level
   // -------------------------------------------------------------------------
   console.log('[2/6] Inserting grade level...');
-  const [gradeLevel] = await db
+  const [insertedGrade] = await db
     .insert(gradeLevels)
     .values({
       grade: 11,
@@ -52,7 +79,11 @@ async function seed() {
       subjectId: subject.id,
       academicYear: '2025-2026',
     })
+    .onConflictDoNothing()
     .returning();
+  const gradeLevel = insertedGrade ?? (await db.select().from(gradeLevels).where(
+    and(eq(gradeLevels.grade, 11), eq(gradeLevels.track, 'literary'), eq(gradeLevels.subjectId, subject.id))
+  ))[0];
   console.log(`  -> gradeLevel: ${gradeLevel.id} (Grade ${gradeLevel.grade} ${gradeLevel.track})`);
 
   // -------------------------------------------------------------------------
@@ -62,7 +93,7 @@ async function seed() {
   const chapterMap: Record<number, string> = {};
 
   for (const unit of curriculumData.units) {
-    const [chapter] = await db
+    const [insertedChapter] = await db
       .insert(chapters)
       .values({
         gradeLevelId: gradeLevel.id,
@@ -72,7 +103,11 @@ async function seed() {
         semester: curriculumData.semester,
         sortOrder: unit.number,
       })
+      .onConflictDoNothing()
       .returning();
+    const chapter = insertedChapter ?? (await db.select().from(chapters).where(
+      and(eq(chapters.gradeLevelId, gradeLevel.id), eq(chapters.number, unit.number))
+    ))[0];
     chapterMap[unit.number] = chapter.id;
     console.log(`  -> chapter ${unit.number}: ${chapter.id} (${unit.title})`);
   }
@@ -89,7 +124,7 @@ async function seed() {
     let sortIdx = 1;
 
     for (const lsn of unit.lessons) {
-      const [lesson] = await db
+      const [insertedLesson] = await db
         .insert(lessons)
         .values({
           chapterId,
@@ -99,7 +134,11 @@ async function seed() {
           periodCount: lsn.periods ?? 2,
           sortOrder: sortIdx++,
         })
+        .onConflictDoNothing()
         .returning();
+      const lesson = insertedLesson ?? (await db.select().from(lessons).where(
+        and(eq(lessons.chapterId, chapterId), eq(lessons.number, lsn.number))
+      ))[0];
       lessonIdMap[lsn.number] = lesson.id;
       lessonCount++;
       console.log(`  -> lesson ${lsn.number}: ${lesson.id} (${lsn.title})`);
@@ -126,7 +165,7 @@ async function seed() {
           descriptionAr: outcomeDesc,
           bloomLevel: 'understand',
           sortOrder: sortIdx,
-        });
+        }).onConflictDoNothing();
         loCount++;
         sortIdx++;
       }
@@ -151,7 +190,7 @@ async function seed() {
       severity: mc.severity,
       remediationHint: mc.remediationHintEn,
       remediationHintAr: mc.remediationHintAr,
-    });
+    }).onConflictDoNothing();
     mcCount++;
   }
   console.log(`  Total misconception types: ${mcCount}`);

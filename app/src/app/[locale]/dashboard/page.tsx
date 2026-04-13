@@ -1,4 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
+import { auth } from '@/lib/auth';
 import { DashboardHome } from './dashboard-home';
 
 type Props = {
@@ -9,5 +10,7 @@ export default async function DashboardPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <DashboardHome />;
+  const session = await auth();
+
+  return <DashboardHome userName={session?.user?.name} />;
 }

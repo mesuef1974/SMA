@@ -15,7 +15,6 @@ import { LessonCard } from '@/components/dashboard/lesson-card';
 import { BloomChart } from '@/components/dashboard/bloom-chart';
 import { MisconceptionAlert } from '@/components/dashboard/misconception-alert';
 import {
-  MOCK_TEACHERS,
   MOCK_MISCONCEPTIONS,
   getTodayLessonPlans,
   getBloomDistribution,
@@ -25,10 +24,14 @@ import {
 } from '@/lib/mock-data';
 import { toArabicIndic } from '@/lib/numerals';
 
-export function DashboardHome() {
+interface DashboardHomeProps {
+  userName?: string | null;
+}
+
+export function DashboardHome({ userName }: DashboardHomeProps) {
   const t = useTranslations('dashboard');
   const locale = useLocale();
-  const teacher = MOCK_TEACHERS[0];
+  const displayName = userName ?? '';
   const stats = getDashboardStats();
   const todayPlans = getTodayLessonPlans();
   const bloomDist = getBloomDistribution();
@@ -42,7 +45,7 @@ export function DashboardHome() {
       {/* Welcome */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-2xl font-bold">
-          {t('welcome', { name: teacher.name_ar })}
+          {t('welcome', { name: displayName })}
         </h2>
         <Button render={<Link href="/dashboard/lesson-plans" />} className="gap-1.5">
           <Plus className="size-4" aria-hidden="true" />

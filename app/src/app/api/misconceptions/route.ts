@@ -6,6 +6,7 @@ import {
   detectMisconceptions,
   type DetectionResult,
 } from '@/lib/misconceptions';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -38,6 +39,10 @@ const requestSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export async function POST(req: Request): Promise<Response> {
+  // --- Rate Limiting ---
+  const rl = await rateLimit(req);
+  if (!rl.success) return rateLimitResponse(rl);
+
   try {
     const body: unknown = await req.json();
 
