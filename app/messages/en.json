@@ -296,6 +296,45 @@
     "nextQuestion": "Next Question",
     "allAnswered": "You answered all questions!",
     "waitingForEnd": "Waiting for the challenge to end...",
-    "challenges": "Challenges"
+    "challenges": "Challenges",
+    "projectorView": "Projector View"
+  },
+  "projector": {
+    "title": "Challenge View",
+    "waitingForStart": "Waiting for start...",
+    "challengeEnded": "Challenge Ended!",
+    "noScoresYet": "No scores yet",
+    "close": "Close",
+    "participantsCount": "{count} participants",
+    "correctCount": "{count} correct answers"
+  },
+  "challengeReport": {
+    "title": "Challenge Report",
+    "viewReport": "Report",
+    "print": "Print",
+    "actualDuration": "Actual Duration",
+    "participant": "participants",
+    "question": "questions",
+    "totalParticipants": "Total Participants",
+    "avgScore": "Average Score",
+    "fastestCorrect": "Fastest Correct Answer",
+    "totalXPDistributed": "Total XP Distributed",
+    "secondsUnit": "s",
+    "teamRankings": "Final Team Rankings",
+    "noTeams": "No teams",
+    "correctLabel": "correct",
+    "avgTimeLabel": "avg time",
+    "questionAccuracy": "Question Performance",
+    "questionLabel": "Q{number}",
+    "easiestQuestion": "Easiest",
+    "hardestQuestion": "Hardest",
+    "studentPerformance": "Student Performance",
+    "rank": "Rank",
+    "studentName": "Name",
+    "team": "Team",
+    "correctAnswers": "Correct Answers",
+    "xpEarned": "XP Earned",
+    "avgTime": "Avg Time",
+    "noStudents": "No students"
   }
 }

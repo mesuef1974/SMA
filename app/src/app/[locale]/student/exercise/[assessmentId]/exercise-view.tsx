@@ -19,6 +19,7 @@ import { Progress, ProgressLabel, ProgressValue } from '@/components/ui/progress
 import { MathInput } from '@/components/math/math-input';
 import { MathText } from '@/components/math/math-display';
 import { ChevronRight, ChevronLeft, Send, Loader2 } from 'lucide-react';
+import { useToast } from '@/components/ui/toast-provider';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -88,6 +89,7 @@ export function ExerciseView({
 }: ExerciseViewProps) {
   const t = useTranslations('exercise');
   const router = useRouter();
+  const { showCorrectToast, showXPToast } = useToast();
   const isRTL = locale === 'ar';
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -141,6 +143,15 @@ export function ExerciseView({
 
       const result = await res.json();
 
+      // Show toasts for correct answers
+      const correctCount = result.feedback?.filter(
+        (f: { isCorrect: boolean }) => f.isCorrect,
+      ).length ?? 0;
+      if (correctCount > 0) {
+        showCorrectToast();
+        showXPToast(correctCount * 10);
+      }
+
       // Navigate to results page with data in search params
       const resultsUrl = `/${locale === 'ar' ? '' : locale + '/'}student/exercise/${assessmentId}/results?data=${encodeURIComponent(JSON.stringify(result))}`;
       router.push(resultsUrl);
@@ -148,7 +159,7 @@ export function ExerciseView({
       setError(err instanceof Error ? err.message : t('submitError'));
       setSubmitting(false);
     }
-  }, [assessmentId, studentId, questions, responses, t, locale, router]);
+  }, [assessmentId, studentId, questions, responses, t, locale, router, showCorrectToast, showXPToast]);
 
   if (totalQuestions === 0) {
     return (

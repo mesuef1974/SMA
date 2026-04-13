@@ -298,3 +298,193 @@ export async function getChallengeStatus(challengeId: string) {
     responseCount: responseCount?.count ?? 0,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Challenge Report — full post-game report data
+// ---------------------------------------------------------------------------
+
+/**
+ * Get full challenge report for a completed challenge.
+ * Returns challenge info, team rankings, student performance,
+ * question-level accuracy, and summary statistics.
+ */
+export async function getChallengeReport(challengeId: string) {
+  // 1. Fetch challenge info
+  const challenge = await db.query.challenges.findFirst({
+    where: eq(challenges.id, challengeId),
+  });
+
+  if (!challenge) return null;
+
+  // Actual duration in seconds (startedAt to endedAt)
+  let durationSeconds = challenge.timeLimitSeconds;
+  if (challenge.startedAt && challenge.endedAt) {
+    durationSeconds = Math.floor(
+      (challenge.endedAt.getTime() - challenge.startedAt.getTime()) / 1000,
+    );
+  }
+
+  // 2. Fetch teams
+  const teams = await db
+    .select()
+    .from(challengeTeams)
+    .where(eq(challengeTeams.challengeId, challengeId));
+
+  // 3. Fetch all participants with student data
+  const participants = await db
+    .select({
+      id: challengeParticipants.id,
+      teamId: challengeParticipants.teamId,
+      studentId: challengeParticipants.studentId,
+      displayNameAr: classroomStudents.displayNameAr,
+      displayName: classroomStudents.displayName,
+    })
+    .from(challengeParticipants)
+    .innerJoin(
+      classroomStudents,
+      eq(challengeParticipants.studentId, classroomStudents.id),
+    )
+    .where(eq(challengeParticipants.challengeId, challengeId));
+
+  // 4. Fetch all responses for this challenge
+  const responses = await db
+    .select()
+    .from(challengeResponses)
+    .where(eq(challengeResponses.challengeId, challengeId));
+
+  // ---------------------------------------------------------------------------
+  // Build team rankings
+  // ---------------------------------------------------------------------------
+  const teamRankings = teams
+    .map((team) => {
+      const teamParticipantIds = participants
+        .filter((p) => p.teamId === team.id)
+        .map((p) => p.id);
+
+      const teamResponses = responses.filter((r) =>
+        teamParticipantIds.includes(r.participantId),
+      );
+
+      const score = teamResponses.reduce((s, r) => s + (r.xpEarned ?? 0), 0);
+      const correctCount = teamResponses.filter((r) => r.isCorrect).length;
+      const totalTimeMs = teamResponses.reduce((s, r) => s + (r.timeMs ?? 0), 0);
+      const avgTimeMs =
+        teamResponses.length > 0
+          ? Math.round(totalTimeMs / teamResponses.length)
+          : 0;
+
+      return {
+        id: team.id,
+        nameAr: team.nameAr,
+        color: team.color,
+        score,
+        correctCount,
+        avgTimeMs,
+        memberCount: teamParticipantIds.length,
+      };
+    })
+    .sort((a, b) => b.score - a.score);
+
+  // ---------------------------------------------------------------------------
+  // Build student performance
+  // ---------------------------------------------------------------------------
+  const studentPerformance = participants
+    .map((p) => {
+      const studentResponses = responses.filter(
+        (r) => r.participantId === p.id,
+      );
+      const correctCount = studentResponses.filter((r) => r.isCorrect).length;
+      const totalXP = studentResponses.reduce(
+        (s, r) => s + (r.xpEarned ?? 0),
+        0,
+      );
+      const totalTimeMs = studentResponses.reduce(
+        (s, r) => s + (r.timeMs ?? 0),
+        0,
+      );
+      const avgTimeMs =
+        studentResponses.length > 0
+          ? Math.round(totalTimeMs / studentResponses.length)
+          : 0;
+
+      const team = teams.find((t) => t.id === p.teamId);
+
+      return {
+        participantId: p.id,
+        studentId: p.studentId,
+        name: p.displayNameAr || p.displayName,
+        teamNameAr: team?.nameAr ?? '',
+        teamColor: team?.color ?? null,
+        correctCount,
+        totalXP,
+        avgTimeMs,
+      };
+    })
+    .sort((a, b) => b.totalXP - a.totalXP);
+
+  // ---------------------------------------------------------------------------
+  // Question accuracy distribution
+  // ---------------------------------------------------------------------------
+  const questionAccuracy: { questionIndex: number; correctPercentage: number }[] = [];
+
+  for (let i = 0; i < challenge.questionCount; i++) {
+    const questionResponses = responses.filter((r) => r.questionIndex === i);
+    const total = questionResponses.length;
+    const correct = questionResponses.filter((r) => r.isCorrect).length;
+    const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
+    questionAccuracy.push({ questionIndex: i, correctPercentage: percentage });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Summary statistics
+  // ---------------------------------------------------------------------------
+  const totalParticipants = participants.length;
+  const totalCorrect = responses.filter((r) => r.isCorrect).length;
+  const totalResponses = responses.length;
+  const avgScore =
+    totalResponses > 0
+      ? Math.round((totalCorrect / totalResponses) * 100)
+      : 0;
+
+  const totalXPDistributed = responses.reduce(
+    (s, r) => s + (r.xpEarned ?? 0),
+    0,
+  );
+
+  // Fastest correct response
+  const correctResponses = responses.filter(
+    (r) => r.isCorrect && r.timeMs != null,
+  );
+  const fastestCorrectMs =
+    correctResponses.length > 0
+      ? Math.min(...correctResponses.map((r) => r.timeMs!))
+      : 0;
+
+  const fastestTeam =
+    teamRankings.length > 0 ? teamRankings[0] : null;
+  const slowestTeam =
+    teamRankings.length > 0 ? teamRankings[teamRankings.length - 1] : null;
+
+  return {
+    challenge: {
+      id: challenge.id,
+      titleAr: challenge.titleAr,
+      questionCount: challenge.questionCount,
+      timeLimitSeconds: challenge.timeLimitSeconds,
+      durationSeconds,
+      startedAt: challenge.startedAt?.toISOString() ?? null,
+      endedAt: challenge.endedAt?.toISOString() ?? null,
+    },
+    teamRankings,
+    studentPerformance,
+    questionAccuracy,
+    stats: {
+      totalParticipants,
+      avgScore,
+      fastestCorrectMs,
+      totalXPDistributed,
+      fastestTeamNameAr: fastestTeam?.nameAr ?? null,
+      slowestTeamNameAr: slowestTeam?.nameAr ?? null,
+    },
+  };
+}

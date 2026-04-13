@@ -66,4 +66,5 @@ export {
   submitChallengeResponse,
   getChallengeLeaderboard,
   getChallengeStatus,
+  getChallengeReport,
 } from './challenges';

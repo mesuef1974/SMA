@@ -296,6 +296,45 @@
     "nextQuestion": "السؤال التالي",
     "allAnswered": "أجبت على جميع الأسئلة!",
     "waitingForEnd": "بانتظار انتهاء التحدي...",
-    "challenges": "التحديات"
+    "challenges": "التحديات",
+    "projectorView": "عرض على البروجكتر"
+  },
+  "projector": {
+    "title": "عرض التحدي",
+    "waitingForStart": "في انتظار البدء...",
+    "challengeEnded": "انتهى التحدي!",
+    "noScoresYet": "لا توجد نتائج بعد",
+    "close": "إغلاق",
+    "participantsCount": "{count} مشارك",
+    "correctCount": "{count} إجابة صحيحة"
+  },
+  "challengeReport": {
+    "title": "تقرير التحدي",
+    "viewReport": "التقرير",
+    "print": "طباعة",
+    "actualDuration": "المدة الفعلية",
+    "participant": "مشارك",
+    "question": "سؤال",
+    "totalParticipants": "إجمالي المشاركين",
+    "avgScore": "متوسط النتيجة",
+    "fastestCorrect": "أسرع إجابة صحيحة",
+    "totalXPDistributed": "إجمالي XP الموزّع",
+    "secondsUnit": "ث",
+    "teamRankings": "ترتيب الفرق النهائي",
+    "noTeams": "لا توجد فرق",
+    "correctLabel": "إجابة صحيحة",
+    "avgTimeLabel": "متوسط وقت",
+    "questionAccuracy": "أداء الأسئلة",
+    "questionLabel": "سؤال {number}",
+    "easiestQuestion": "الأسهل",
+    "hardestQuestion": "الأصعب",
+    "studentPerformance": "أداء الطلاب",
+    "rank": "الترتيب",
+    "studentName": "الاسم",
+    "team": "الفريق",
+    "correctAnswers": "الإجابات الصحيحة",
+    "xpEarned": "XP المكتسب",
+    "avgTime": "متوسط الوقت",
+    "noStudents": "لا يوجد طلاب"
   }
 }

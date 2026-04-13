@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 import { routing, type AppLocale } from '@/i18n/routing';
+import { ToastProvider } from '@/components/ui/toast-provider';
 
 type Props = {
   children: React.ReactNode;
@@ -39,13 +40,15 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:start-4 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        {t('skipToContent')}
-      </a>
-      {children}
+      <ToastProvider>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:start-4 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          {t('skipToContent')}
+        </a>
+        {children}
+      </ToastProvider>
     </NextIntlClientProvider>
   );
 }

@@ -21,7 +21,11 @@ import {
   Clock,
   HelpCircle,
   Swords,
+  Monitor,
+  FileBarChart,
 } from 'lucide-react';
+import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import { toArabicIndic } from '@/lib/numerals';
 
 // ---------------------------------------------------------------------------
@@ -86,6 +90,8 @@ const statusStyles: Record<string, string> = {
 
 export function ChallengesView({ challenges, classrooms }: ChallengesViewProps) {
   const t = useTranslations('challenge');
+  const tReport = useTranslations('challengeReport');
+  const locale = useLocale();
 
   // State
   const [showCreate, setShowCreate] = useState(false);
@@ -309,16 +315,27 @@ export function ChallengesView({ challenges, classrooms }: ChallengesViewProps) 
               {challenge?.classroomName}
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setControllingId(null);
-              setLiveStatus(null);
-              setLiveScores([]);
-            }}
-          >
-            {t('backToList')}
-          </Button>
+          <div className="flex gap-2">
+            <Link
+              href={`/dashboard/challenges/${controllingId}/projector`}
+              target="_blank"
+            >
+              <Button variant="outline">
+                <Monitor className="size-4 me-2" />
+                {t('projectorView')}
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setControllingId(null);
+                setLiveStatus(null);
+                setLiveScores([]);
+              }}
+            >
+              {t('backToList')}
+            </Button>
+          </div>
         </div>
 
         {/* Timer and controls */}
@@ -590,7 +607,7 @@ export function ChallengesView({ challenges, classrooms }: ChallengesViewProps) 
                       {challenge.classroomName}
                     </p>
                   </div>
-                  <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <HelpCircle className="size-4" />
                       {toArabicIndic(challenge.questionCount)} {t('questionsLabel')}
@@ -603,6 +620,17 @@ export function ChallengesView({ challenges, classrooms }: ChallengesViewProps) 
                       <Clock className="size-4" />
                       {formatTime(challenge.timeLimitSeconds)}
                     </span>
+                    {challenge.status === 'completed' && (
+                      <Link
+                        href={`/${locale}/dashboard/challenges/${challenge.id}/report`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button variant="outline" size="sm" className="gap-1.5">
+                          <FileBarChart className="size-4" />
+                          {tReport('viewReport')}
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </CardContent>

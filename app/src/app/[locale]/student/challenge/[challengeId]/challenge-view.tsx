@@ -20,6 +20,7 @@ import {
   Star,
 } from 'lucide-react';
 import { toArabicIndic } from '@/lib/numerals';
+import { useToast } from '@/components/ui/toast-provider';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -71,6 +72,7 @@ export function ChallengeView(props: ChallengeViewProps) {
     teamColor,
   } = props;
   const t = useTranslations('challenge');
+  const { showCorrectToast, showXPToast } = useToast();
 
   // State
   const [status, setStatus] = useState<SSEStatus | null>(null);
@@ -188,6 +190,12 @@ export function ChallengeView(props: ChallengeViewProps) {
         setLastResult(result);
         setTotalXP((prev) => prev + data.xpEarned);
         setResponse('');
+
+        // Show toasts for correct answers
+        if (data.isCorrect) {
+          showCorrectToast();
+          showXPToast(data.xpEarned);
+        }
 
         // Auto-advance to next question after 1.5s
         if (currentQuestion < questionCount - 1) {
