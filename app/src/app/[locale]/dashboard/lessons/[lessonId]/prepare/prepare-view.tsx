@@ -15,7 +15,10 @@ import {
   AlertCircle,
   CheckCircle2,
   ChevronRight,
+  Presentation,
 } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -125,6 +128,11 @@ interface PeriodState {
 // ---------------------------------------------------------------------------
 
 export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
+  const pathname = usePathname();
+  // Derive the present URL from the current prepare path
+  // e.g. /ar/dashboard/lessons/xyz/prepare → /ar/dashboard/lessons/xyz/present
+  const presentBasePath = pathname.replace(/\/prepare\/?$/, '/present');
+
   // Initialize period states from existing plans
   const [periodStates, setPeriodStates] = useState<Record<number, PeriodState>>(() => {
     const initial: Record<number, PeriodState> = {};
@@ -353,14 +361,24 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
                           تم توليد التحضير بنجاح
                         </span>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => generatePlan(p)}
-                      >
-                        <Sparkles className="size-3.5" />
-                        إعادة التوليد
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          render={<Link href={`${presentBasePath}?period=${p}`} />}
+                        >
+                          <Presentation className="size-3.5" />
+                          عرض تقديمي
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => generatePlan(p)}
+                        >
+                          <Sparkles className="size-3.5" />
+                          إعادة التوليد
+                        </Button>
+                      </div>
                     </div>
                     <LessonPlanViewer plan={state.plan} />
                   </div>

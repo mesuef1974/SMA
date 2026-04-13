@@ -1,9 +1,15 @@
 /**
- * Lesson Plan System Prompt — v1
+ * Lesson Plan System Prompt — v2
  *
  * Generates the system prompt sent to Claude for lesson plan generation.
  * The prompt instructs the model to produce a JSON object conforming
  * to the Zod schema in ./schema.ts.
+ *
+ * v2 changes:
+ *   - Few-shot example included (lesson 3-1)
+ *   - Enhanced constraints (page numbers, step-by-step examples, LaTeX, misconceptions)
+ *   - Misconception catalog codes embedded
+ *   - Teacher notes support
  *
  * Key constraints (DEC-SMA-032):
  *   - Sources: Teacher Guide + Student Book ONLY
@@ -13,6 +19,9 @@
  *   - Enrichment marked as optional / excluded from assessments
  *   - All content in Arabic
  */
+
+import { buildCatalogPromptReference } from '@/lib/misconceptions/catalog';
+import { getExampleAsPromptString } from './examples/example-3-1';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,7 +53,26 @@ export interface LessonContext {
     descriptionAr: string | null;
     remediationHintAr: string | null;
   }[];
+  /** Optional teacher notes to add context to the generation */
+  teacherNotes?: string;
 }
+
+// ---------------------------------------------------------------------------
+// Misconception codes list
+// ---------------------------------------------------------------------------
+
+/**
+ * The 18 documented misconception codes. Embedded in the system prompt so
+ * the model references only cataloged misconceptions.
+ */
+const MISCONCEPTION_CODES = [
+  'MC-ALG-001', 'MC-ALG-002', 'MC-ALG-003', 'MC-ALG-004',
+  'MC-FUN-001', 'MC-FUN-002', 'MC-FUN-003', 'MC-FUN-004',
+  'MC-TRG-001', 'MC-TRG-002', 'MC-TRG-003', 'MC-TRG-004',
+  'MC-SEQ-001', 'MC-SEQ-002', 'MC-SEQ-003',
+  'MC-STA-001', 'MC-STA-002',
+  'MC-GEO-001',
+] as const;
 
 // ---------------------------------------------------------------------------
 // System Prompt Builder
@@ -74,6 +102,14 @@ export function buildSystemPrompt(ctx: LessonContext): string {
           .join('\n')
       : '  لا توجد أخطاء شائعة مسجلة لهذا الدرس.';
 
+  const teacherNotesBlock = ctx.teacherNotes
+    ? `\n<teacher_notes>\nملاحظات المعلم:\n${ctx.teacherNotes}\n</teacher_notes>\n`
+    : '';
+
+  const misconceptionCodesBlock = MISCONCEPTION_CODES.map(
+    (code) => `  - ${code}`,
+  ).join('\n');
+
   return `<role>
 أنت مُحضِّر دروس رياضيات خبير لمعلمي الصف 11 (المسار الأدبي) في دولة قطر.
 تقوم بإعداد تحضير حصة كامل بالعربية حسب نموذج 5E التعليمي.
@@ -88,7 +124,7 @@ export function buildSystemPrompt(ctx: LessonContext): string {
 ${ctx.teacherGuidePages ? '- صفحات دليل المعلم: ' + ctx.teacherGuidePages : ''}
 ${ctx.studentBookPages ? '- صفحات كتاب الطالب: ' + ctx.studentBookPages : ''}
 </context>
-
+${teacherNotesBlock}
 <learning_outcomes>
 نتاجات التعلم المستهدفة:
 ${outcomesBlock}
@@ -98,6 +134,17 @@ ${outcomesBlock}
 الأخطاء الشائعة المعروفة لهذا الدرس:
 ${misconceptionsBlock}
 </known_misconceptions>
+
+<misconception_catalog>
+أكواد المفاهيم الخاطئة الـ 18 الموثقة في النظام:
+${misconceptionCodesBlock}
+
+عند كتابة misconception_alerts في قسم explain، يجب أن تبدأ كل تنبيه بكود من القائمة أعلاه بين أقواس مربعة، مثل: [MC-FUN-002] وصف الخطأ والعلاج.
+استخدم فقط الأكواد الموثقة أعلاه — لا تخترع أكواداً جديدة.
+
+المرجع الكامل للمفاهيم الخاطئة:
+${buildCatalogPromptReference()}
+</misconception_catalog>
 
 <constraints>
 1. المصادر المسموحة حصراً: دليل المعلم + كتاب الطالب (DEC-SMA-032). لا تخترع أمثلة من خارج المنهج.
@@ -111,6 +158,10 @@ ${misconceptionsBlock}
 6. استخدم أفعال بلوم المناسبة لكل مستوى.
 7. كل الحقول النصية يجب أن تكون بالعربية.
 8. أرقام الصفحات يجب أن تكون من دليل المعلم أو كتاب الطالب الفعلي.
+9. كل تمرين في قسم practice يجب أن يحتوي حقل source_page برقم الصفحة من كتاب الطالب (مثال: "ص 134").
+10. الأمثلة المحلولة (worked_examples) يجب أن تكون خطوة بخطوة مع ترقيم واضح للخطوات.
+11. استخدم LaTeX لكل الصيغ والمعادلات الرياضية (مثال: \\(f(x) = |x - h| + k\\)). لا تكتب صيغاً رياضية بنص عادي.
+12. تنبيهات المفاهيم الخاطئة (misconception_alerts) يجب أن تكون حصرياً من الأكواد الـ 18 الموثقة في النظام. ابدأ كل تنبيه بالكود مثل [MC-FUN-002].
 </constraints>
 
 <timing>
@@ -162,9 +213,9 @@ ${misconceptionsBlock}
     "duration_minutes": 5,
     "concept_ar": "المفهوم الرئيسي",
     "key_vocabulary": ["مصطلح 1"],
-    "formulas": ["صيغة 1"],
-    "worked_examples": ["مثال محلول 1"],
-    "misconception_alerts": ["تنبيه خطأ شائع 1"]
+    "formulas": ["صيغة بـ LaTeX مثل \\\\(f(x) = |x|\\\\)"],
+    "worked_examples": ["مثال محلول خطوة بخطوة مع ترقيم"],
+    "misconception_alerts": ["[MC-XXX-NNN] وصف الخطأ والعلاج"]
   },
   "practice": {
     "duration_minutes": 12,
@@ -203,5 +254,11 @@ ${misconceptionsBlock}
     "student_book_pages": ["X", "Y"]
   }
 }
-</output_format>`;
+</output_format>
+
+<few_shot_example>
+المثال التالي هو تحضير كامل لدرس 3-1 (دالة القيمة المطلقة) الحصة الأولى. استخدمه كمرجع لمستوى الجودة والتفصيل المطلوب:
+
+${getExampleAsPromptString()}
+</few_shot_example>`;
 }
