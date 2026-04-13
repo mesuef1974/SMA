@@ -113,3 +113,17 @@ export {
   type ChatMessage,
   type NewChatMessage,
 } from './chat';
+
+export {
+  // Tables
+  classrooms,
+  classroomStudents,
+  // Relations
+  classroomsRelations,
+  classroomStudentsRelations,
+  // Types
+  type Classroom,
+  type NewClassroom,
+  type ClassroomStudent,
+  type NewClassroomStudent,
+} from './classrooms';
