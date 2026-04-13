@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Search } from 'lucide-react';
+import { Search, Sparkles } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -238,6 +239,17 @@ export function LessonsView({ chapters }: LessonsViewProps) {
                                 {statusLabel}
                               </Badge>
                             )}
+
+                            {/* Prepare link */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1.5 shrink-0"
+                              render={<Link href={`/dashboard/lessons/${lesson.id}/prepare`} />}
+                            >
+                              <Sparkles className="size-3.5" />
+                              {t('prepareLessonPlan')}
+                            </Button>
                           </div>
                         );
                       })}

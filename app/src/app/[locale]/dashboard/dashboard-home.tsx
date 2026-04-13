@@ -32,6 +32,7 @@ interface DashboardStats {
 
 interface TodayPlan {
   id: string;
+  lessonId: string;
   lessonNumber: number;
   titleAr: string;
   titleEn: string;
@@ -143,6 +144,7 @@ export function DashboardHome({
             {todayPlans.map((plan) => (
               <LessonCard
                 key={plan.id}
+                lessonId={plan.lessonId}
                 lessonNumber={plan.lessonNumber}
                 titleAr={plan.titleAr}
                 titleEn={plan.titleEn}

@@ -56,6 +56,7 @@ export default async function DashboardPage({ params }: Props) {
     .slice(0, 3)
     .map((p) => ({
       id: p.id,
+      lessonId: p.lessonId ?? p.id,
       lessonNumber: p.lesson?.sortOrder ?? 0,
       titleAr: p.lesson?.titleAr ?? '',
       titleEn: p.lesson?.title ?? '',

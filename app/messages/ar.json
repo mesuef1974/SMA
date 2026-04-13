@@ -65,7 +65,8 @@
     "filterByChapter": "تصفية حسب الفصل",
     "filterByStatus": "تصفية حسب الحالة",
     "filterByBloom": "تصفية حسب مستوى بلوم",
-    "notifications": "الإشعارات"
+    "notifications": "الإشعارات",
+    "prepareLessonPlan": "إعداد التحضير"
   },
   "sidebar": {
     "home": "الرئيسية",
