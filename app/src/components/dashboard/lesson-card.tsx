@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toArabicIndic } from '@/lib/numerals';
-import type { LessonStatus } from '@/lib/mock-data';
+
+type LessonStatus = 'draft' | 'in_review' | 'approved';
 
 interface LessonCardProps {
   lessonNumber: number;
