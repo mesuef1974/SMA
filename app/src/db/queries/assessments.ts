@@ -19,6 +19,7 @@ export async function getAssessmentsByLesson(lessonId: string) {
     with: {
       teacher: true,
     },
+    limit: 50,
   });
 }
 

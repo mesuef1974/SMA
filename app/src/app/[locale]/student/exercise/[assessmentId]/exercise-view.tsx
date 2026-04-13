@@ -16,8 +16,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress, ProgressLabel, ProgressValue } from '@/components/ui/progress';
-import { MathInput } from '@/components/math/math-input';
+import dynamic from 'next/dynamic';
 import { MathText } from '@/components/math/math-display';
+
+const MathInput = dynamic(
+  () => import('@/components/math/math-input').then((mod) => ({ default: mod.MathInput })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-12 items-center justify-center rounded-lg border border-input bg-background text-sm text-muted-foreground">
+        ...
+      </div>
+    ),
+  },
+);
 import { ChevronRight, ChevronLeft, Send, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/toast-provider';
 

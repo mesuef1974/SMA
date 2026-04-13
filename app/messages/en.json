@@ -80,7 +80,8 @@
     "aiChat": "AI Chat",
     "classrooms": "Classroom Management",
     "leaderboard": "Leaderboard",
-    "challenges": "Challenges"
+    "challenges": "Challenges",
+    "help": "Help"
   },
   "student": {
     "title": "Student Portal",
@@ -101,7 +102,8 @@
     "welcomeStudent": "Welcome, {name}",
     "yourClass": "Your class: {className}",
     "exercisesPlaceholder": "Exercises list will appear here soon",
-    "noSession": "No session found. Please join again."
+    "noSession": "No session found. Please join again.",
+    "help": "Help"
   },
   "classroom": {
     "title": "Classroom Management",
@@ -336,5 +338,63 @@
     "xpEarned": "XP Earned",
     "avgTime": "Avg Time",
     "noStudents": "No students"
+  },
+  "help": {
+    "pageTitle": "Quick Start Guide",
+    "pageSubtitle": "Everything you need to get started with Smart Math Analyzer",
+    "teacher": {
+      "title": "For Teachers",
+      "loginTitle": "Sign In",
+      "loginDesc": "Go to the login page and use your account credentials",
+      "dashboardTitle": "Dashboard",
+      "dashboardDesc": "After signing in you will find: Lessons, Preparation, Challenges, Leaderboard, Reports",
+      "prepare": {
+        "title": "Prepare a Lesson",
+        "step1": "Select the lesson from the list",
+        "step2": "Click \"Prepare\"",
+        "step3": "Add your notes (optional)",
+        "step4": "Click \"Generate Preparation\"",
+        "step5": "Review the preparation and edit as needed"
+      },
+      "challenge": {
+        "title": "Create a Live Challenge",
+        "step1": "Go to the Challenges page",
+        "step2": "Select the class and settings",
+        "step3": "Click \"Create Challenge\"",
+        "step4": "Share the link with students or display on the projector",
+        "step5": "Click \"Start\" when everyone is ready"
+      },
+      "reportTitle": "View Report",
+      "reportDesc": "After the challenge ends, click \"Report\" to see team performance"
+    },
+    "student": {
+      "title": "For Students",
+      "join": {
+        "title": "Joining",
+        "step1": "Go to the home page",
+        "step2": "Enter the class code (6 characters) given by your teacher",
+        "step3": "Enter your name",
+        "step4": "Click \"Join\""
+      },
+      "exerciseTitle": "Solving Exercises",
+      "exerciseDesc": "Select the lesson → solve the questions → see your results and points",
+      "challengeTitle": "Participating in a Challenge",
+      "challengeDesc": "When the teacher starts a challenge, you will find it on your page → join and answer quickly with your team",
+      "xpTitle": "Points and Badges",
+      "xpDesc": "Every correct answer earns you XP points → collect points to level up and earn badges"
+    },
+    "faq": {
+      "title": "FAQ",
+      "q1": "I forgot the class code",
+      "a1": "Ask your teacher for it",
+      "q2": "I can't sign in",
+      "a2": "Check your email and password. Contact the administration",
+      "q3": "The challenge is not working",
+      "a3": "Make sure you are connected to the internet and the challenge is still active",
+      "q4": "How do I see my grades?",
+      "a4": "From the Leaderboard page you can see your rank and points"
+    },
+    "footerSupport": "Need more help? Contact the support team",
+    "backToHome": "Back to Home"
   }
 }

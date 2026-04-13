@@ -1,4 +1,6 @@
 import { auth } from '@/lib/auth';
+import { validateOrigin, csrfForbiddenResponse } from '@/lib/security/csrf';
+import { sanitizeText } from '@/lib/security/sanitize';
 import {
   createChallenge,
   createTeams,
@@ -45,6 +47,9 @@ function validateCreateBody(
   if (typeof titleAr !== 'string' || titleAr.trim().length === 0) {
     return { ok: false, error: 'عنوان التحدي مطلوب' };
   }
+  if (titleAr.trim().length > 200) {
+    return { ok: false, error: 'عنوان التحدي يجب ألا يتجاوز 200 حرف' };
+  }
   if (typeof questionCount !== 'number' || ![5, 10, 15].includes(questionCount)) {
     return { ok: false, error: 'عدد الأسئلة يجب أن يكون 5 أو 10 أو 15' };
   }
@@ -62,7 +67,7 @@ function validateCreateBody(
     ok: true,
     data: {
       classroomId,
-      titleAr: titleAr.trim(),
+      titleAr: sanitizeText(titleAr, 200),
       questionCount,
       timeLimitSeconds,
       teamCount,
@@ -75,6 +80,9 @@ function validateCreateBody(
 // ---------------------------------------------------------------------------
 
 export async function POST(req: Request) {
+  // --- CSRF Protection ---
+  if (!validateOrigin(req)) return csrfForbiddenResponse();
+
   const session = await auth();
 
   if (!session?.user?.id) {

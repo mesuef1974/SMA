@@ -56,6 +56,7 @@ export function StudentJoinForm() {
                 type="text"
                 placeholder={t('studentNamePlaceholder')}
                 required
+                maxLength={50}
                 autoComplete="name"
               />
             </div>

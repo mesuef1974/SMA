@@ -186,6 +186,8 @@ export async function submitChallengeResponse(
 /**
  * Get the live leaderboard for a challenge — team scores.
  * Score = sum of xpEarned for correct responses per team.
+ *
+ * Uses a single joined query instead of per-team queries to avoid N+1.
  */
 export async function getChallengeLeaderboard(challengeId: string) {
   const teams = await db
@@ -197,49 +199,41 @@ export async function getChallengeLeaderboard(challengeId: string) {
     .from(challengeTeams)
     .where(eq(challengeTeams.challengeId, challengeId));
 
-  const teamScores = await Promise.all(
-    teams.map(async (team) => {
-      // Get participants for this team
-      const participants = await db
-        .select({ id: challengeParticipants.id })
-        .from(challengeParticipants)
-        .where(
-          and(
-            eq(challengeParticipants.challengeId, challengeId),
-            eq(challengeParticipants.teamId, team.id),
-          ),
-        );
+  if (teams.length === 0) return [];
 
-      const participantIds = participants.map((p) => p.id);
+  // Single query: join teams -> participants -> responses, grouped by team
+  const teamScoreRows = await db
+    .select({
+      teamId: challengeParticipants.teamId,
+      score: sql<number>`COALESCE(SUM(${challengeResponses.xpEarned}), 0)`,
+      correctCount: sql<number>`COALESCE(SUM(CASE WHEN ${challengeResponses.isCorrect} THEN 1 ELSE 0 END), 0)`,
+    })
+    .from(challengeParticipants)
+    .leftJoin(
+      challengeResponses,
+      and(
+        eq(challengeResponses.participantId, challengeParticipants.id),
+        eq(challengeResponses.challengeId, challengeId),
+      ),
+    )
+    .where(eq(challengeParticipants.challengeId, challengeId))
+    .groupBy(challengeParticipants.teamId);
 
-      if (participantIds.length === 0) {
-        return { ...team, score: 0, correctCount: 0 };
-      }
-
-      // Sum scores across all participants in this team
-      const [result] = await db
-        .select({
-          score: sql<number>`COALESCE(SUM(${challengeResponses.xpEarned}), 0)`,
-          correctCount: sql<number>`COALESCE(SUM(CASE WHEN ${challengeResponses.isCorrect} THEN 1 ELSE 0 END), 0)`,
-        })
-        .from(challengeResponses)
-        .where(
-          and(
-            eq(challengeResponses.challengeId, challengeId),
-            sql`${challengeResponses.participantId} IN (${sql.join(
-              participantIds.map((id) => sql`${id}`),
-              sql`, `,
-            )})`,
-          ),
-        );
-
-      return {
-        ...team,
-        score: Number(result?.score ?? 0),
-        correctCount: Number(result?.correctCount ?? 0),
-      };
-    }),
+  const scoreMap = new Map(
+    teamScoreRows.map((r) => [
+      r.teamId,
+      { score: Number(r.score), correctCount: Number(r.correctCount) },
+    ]),
   );
+
+  const teamScores = teams.map((team) => {
+    const stats = scoreMap.get(team.id);
+    return {
+      ...team,
+      score: stats?.score ?? 0,
+      correctCount: stats?.correctCount ?? 0,
+    };
+  });
 
   // Sort by score descending
   return teamScores.sort((a, b) => b.score - a.score);

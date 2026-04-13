@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getClassroomByCode, joinClassroom } from '@/db/queries';
 import { getLocale } from 'next-intl/server';
+import { sanitizeText } from '@/lib/security/sanitize';
 
 /**
  * Server action: validate class code, enroll the student,
@@ -14,7 +15,8 @@ export async function joinClassAction(
   formData: FormData,
 ) {
   const code = (formData.get('code') as string)?.trim().toUpperCase();
-  const displayName = (formData.get('displayName') as string)?.trim();
+  const rawDisplayName = (formData.get('displayName') as string) ?? '';
+  const displayName = sanitizeText(rawDisplayName, 50);
   const locale = await getLocale();
 
   // --- Validation ---
