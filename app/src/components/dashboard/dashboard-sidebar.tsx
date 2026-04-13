@@ -16,6 +16,7 @@ import {
   GraduationCap,
   Trophy,
   Swords,
+  HelpCircle,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -53,6 +54,7 @@ const mainNavItems: NavItem[] = [
 const bottomNavItems: NavItem[] = [
   { key: 'aiChat', href: '/dashboard/ai-chat', icon: MessageCircle },
   { key: 'settings', href: '/dashboard/settings', icon: Settings },
+  { key: 'help', href: '/help', icon: HelpCircle },
 ];
 
 export function DashboardSidebar() {

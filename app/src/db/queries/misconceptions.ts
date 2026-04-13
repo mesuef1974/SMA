@@ -25,6 +25,7 @@ export async function getStudentMisconceptions(studentId: string, lessonId?: str
       misconceptionType: true,
       lesson: true,
     },
+    limit: 100,
   });
 }
 
@@ -57,7 +58,8 @@ export async function getMisconceptionStats(lessonId: string) {
       misconceptionTypes.category,
       misconceptionTypes.severity,
     )
-    .orderBy(desc(count(studentMisconceptions.id)));
+    .orderBy(desc(count(studentMisconceptions.id)))
+    .limit(50);
 }
 
 /**

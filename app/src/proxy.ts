@@ -91,7 +91,8 @@ export function proxy(request: NextRequest) {
 export const config = {
   // Match all pathnames except:
   // - NextAuth API routes (/api/auth/...)
+  // - Health check endpoint (/api/health)
   // - Next.js internals (/_next/...)
   // - Static files with extensions (.ico, .png, etc.)
-  matcher: ['/((?!api/auth|_next|.*\\..*).*)'],
+  matcher: ['/((?!api/auth|api/health|_next|.*\\..*).*)'],
 };

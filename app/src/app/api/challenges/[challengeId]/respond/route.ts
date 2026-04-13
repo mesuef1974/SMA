@@ -8,6 +8,7 @@ import {
   challengeResponses,
 } from '@/db/schema';
 import { submitChallengeResponse } from '@/db/queries';
+import { validateOrigin, csrfForbiddenResponse } from '@/lib/security/csrf';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -37,6 +38,9 @@ function validateBody(
   if (typeof response !== 'string') {
     return { ok: false, error: 'الإجابة مطلوبة' };
   }
+  if (response.trim().length > 2000) {
+    return { ok: false, error: 'الإجابة يجب ألا تتجاوز 2000 حرف' };
+  }
 
   const { isCorrect, timeMs } = body as Record<string, unknown>;
 
@@ -61,6 +65,9 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ challengeId: string }> },
 ) {
+  // --- CSRF Protection ---
+  if (!validateOrigin(req)) return csrfForbiddenResponse();
+
   const { challengeId } = await params;
 
   // --- Cookie-based student authentication ---

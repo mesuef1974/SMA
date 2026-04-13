@@ -46,5 +46,6 @@ export async function getTeachersBySchool(schoolId: string) {
     with: {
       school: true,
     },
+    limit: 200,
   });
 }

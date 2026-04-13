@@ -106,6 +106,8 @@ export async function getStudentPerformance(studentId: string) {
  * Aggregate performance across all students in a classroom.
  * Returns per-student summary with accuracy rate and misconception count.
  * Primary use: teacher dashboard — class overview.
+ *
+ * Uses batch queries instead of per-student queries to avoid N+1 pattern.
  */
 export async function getClassPerformance(classroomId: string) {
   // Get all students in this classroom
@@ -120,43 +122,72 @@ export async function getClassPerformance(classroomId: string) {
     .from(classroomStudents)
     .where(eq(classroomStudents.classroomId, classroomId));
 
-  // For each student, get response stats and misconception count
-  const studentPerformances = await Promise.all(
-    students.map(async (student) => {
-      const [responseStats] = await db
-        .select({
-          totalResponses: count(studentResponses.id),
-          correctResponses: count(
-            sql`CASE WHEN ${studentResponses.isCorrect} = true THEN 1 END`,
-          ),
-        })
-        .from(studentResponses)
-        .where(eq(studentResponses.studentId, student.id));
+  if (students.length === 0) {
+    return {
+      students: [],
+      commonMisconceptions: [],
+      classStats: { totalStudents: 0, averageAccuracy: 0 },
+    };
+  }
 
-      const [misconceptionStats] = await db
-        .select({
-          totalMisconceptions: count(studentMisconceptions.id),
-          unresolvedMisconceptions: count(
-            sql`CASE WHEN ${studentMisconceptions.resolved} = false THEN 1 END`,
-          ),
-        })
-        .from(studentMisconceptions)
-        .where(eq(studentMisconceptions.studentId, student.id));
+  const studentIds = students.map((s) => s.id);
 
-      const total = responseStats?.totalResponses ?? 0;
-      const correct = responseStats?.correctResponses ?? 0;
+  // Batch: response stats per student (single query for all students)
+  const responseStatsRows = await db
+    .select({
+      studentId: studentResponses.studentId,
+      totalResponses: count(studentResponses.id),
+      correctResponses: count(
+        sql`CASE WHEN ${studentResponses.isCorrect} = true THEN 1 END`,
+      ),
+    })
+    .from(studentResponses)
+    .where(
+      sql`${studentResponses.studentId} IN (${sql.join(
+        studentIds.map((id) => sql`${id}`),
+        sql`, `,
+      )})`,
+    )
+    .groupBy(studentResponses.studentId);
 
-      return {
-        ...student,
-        totalExercises: total,
-        correctExercises: correct,
-        accuracyRate: total > 0 ? Math.round((correct / total) * 100) : 0,
-        totalMisconceptions: misconceptionStats?.totalMisconceptions ?? 0,
-        unresolvedMisconceptions:
-          misconceptionStats?.unresolvedMisconceptions ?? 0,
-      };
-    }),
-  );
+  // Batch: misconception stats per student (single query for all students)
+  const misconceptionStatsRows = await db
+    .select({
+      studentId: studentMisconceptions.studentId,
+      totalMisconceptions: count(studentMisconceptions.id),
+      unresolvedMisconceptions: count(
+        sql`CASE WHEN ${studentMisconceptions.resolved} = false THEN 1 END`,
+      ),
+    })
+    .from(studentMisconceptions)
+    .where(
+      sql`${studentMisconceptions.studentId} IN (${sql.join(
+        studentIds.map((id) => sql`${id}`),
+        sql`, `,
+      )})`,
+    )
+    .groupBy(studentMisconceptions.studentId);
+
+  // Build lookup maps for O(1) access
+  const responseMap = new Map(responseStatsRows.map((r) => [r.studentId, r]));
+  const misconceptionMap = new Map(misconceptionStatsRows.map((m) => [m.studentId, m]));
+
+  const studentPerformances = students.map((student) => {
+    const rs = responseMap.get(student.id);
+    const ms = misconceptionMap.get(student.id);
+
+    const total = rs?.totalResponses ?? 0;
+    const correct = rs?.correctResponses ?? 0;
+
+    return {
+      ...student,
+      totalExercises: total,
+      correctExercises: correct,
+      accuracyRate: total > 0 ? Math.round((correct / total) * 100) : 0,
+      totalMisconceptions: ms?.totalMisconceptions ?? 0,
+      unresolvedMisconceptions: ms?.unresolvedMisconceptions ?? 0,
+    };
+  });
 
   // Compute class-wide most common misconceptions
   const commonMisconceptions = await db
@@ -237,5 +268,6 @@ export async function getStudentResponsesByStudent(studentId: string) {
       eq(assessmentQuestions.assessmentId, assessments.id),
     )
     .where(eq(studentResponses.studentId, studentId))
-    .orderBy(sql`${studentResponses.submittedAt} DESC`);
+    .orderBy(sql`${studentResponses.submittedAt} DESC`)
+    .limit(200);
 }

@@ -16,6 +16,7 @@ import { generateObject } from 'ai';
 
 import { auth } from '@/lib/auth';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { validateOrigin, csrfForbiddenResponse } from '@/lib/security/csrf';
 import { isAIConfigured, getAnthropicModel } from '@/lib/ai/anthropic';
 import { lessonPlanSchema } from '@/lib/lesson-plans/schema';
 import { buildSystemPrompt } from '@/lib/lesson-plans/prompt';
@@ -54,6 +55,9 @@ function errorJson(message: string, status: number): Response {
 // ---------------------------------------------------------------------------
 
 export async function POST(req: Request): Promise<Response> {
+  // --- CSRF Protection ---
+  if (!validateOrigin(req)) return csrfForbiddenResponse();
+
   // --- Rate Limiting ---
   const rl = await rateLimit(req);
   if (!rl.success) return rateLimitResponse(rl);

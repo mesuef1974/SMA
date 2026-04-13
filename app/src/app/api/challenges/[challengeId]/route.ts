@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth';
+import { validateOrigin, csrfForbiddenResponse } from '@/lib/security/csrf';
 import {
   getChallengeStatus,
   getChallengeLeaderboard,
@@ -69,6 +70,9 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ challengeId: string }> },
 ) {
+  // --- CSRF Protection ---
+  if (!validateOrigin(req)) return csrfForbiddenResponse();
+
   const { challengeId } = await params;
 
   const session = await auth();

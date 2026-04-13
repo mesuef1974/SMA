@@ -25,6 +25,7 @@ export async function getLessonPlansByTeacher(teacherId: string) {
         },
       },
     },
+    limit: 100,
   });
 }
 
