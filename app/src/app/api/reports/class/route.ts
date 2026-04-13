@@ -5,11 +5,10 @@ import { getClassPerformance, getClassroomById } from '@/db/queries';
 import { db } from '@/db';
 import {
   assessmentQuestions,
-  assessments,
   classroomStudents,
   studentResponses,
 } from '@/db/schema';
-import { count, eq, sql } from 'drizzle-orm';
+import { count, eq } from 'drizzle-orm';
 
 // ---------------------------------------------------------------------------
 // GET /api/reports/class

@@ -129,7 +129,7 @@ async function seed() {
         .values({
           chapterId,
           number: lsn.number,
-          title: lessonTitleEn(lsn.number, lsn.title),
+          title: lessonTitleEn(lsn.number),
           titleAr: lsn.title,
           periodCount: lsn.periods ?? 2,
           sortOrder: sortIdx++,
@@ -223,7 +223,7 @@ function unitTitleEn(num: number): string {
   return map[num] ?? `Unit ${num}`;
 }
 
-function lessonTitleEn(number: string, _titleAr: string): string {
+function lessonTitleEn(number: string): string {
   const map: Record<string, string> = {
     '3-1': 'Absolute Value Function',
     '3-2': 'Piecewise-Defined Functions',

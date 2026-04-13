@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 
 import { db } from '@/db';
 import { classrooms, classroomStudents } from '@/db/schema';
-import type { NewClassroom, NewClassroomStudent } from '@/db/schema';
+import type { NewClassroom } from '@/db/schema';
 
 // ---------------------------------------------------------------------------
 // Classrooms DAL — classroom management and student enrollment

@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { MathDisplay, MathText } from '@/components/math/math-display';
 import { cn } from '@/lib/utils';
-import type { LessonPlanData, BloomLevel, Tier } from '@/lib/lesson-plans/schema';
+import type { LessonPlanData } from '@/lib/lesson-plans/schema';
 
 // ---------------------------------------------------------------------------
 // Types

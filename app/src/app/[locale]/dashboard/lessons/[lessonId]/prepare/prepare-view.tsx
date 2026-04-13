@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { LessonPlanViewer } from '@/components/lesson-plan/lesson-plan-viewer';
-import type { LessonPlanData, BloomLevel } from '@/lib/lesson-plans/schema';
+import type { LessonPlanData } from '@/lib/lesson-plans/schema';
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
