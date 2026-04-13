@@ -3,7 +3,7 @@
  *
  * Contains realistic Grade 11 Literary track math data aligned to
  * Qatar's national curriculum (QNCF). All Arabic text uses natural
- * teacher-friendly phrasing. Do NOT connect to Supabase — these are
+ * teacher-friendly phrasing. Do NOT connect to the database — these are
  * static fixtures for UI development only.
  */
 
