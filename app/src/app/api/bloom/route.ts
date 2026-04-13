@@ -123,13 +123,13 @@ export async function POST(req: Request): Promise<Response> {
   } catch (error) {
     console.error('[/api/bloom] Error:', error);
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'حدث خطأ غير متوقع أثناء معالجة الطلب';
+    if (error instanceof Error) {
+      console.error('[bloom]', error.message);
+    }
 
-    return Response.json({ error: message } satisfies ErrorResponse, {
-      status: 500,
-    });
+    return Response.json(
+      { error: 'حدث خطأ غير متوق�� أثناء معالجة الطلب' } satisfies ErrorResponse,
+      { status: 500 },
+    );
   }
 }

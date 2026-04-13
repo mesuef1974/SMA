@@ -15,3 +15,8 @@ export {
   type DetectionContext,
   type PatternMatch,
 } from './detector';
+
+export {
+  analyzeStudentResponse,
+  type AnalysisResult,
+} from './analyze-response';

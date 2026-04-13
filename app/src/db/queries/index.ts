@@ -31,3 +31,19 @@ export {
   getMisconceptionStats,
   logMisconception,
 } from './misconceptions';
+
+export {
+  getClassroomByCode,
+  joinClassroom,
+  getClassroomStudents,
+  createClassroom,
+  getTeacherClassrooms,
+  getClassroomById,
+  getStudentById,
+} from './classrooms';
+
+export {
+  getStudentPerformance,
+  getClassPerformance,
+  getStudentResponsesByStudent,
+} from './performance';

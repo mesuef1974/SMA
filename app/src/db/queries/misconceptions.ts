@@ -1,4 +1,4 @@
-import { and, count, desc, eq } from 'drizzle-orm';
+import { count, desc, eq } from 'drizzle-orm';
 
 import { db } from '@/db';
 import { misconceptionTypes, studentMisconceptions } from '@/db/schema';

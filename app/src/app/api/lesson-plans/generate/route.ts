@@ -31,6 +31,10 @@ const requestSchema = z.object({
   periodNumber: z.union([z.literal(1), z.literal(2)], {
     message: 'periodNumber يجب أن يكون 1 أو 2',
   }),
+  teacherNotes: z
+    .string()
+    .max(1000, 'ملاحظات المعلم يجب ألا تتجاوز 1000 حرف')
+    .optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -78,7 +82,7 @@ export async function POST(req: Request): Promise<Response> {
       return errorJson(firstError?.message ?? 'الطلب غير صالح', 400);
     }
 
-    const { lessonId, periodNumber } = parsed.data;
+    const { lessonId, periodNumber, teacherNotes } = parsed.data;
 
     // --- Fetch lesson from DB ---
     const lesson = await getLessonById(lessonId);
@@ -118,6 +122,7 @@ export async function POST(req: Request): Promise<Response> {
         descriptionAr: null,
         remediationHintAr: null,
       })),
+      teacherNotes,
     };
 
     // --- Call Claude AI ---

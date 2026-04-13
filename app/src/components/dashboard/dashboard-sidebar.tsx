@@ -13,6 +13,7 @@ import {
   BarChart3,
   Settings,
   MessageCircle,
+  GraduationCap,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -42,6 +43,7 @@ const mainNavItems: NavItem[] = [
   { key: 'assessments', href: '/dashboard/assessments', icon: ClipboardCheck },
   { key: 'misconceptions', href: '/dashboard/misconceptions', icon: AlertCircle },
   { key: 'reports', href: '/dashboard/reports', icon: BarChart3 },
+  { key: 'classrooms', href: '/dashboard/classroom', icon: GraduationCap },
 ];
 
 const bottomNavItems: NavItem[] = [
