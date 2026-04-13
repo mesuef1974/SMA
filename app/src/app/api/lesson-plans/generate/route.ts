@@ -159,11 +159,10 @@ export async function POST(req: Request): Promise<Response> {
       );
     }
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'حدث خطأ غير متوقع أثناء توليد التحضير';
+    if (error instanceof Error) {
+      console.error('[lesson-plans/generate]', error.message);
+    }
 
-    return errorJson(message, 500);
+    return errorJson('حدث خطأ غير متوقع أثناء توليد التحضير', 500);
   }
 }
