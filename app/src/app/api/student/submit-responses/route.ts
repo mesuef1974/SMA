@@ -1,6 +1,11 @@
+import { cookies } from 'next/headers';
+
 import { db } from '@/db';
 import { studentResponses, assessmentQuestions, assessments } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MAX_RESPONSES = 100;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -47,16 +52,20 @@ function validateBody(body: unknown): { ok: true; data: RequestBody } | { ok: fa
 
   const { assessmentId, studentId, responses } = body as Record<string, unknown>;
 
-  if (typeof assessmentId !== 'string' || !assessmentId) {
-    return { ok: false, error: 'assessmentId is required' };
+  if (typeof assessmentId !== 'string' || !UUID_RE.test(assessmentId)) {
+    return { ok: false, error: 'assessmentId must be a valid UUID' };
   }
 
-  if (typeof studentId !== 'string' || !studentId) {
-    return { ok: false, error: 'studentId is required' };
+  if (typeof studentId !== 'string' || !UUID_RE.test(studentId)) {
+    return { ok: false, error: 'studentId must be a valid UUID' };
   }
 
   if (!Array.isArray(responses)) {
     return { ok: false, error: 'responses must be an array' };
+  }
+
+  if (responses.length > MAX_RESPONSES) {
+    return { ok: false, error: `responses array cannot exceed ${MAX_RESPONSES} items` };
   }
 
   for (let i = 0; i < responses.length; i++) {
@@ -119,6 +128,17 @@ function checkAnswer(
 // ---------------------------------------------------------------------------
 
 export async function POST(req: Request): Promise<Response> {
+  // --- Cookie-based student authentication ---
+  const cookieStore = await cookies();
+  const cookieStudentId = cookieStore.get('studentId')?.value;
+
+  if (!cookieStudentId) {
+    return Response.json(
+      { error: 'غير مصرّح — يرجى الانضمام للفصل أولاً' } satisfies ErrorResponse,
+      { status: 401 },
+    );
+  }
+
   try {
     const body: unknown = await req.json();
     const validation = validateBody(body);
@@ -131,6 +151,14 @@ export async function POST(req: Request): Promise<Response> {
     }
 
     const { assessmentId, studentId, responses } = validation.data;
+
+    // Verify the request studentId matches the authenticated cookie
+    if (studentId !== cookieStudentId) {
+      return Response.json(
+        { error: 'غير مصرّح — معرف الطالب غير متطابق' } satisfies ErrorResponse,
+        { status: 403 },
+      );
+    }
 
     // Verify assessment exists
     const assessment = await db.query.assessments.findFirst({
@@ -206,10 +234,8 @@ export async function POST(req: Request): Promise<Response> {
   } catch (error) {
     console.error('[/api/student/submit-responses] Error:', error);
 
-    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
-
     return Response.json(
-      { error: message } satisfies ErrorResponse,
+      { error: 'حدث خطأ غير متوقع أثناء إرسال الإجابات' } satisfies ErrorResponse,
       { status: 500 },
     );
   }

@@ -74,13 +74,12 @@ export async function POST(req: Request): Promise<Response> {
   } catch (error) {
     console.error('[/api/misconceptions] Error:', error);
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'حدث خطأ غير متوقع أثناء تحليل إجابة الطالب';
+    if (error instanceof Error) {
+      console.error('[misconceptions]', error.message);
+    }
 
     return Response.json(
-      { error: message } satisfies ErrorResponse,
+      { error: 'حدث خطأ غير متوقع أثناء تحليل إجابة الطالب' } satisfies ErrorResponse,
       { status: 500 },
     );
   }

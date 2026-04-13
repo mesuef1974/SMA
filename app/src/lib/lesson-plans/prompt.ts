@@ -102,8 +102,13 @@ export function buildSystemPrompt(ctx: LessonContext): string {
           .join('\n')
       : '  لا توجد أخطاء شائعة مسجلة لهذا الدرس.';
 
-  const teacherNotesBlock = ctx.teacherNotes
-    ? `\n<teacher_notes>\nملاحظات المعلم:\n${ctx.teacherNotes}\n</teacher_notes>\n`
+  // Sanitize teacher notes to prevent prompt injection via XML tag breakout
+  const sanitizedNotes = ctx.teacherNotes
+    ? ctx.teacherNotes.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    : undefined;
+
+  const teacherNotesBlock = sanitizedNotes
+    ? `\n<teacher_notes>\nملاحظات المعلم:\n${sanitizedNotes}\n</teacher_notes>\n`
     : '';
 
   const misconceptionCodesBlock = MISCONCEPTION_CODES.map(
