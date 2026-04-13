@@ -1,14 +1,18 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { BookOpen, Clock } from 'lucide-react';
+import { BookOpen, Clock, Sparkles } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toArabicIndic } from '@/lib/numerals';
-import type { LessonStatus } from '@/lib/mock-data';
+
+type LessonStatus = 'draft' | 'in_review' | 'approved';
 
 interface LessonCardProps {
+  lessonId: string;
   lessonNumber: number;
   titleAr: string;
   titleEn: string;
@@ -26,6 +30,7 @@ const statusStyles: Record<LessonStatus, string> = {
 };
 
 export function LessonCard({
+  lessonId,
   lessonNumber,
   titleAr,
   titleEn,
@@ -70,6 +75,12 @@ export function LessonCard({
           )}
           <span className="text-xs">
             {t('minutes', { count: num(periods * 45) })}
+          </span>
+          <span className="ms-auto">
+            <Button variant="outline" size="sm" className="gap-1.5" render={<Link href={`/dashboard/lessons/${lessonId}/prepare`} />}>
+              <Sparkles className="size-3.5" />
+              {t('prepareLessonPlan')}
+            </Button>
           </span>
         </div>
       </CardContent>

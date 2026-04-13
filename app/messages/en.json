@@ -65,7 +65,8 @@
     "filterByChapter": "Filter by chapter",
     "filterByStatus": "Filter by status",
     "filterByBloom": "Filter by Bloom level",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "prepareLessonPlan": "Prepare Lesson"
   },
   "sidebar": {
     "home": "Home",

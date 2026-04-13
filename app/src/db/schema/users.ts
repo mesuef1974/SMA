@@ -34,6 +34,7 @@ export const schools = pgTable('schools', {
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: text('email').unique().notNull(),
+  passwordHash: text('password_hash'),
   fullName: text('full_name').notNull(),
   fullNameAr: text('full_name_ar'),
   role: userRoleEnum('role').notNull(),

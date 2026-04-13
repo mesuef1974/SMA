@@ -6,11 +6,16 @@ import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { LanguageSwitcher } from './language-switcher';
-import { MOCK_TEACHERS } from '@/lib/mock-data';
+import { SignOutButton } from './sign-out-button';
 
-export function DashboardHeader() {
+interface DashboardHeaderProps {
+  userName?: string | null;
+}
+
+export function DashboardHeader({ userName }: DashboardHeaderProps) {
   const t = useTranslations('dashboard');
-  const teacher = MOCK_TEACHERS[0];
+  const displayName = userName ?? '';
+  const initial = displayName.charAt(0) || '?';
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -37,10 +42,14 @@ export function DashboardHeader() {
             className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold"
             aria-hidden="true"
           >
-            {teacher.name_ar.charAt(0)}
+            {initial}
           </div>
-          <span className="hidden text-sm font-medium sm:inline">{teacher.name_ar}</span>
+          <span className="hidden text-sm font-medium sm:inline">
+            {displayName}
+          </span>
         </div>
+
+        <SignOutButton />
       </div>
     </header>
   );

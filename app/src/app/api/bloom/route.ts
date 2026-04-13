@@ -1,6 +1,7 @@
 export const runtime = 'edge';
 
 import { classifyOutcomes, type OutcomeAnalysis } from '@/lib/bloom-classifier';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -91,6 +92,10 @@ function validateRequest(body: unknown): {
 // ---------------------------------------------------------------------------
 
 export async function POST(req: Request): Promise<Response> {
+  // --- Rate Limiting ---
+  const rl = await rateLimit(req);
+  if (!rl.success) return rateLimitResponse(rl);
+
   try {
     const body: unknown = await req.json();
     const validation = validateRequest(body);

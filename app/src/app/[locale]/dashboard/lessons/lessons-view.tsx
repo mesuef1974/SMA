@@ -2,24 +2,46 @@
 
 import { useState, useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Search } from 'lucide-react';
+import { Search, Sparkles } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toArabicIndic } from '@/lib/numerals';
-import {
-  MOCK_CHAPTERS,
-  MOCK_LESSONS,
-  MOCK_LESSON_PLANS,
-  type LessonStatus,
-} from '@/lib/mock-data';
-import {
-  BLOOM_KEYWORDS,
-  BLOOM_LEVELS_ORDERED,
-  type BloomLevel,
-} from '@/lib/bloom-keywords';
+
+// ---------------------------------------------------------------------------
+// Types — serializable data passed from the server component
+// ---------------------------------------------------------------------------
+
+type LessonStatus = 'draft' | 'in_review' | 'approved';
+
+interface LessonData {
+  id: string;
+  chapterId: string;
+  number: number;
+  titleAr: string;
+  titleEn: string;
+  periods: number;
+  status: LessonStatus | null;
+}
+
+interface ChapterData {
+  id: string;
+  number: number;
+  titleAr: string;
+  titleEn: string;
+  lessons: LessonData[];
+}
+
+interface LessonsViewProps {
+  chapters: ChapterData[];
+}
+
+// ---------------------------------------------------------------------------
+// Style constants
+// ---------------------------------------------------------------------------
 
 const statusStyles: Record<LessonStatus, string> = {
   draft: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
@@ -27,62 +49,46 @@ const statusStyles: Record<LessonStatus, string> = {
   approved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
 };
 
-const bloomPillColors: Record<BloomLevel, string> = {
-  remember: 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300',
-  understand: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
-  apply: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
-  analyze: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  evaluate: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-  create: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
-};
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
-export function LessonsView() {
+export function LessonsView({ chapters }: LessonsViewProps) {
   const t = useTranslations('dashboard');
   const locale = useLocale();
 
   const [search, setSearch] = useState('');
   const [filterChapter, setFilterChapter] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<LessonStatus | null>(null);
-  const [filterBloom, setFilterBloom] = useState<BloomLevel | null>(null);
   const [collapsedChapters, setCollapsedChapters] = useState<Set<string>>(new Set());
 
   const num = (n: number) => (locale === 'ar' ? toArabicIndic(n) : String(n));
 
-  // Build a map: lessonId -> best status from plans
-  const lessonStatusMap = useMemo(() => {
-    const map = new Map<string, LessonStatus>();
-    for (const plan of MOCK_LESSON_PLANS) {
-      const existing = map.get(plan.lessonId);
-      // priority: approved > in_review > draft
-      if (!existing || statusPriority(plan.status) > statusPriority(existing)) {
-        map.set(plan.lessonId, plan.status);
-      }
-    }
-    return map;
-  }, []);
+  // Flatten all lessons with chapter reference for filtering
+  const allLessons = useMemo(() => {
+    return chapters.flatMap((ch) => ch.lessons);
+  }, [chapters]);
 
   // Filter lessons
   const filteredLessons = useMemo(() => {
-    return MOCK_LESSONS.filter((lesson) => {
+    return allLessons.filter((lesson) => {
       if (filterChapter && lesson.chapterId !== filterChapter) return false;
       if (filterStatus) {
-        const status = lessonStatusMap.get(lesson.id);
-        if (status !== filterStatus) return false;
+        if (lesson.status !== filterStatus) return false;
       }
-      if (filterBloom && !lesson.bloomLevels.includes(filterBloom)) return false;
       if (search) {
         const q = search.toLowerCase();
         const matchTitle =
-          lesson.title_ar.includes(q) || lesson.title_en.toLowerCase().includes(q);
+          lesson.titleAr.includes(q) || lesson.titleEn.toLowerCase().includes(q);
         if (!matchTitle) return false;
       }
       return true;
     });
-  }, [search, filterChapter, filterStatus, filterBloom, lessonStatusMap]);
+  }, [search, filterChapter, filterStatus, allLessons]);
 
-  // Group by chapter
+  // Group filtered lessons by chapter
   const groupedByChapter = useMemo(() => {
-    const groups: Map<string, typeof filteredLessons> = new Map();
+    const groups: Map<string, LessonData[]> = new Map();
     for (const lesson of filteredLessons) {
       const existing = groups.get(lesson.chapterId) ?? [];
       existing.push(lesson);
@@ -107,10 +113,9 @@ export function LessonsView() {
     setSearch('');
     setFilterChapter(null);
     setFilterStatus(null);
-    setFilterBloom(null);
   }
 
-  const hasFilters = search || filterChapter || filterStatus || filterBloom;
+  const hasFilters = search || filterChapter || filterStatus;
 
   return (
     <div className="space-y-6">
@@ -137,9 +142,9 @@ export function LessonsView() {
           aria-label={t('filterByChapter')}
         >
           <option value="">{t('allChapters')}</option>
-          {MOCK_CHAPTERS.map((ch) => (
+          {chapters.map((ch) => (
             <option key={ch.id} value={ch.id}>
-              {locale === 'ar' ? ch.title_ar : ch.title_en}
+              {locale === 'ar' ? ch.titleAr : ch.titleEn}
             </option>
           ))}
         </select>
@@ -157,24 +162,6 @@ export function LessonsView() {
           <option value="approved">{t('approved')}</option>
         </select>
 
-        {/* Bloom filter */}
-        <select
-          value={filterBloom ?? ''}
-          onChange={(e) => setFilterBloom((e.target.value as BloomLevel) || null)}
-          className="h-8 rounded-md border border-input bg-background px-3 text-sm"
-          aria-label={t('filterByBloom')}
-        >
-          <option value="">{t('allBloomLevels')}</option>
-          {BLOOM_LEVELS_ORDERED.map((level) => {
-            const info = BLOOM_KEYWORDS[level];
-            return (
-              <option key={level} value={level}>
-                {locale === 'ar' ? info.label_ar : info.label_en}
-              </option>
-            );
-          })}
-        </select>
-
         {hasFilters && (
           <Button variant="ghost" size="sm" onClick={clearFilters}>
             &times;
@@ -187,10 +174,10 @@ export function LessonsView() {
         <p className="text-center text-muted-foreground py-12">{t('noLessonsFound')}</p>
       ) : (
         <div className="space-y-4">
-          {MOCK_CHAPTERS.filter((ch) => groupedByChapter.has(ch.id)).map((chapter) => {
-            const lessons = groupedByChapter.get(chapter.id)!;
+          {chapters.filter((ch) => groupedByChapter.has(ch.id)).map((chapter) => {
+            const chapterLessons = groupedByChapter.get(chapter.id)!;
             const isCollapsed = collapsedChapters.has(chapter.id);
-            const chapterTitle = locale === 'ar' ? chapter.title_ar : chapter.title_en;
+            const chapterTitle = locale === 'ar' ? chapter.titleAr : chapter.titleEn;
 
             return (
               <Card key={chapter.id}>
@@ -212,7 +199,7 @@ export function LessonsView() {
                       {t('chapter', { number: num(chapter.number) })}: {chapterTitle}
                     </span>
                     <Badge variant="secondary" className="text-xs">
-                      {num(lessons.length)}
+                      {num(chapterLessons.length)}
                     </Badge>
                     <span className={cn('ms-auto transition-transform text-muted-foreground', isCollapsed && 'rotate-180 rtl:-rotate-180')}>
                       &#9650;
@@ -222,16 +209,15 @@ export function LessonsView() {
                 {!isCollapsed && (
                   <CardContent>
                     <div className="divide-y divide-border">
-                      {lessons.map((lesson) => {
-                        const status = lessonStatusMap.get(lesson.id);
-                        const statusLabel = status
-                          ? status === 'draft'
+                      {chapterLessons.map((lesson) => {
+                        const statusLabel = lesson.status
+                          ? lesson.status === 'draft'
                             ? t('draft')
-                            : status === 'in_review'
+                            : lesson.status === 'in_review'
                               ? t('inReview')
                               : t('approved')
                           : null;
-                        const lessonTitle = locale === 'ar' ? lesson.title_ar : lesson.title_en;
+                        const lessonTitle = locale === 'ar' ? lesson.titleAr : lesson.titleEn;
 
                         return (
                           <div
@@ -247,26 +233,23 @@ export function LessonsView() {
                               </p>
                             </div>
 
-                            {/* Bloom pills */}
-                            <div className="flex flex-wrap gap-1">
-                              {lesson.bloomLevels.map((bl) => (
-                                <Badge
-                                  key={bl}
-                                  className={cn('text-[10px] px-1.5', bloomPillColors[bl])}
-                                >
-                                  {locale === 'ar'
-                                    ? BLOOM_KEYWORDS[bl].label_ar
-                                    : BLOOM_KEYWORDS[bl].label_en}
-                                </Badge>
-                              ))}
-                            </div>
-
                             {/* Status */}
-                            {status && statusLabel && (
-                              <Badge className={cn('shrink-0', statusStyles[status])}>
+                            {lesson.status && statusLabel && (
+                              <Badge className={cn('shrink-0', statusStyles[lesson.status])}>
                                 {statusLabel}
                               </Badge>
                             )}
+
+                            {/* Prepare link */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1.5 shrink-0"
+                              render={<Link href={`/dashboard/lessons/${lesson.id}/prepare`} />}
+                            >
+                              <Sparkles className="size-3.5" />
+                              {t('prepareLessonPlan')}
+                            </Button>
                           </div>
                         );
                       })}
@@ -280,12 +263,4 @@ export function LessonsView() {
       )}
     </div>
   );
-}
-
-function statusPriority(s: LessonStatus): number {
-  switch (s) {
-    case 'approved': return 3;
-    case 'in_review': return 2;
-    case 'draft': return 1;
-  }
 }

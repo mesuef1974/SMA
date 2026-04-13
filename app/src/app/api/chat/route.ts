@@ -2,8 +2,13 @@ export const runtime = 'edge';
 
 import { streamText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
+  // --- Rate Limiting ---
+  const rl = await rateLimit(req);
+  if (!rl.success) return rateLimitResponse(rl);
+
   const { messages } = await req.json();
 
   const result = streamText({
