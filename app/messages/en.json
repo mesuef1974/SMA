@@ -1,0 +1,81 @@
+{
+  "app": {
+    "title": "Smart Math Analyzer",
+    "subtitle": "SMA",
+    "description": "AI-powered math education platform for secondary school in Qatar",
+    "tagline": "Your personal tutor helping you step by step with the Socratic method"
+  },
+  "nav": {
+    "home": "Home",
+    "lessons": "Lessons",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "skipToContent": "Skip to main content"
+  },
+  "math": {
+    "exampleLabel": "Example — Quadratic Formula:",
+    "renderError": "Error rendering equation"
+  },
+  "a11y": {
+    "languageSwitch": "Switch language",
+    "themeToggle": "Toggle theme",
+    "mainContent": "Main content"
+  },
+  "dashboard": {
+    "title": "Teacher Dashboard",
+    "welcome": "Welcome, {name}",
+    "todayLessons": "Today's Lessons",
+    "upcomingLessons": "Upcoming Lessons",
+    "recentActivity": "Recent Activity",
+    "studentProgress": "Student Progress",
+    "misconceptions": "Detected Misconceptions",
+    "quickActions": "Quick Actions",
+    "newLessonPlan": "New Lesson Plan",
+    "viewAllLessons": "View All Lessons",
+    "viewReports": "View Reports",
+    "noLessonsToday": "No lessons scheduled for today",
+    "bloomDistribution": "Bloom Level Distribution",
+    "lessonStatus": "Lesson Status",
+    "draft": "Draft",
+    "inReview": "In Review",
+    "approved": "Approved",
+    "period": "Period {number}",
+    "minutes": "{count} minutes",
+    "chapter": "Chapter {number}",
+    "lesson": "Lesson {number}",
+    "students": "{count} students",
+    "completionRate": "Completion Rate",
+    "averageScore": "Average Score",
+    "totalLessonPlans": "Lesson Plans",
+    "totalStudents": "Total Students",
+    "detectedThisWeek": "Detected this week",
+    "recentMisconceptions": "Recent Misconceptions",
+    "frequency": "Frequency",
+    "severity": "Severity",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "allChapters": "All Chapters",
+    "allStatuses": "All Statuses",
+    "allBloomLevels": "All Levels",
+    "searchLessons": "Search lessons...",
+    "noLessonsFound": "No lessons found",
+    "bloomLevels": "Bloom Levels",
+    "periods": "Periods",
+    "filterByChapter": "Filter by chapter",
+    "filterByStatus": "Filter by status",
+    "filterByBloom": "Filter by Bloom level",
+    "notifications": "Notifications"
+  },
+  "sidebar": {
+    "home": "Home",
+    "lessons": "Lessons",
+    "lessonPlans": "Lesson Plans",
+    "students": "Students",
+    "assessments": "Assessments",
+    "misconceptions": "Misconceptions",
+    "reports": "Reports",
+    "settings": "Settings",
+    "aiChat": "AI Chat"
+  }
+}
