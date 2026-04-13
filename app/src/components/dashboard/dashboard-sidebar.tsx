@@ -14,6 +14,8 @@ import {
   Settings,
   MessageCircle,
   GraduationCap,
+  Trophy,
+  Swords,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -44,6 +46,8 @@ const mainNavItems: NavItem[] = [
   { key: 'misconceptions', href: '/dashboard/misconceptions', icon: AlertCircle },
   { key: 'reports', href: '/dashboard/reports', icon: BarChart3 },
   { key: 'classrooms', href: '/dashboard/classroom', icon: GraduationCap },
+  { key: 'leaderboard', href: '/dashboard/leaderboard', icon: Trophy },
+  { key: 'challenges', href: '/dashboard/challenges', icon: Swords },
 ];
 
 const bottomNavItems: NavItem[] = [

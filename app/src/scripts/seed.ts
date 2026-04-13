@@ -22,8 +22,11 @@ import {
   lessons,
   learningOutcomes,
   misconceptionTypes,
+  xpConfig,
+  badgeDefinitions,
 } from '../db/schema';
 import { MISCONCEPTION_CATALOG } from '../lib/misconceptions/catalog';
+import { BADGE_DEFINITIONS } from '../lib/gamification/badges';
 import curriculumData from '../data/curriculum-structure.json';
 
 async function seed() {
@@ -32,7 +35,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 0. Demo Teacher (S1-6)
   // -------------------------------------------------------------------------
-  console.log('[0/6] Inserting demo teacher...');
+  console.log('[0/8] Inserting demo teacher...');
   const passwordHash = await bcrypt.hash('Sma2026!', 12);
   const [teacher] = await db
     .insert(users)
@@ -54,7 +57,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 1. Subject
   // -------------------------------------------------------------------------
-  console.log('[1/6] Inserting subject...');
+  console.log('[1/8] Inserting subject...');
   const [insertedSubject] = await db
     .insert(subjects)
     .values({
@@ -70,7 +73,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 2. Grade Level
   // -------------------------------------------------------------------------
-  console.log('[2/6] Inserting grade level...');
+  console.log('[2/8] Inserting grade level...');
   const [insertedGrade] = await db
     .insert(gradeLevels)
     .values({
@@ -89,7 +92,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 3. Chapters
   // -------------------------------------------------------------------------
-  console.log('[3/6] Inserting chapters...');
+  console.log('[3/8] Inserting chapters...');
   const chapterMap: Record<number, string> = {};
 
   for (const unit of curriculumData.units) {
@@ -115,7 +118,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 4. Lessons
   // -------------------------------------------------------------------------
-  console.log('[4/6] Inserting lessons...');
+  console.log('[4/8] Inserting lessons...');
   let lessonCount = 0;
   const lessonIdMap: Record<string, string> = {};
 
@@ -149,7 +152,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 5. Learning Outcomes
   // -------------------------------------------------------------------------
-  console.log('[5/6] Inserting learning outcomes...');
+  console.log('[5/8] Inserting learning outcomes...');
   let loCount = 0;
 
   for (const unit of curriculumData.units) {
@@ -176,7 +179,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 6. Misconception Types
   // -------------------------------------------------------------------------
-  console.log('[6/6] Inserting misconception types...');
+  console.log('[6/8] Inserting misconception types...');
   let mcCount = 0;
 
   for (const mc of MISCONCEPTION_CATALOG) {
@@ -196,6 +199,44 @@ async function seed() {
   console.log(`  Total misconception types: ${mcCount}`);
 
   // -------------------------------------------------------------------------
+  // 7. XP Config (Bloom level → XP reward mapping)
+  // -------------------------------------------------------------------------
+  console.log('[7/8] Inserting XP config (Bloom levels)...');
+  const xpConfigData = [
+    { bloomLevel: 'remember' as const,    xpReward: 10, descriptionAr: 'التذكر — استرجاع المعلومات' },
+    { bloomLevel: 'understand' as const,  xpReward: 15, descriptionAr: 'الفهم — شرح الأفكار والمفاهيم' },
+    { bloomLevel: 'apply' as const,       xpReward: 20, descriptionAr: 'التطبيق — استخدام المعلومات في مواقف جديدة' },
+    { bloomLevel: 'analyze' as const,     xpReward: 30, descriptionAr: 'التحليل — تفكيك المعلومات إلى أجزاء' },
+    { bloomLevel: 'evaluate' as const,    xpReward: 40, descriptionAr: 'التقويم — إصدار أحكام مبنية على معايير' },
+    { bloomLevel: 'create' as const,      xpReward: 50, descriptionAr: 'الإبداع — إنتاج عمل أصيل' },
+  ];
+  let xpConfigCount = 0;
+  for (const cfg of xpConfigData) {
+    await db.insert(xpConfig).values(cfg).onConflictDoNothing();
+    xpConfigCount++;
+  }
+  console.log(`  Total XP config entries: ${xpConfigCount}`);
+
+  // -------------------------------------------------------------------------
+  // 8. Badge Definitions
+  // -------------------------------------------------------------------------
+  console.log('[8/8] Inserting badge definitions...');
+  let badgeCount = 0;
+  for (const badge of BADGE_DEFINITIONS) {
+    await db.insert(badgeDefinitions).values({
+      code: badge.code,
+      nameAr: badge.nameAr,
+      descriptionAr: badge.descriptionAr,
+      icon: badge.icon,
+      category: badge.category,
+      xpReward: badge.xpReward,
+      criteriaJson: badge.criteriaJson,
+    }).onConflictDoNothing();
+    badgeCount++;
+  }
+  console.log(`  Total badge definitions: ${badgeCount}`);
+
+  // -------------------------------------------------------------------------
   // Summary
   // -------------------------------------------------------------------------
   console.log('\n--- Seed complete ---');
@@ -205,7 +246,9 @@ async function seed() {
   console.log(`  lessons:            ${lessonCount}`);
   console.log(`  learning_outcomes:  ${loCount}`);
   console.log(`  misconception_types:${mcCount}`);
-  console.log(`  TOTAL rows:         ${1 + 1 + Object.keys(chapterMap).length + lessonCount + loCount + mcCount}`);
+  console.log(`  xp_config:          ${xpConfigCount}`);
+  console.log(`  badge_definitions:  ${badgeCount}`);
+  console.log(`  TOTAL rows:         ${1 + 1 + Object.keys(chapterMap).length + lessonCount + loCount + mcCount + xpConfigCount + badgeCount}`);
 
   process.exit(0);
 }

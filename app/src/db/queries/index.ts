@@ -47,3 +47,23 @@ export {
   getClassPerformance,
   getStudentResponsesByStudent,
 } from './performance';
+
+export {
+  awardXP,
+  getStudentXP,
+  getClassLeaderboard,
+  awardBadge,
+  getStudentBadges,
+  checkBadgeEligibility,
+} from './gamification';
+
+export {
+  createChallenge,
+  startChallenge,
+  endChallenge,
+  createTeams,
+  assignStudentsToTeams,
+  submitChallengeResponse,
+  getChallengeLeaderboard,
+  getChallengeStatus,
+} from './challenges';

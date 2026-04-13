@@ -7,7 +7,7 @@ const intlMiddleware = createIntlMiddleware(routing);
 
 // Paths that require authentication (checked after locale prefix is stripped)
 const protectedPaths = ['/dashboard'];
-const protectedApiPaths = ['/api/bloom', '/api/misconceptions', '/api/chat', '/api/lesson-plans', '/api/reports'];
+const protectedApiPaths = ['/api/bloom', '/api/misconceptions', '/api/chat', '/api/lesson-plans', '/api/reports', '/api/challenges'];
 
 function stripLocale(pathname: string): string {
   for (const locale of routing.locales) {
@@ -23,7 +23,16 @@ function isProtectedPage(pathname: string): boolean {
   return protectedPaths.some((p) => strippedPath.startsWith(p));
 }
 
+// Paths under /api/challenges that students access with cookies (no teacher auth)
+const challengeStudentPaths = ['/stream', '/respond'];
+
 function isProtectedApi(pathname: string): boolean {
+  // Allow student-facing challenge sub-routes through without teacher auth
+  if (pathname.startsWith('/api/challenges/')) {
+    if (challengeStudentPaths.some((p) => pathname.endsWith(p))) {
+      return false;
+    }
+  }
   return protectedApiPaths.some((p) => pathname.startsWith(p));
 }
 
