@@ -18,6 +18,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 interface RespondBody {
   questionIndex: number;
   response: string;
+  isCorrect?: boolean;
+  timeMs?: number;
 }
 
 function validateBody(
@@ -36,9 +38,16 @@ function validateBody(
     return { ok: false, error: 'الإجابة مطلوبة' };
   }
 
+  const { isCorrect, timeMs } = body as Record<string, unknown>;
+
   return {
     ok: true,
-    data: { questionIndex, response: response.trim() },
+    data: {
+      questionIndex,
+      response: response.trim(),
+      isCorrect: typeof isCorrect === 'boolean' ? isCorrect : undefined,
+      timeMs: typeof timeMs === 'number' ? timeMs : undefined,
+    },
   };
 }
 
@@ -65,6 +74,13 @@ export async function POST(
     );
   }
 
+  if (!UUID_RE.test(studentId)) {
+    return Response.json(
+      { error: 'معرّف الطالب غير صالح' },
+      { status: 400 },
+    );
+  }
+
   if (!UUID_RE.test(challengeId)) {
     return Response.json(
       { error: 'معرف التحدي غير صالح' },
@@ -80,7 +96,7 @@ export async function POST(
       return Response.json({ error: validation.error }, { status: 400 });
     }
 
-    const { questionIndex, response } = validation.data;
+    const { questionIndex, response, isCorrect: hintCorrect, timeMs: hintTimeMs } = validation.data;
 
     // 1. Verify challenge exists and is active
     const challenge = await db.query.challenges.findFirst({
@@ -145,12 +161,8 @@ export async function POST(
     // passing the expected value for comparison. In a full implementation,
     // questions would be fetched from the DB. For now, we accept an isCorrect hint.
     // If no hint is provided, mark as correct if response is non-empty.
-    const bodyRaw = await req.clone().json();
-    const isCorrect = typeof bodyRaw.isCorrect === 'boolean'
-      ? bodyRaw.isCorrect
-      : response.length > 0;
-
-    const timeMs = typeof bodyRaw.timeMs === 'number' ? bodyRaw.timeMs : 0;
+    const isCorrect = hintCorrect ?? response.length > 0;
+    const timeMs = hintTimeMs ?? 0;
 
     // 6. Submit and award XP
     const result = await submitChallengeResponse(

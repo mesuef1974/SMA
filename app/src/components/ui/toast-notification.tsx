@@ -131,7 +131,7 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
   return (
     <div
       className="fixed bottom-4 left-4 z-[9999] flex flex-col-reverse gap-2 pointer-events-none"
-      aria-label="Notifications"
+      aria-label="الإشعارات"
     >
       {visible.map((toast) => (
         <div key={toast.id} className="pointer-events-auto">

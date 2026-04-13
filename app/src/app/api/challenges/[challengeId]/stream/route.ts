@@ -7,6 +7,8 @@ import { getChallengeStatus, getChallengeLeaderboard } from '@/db/queries';
 // No auth required — students access via cookie-based sessions.
 // ---------------------------------------------------------------------------
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const dynamic = 'force-dynamic';
 
 export async function GET(
@@ -15,8 +17,16 @@ export async function GET(
 ) {
   const { challengeId } = await params;
 
+  if (!UUID_RE.test(challengeId)) {
+    return Response.json(
+      { error: 'معرف التحدي غير صالح' },
+      { status: 400 },
+    );
+  }
+
   const encoder = new TextEncoder();
   let closed = false;
+  let intervalId: ReturnType<typeof setInterval> | null = null;
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -99,20 +109,22 @@ export async function GET(
       await poll();
 
       // Poll every 2 seconds
-      const interval = setInterval(async () => {
+      intervalId = setInterval(async () => {
         if (closed) {
-          clearInterval(interval);
+          clearInterval(intervalId!);
+          intervalId = null;
           return;
         }
         await poll();
       }, 2000);
-
-      // Cleanup when the stream is cancelled (client disconnects)
-      // Note: cancel() is called by the runtime when the client closes the connection
     },
 
     cancel() {
       closed = true;
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
     },
   });
 
