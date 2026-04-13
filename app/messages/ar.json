@@ -1,0 +1,81 @@
+{
+  "app": {
+    "title": "محلل الرياضيات الذكي",
+    "subtitle": "SMA",
+    "description": "منصة تعليم الرياضيات بالذكاء الاصطناعي للمرحلة الثانوية في قطر",
+    "tagline": "معلّمك الخاص يساعدك خطوة بخطوة بطريقة سقراطية"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "lessons": "الدروس",
+    "dashboard": "لوحة التحكم",
+    "settings": "الإعدادات",
+    "skipToContent": "انتقل إلى المحتوى الرئيسي"
+  },
+  "math": {
+    "exampleLabel": "مثال — الصيغة التربيعية:",
+    "renderError": "خطأ في عرض المعادلة"
+  },
+  "a11y": {
+    "languageSwitch": "تبديل اللغة",
+    "themeToggle": "تبديل المظهر",
+    "mainContent": "المحتوى الرئيسي"
+  },
+  "dashboard": {
+    "title": "لوحة تحكم المعلم",
+    "welcome": "مرحباً، {name}",
+    "todayLessons": "دروس اليوم",
+    "upcomingLessons": "الدروس القادمة",
+    "recentActivity": "النشاط الأخير",
+    "studentProgress": "تقدم الطلاب",
+    "misconceptions": "المفاهيم الخاطئة المكتشفة",
+    "quickActions": "إجراءات سريعة",
+    "newLessonPlan": "تحضير درس جديد",
+    "viewAllLessons": "عرض جميع الدروس",
+    "viewReports": "عرض التقارير",
+    "noLessonsToday": "لا توجد دروس مجدولة اليوم",
+    "bloomDistribution": "توزيع مستويات بلوم",
+    "lessonStatus": "حالة الدرس",
+    "draft": "مسودة",
+    "inReview": "قيد المراجعة",
+    "approved": "معتمد",
+    "period": "الحصة {number}",
+    "minutes": "{count} دقيقة",
+    "chapter": "الفصل {number}",
+    "lesson": "الدرس {number}",
+    "students": "{count} طالب",
+    "completionRate": "نسبة الإنجاز",
+    "averageScore": "متوسط الدرجات",
+    "totalLessonPlans": "تحضيرات الدروس",
+    "totalStudents": "عدد الطلاب",
+    "detectedThisWeek": "اكتشفت هذا الأسبوع",
+    "recentMisconceptions": "أحدث المفاهيم الخاطئة",
+    "frequency": "التكرار",
+    "severity": "الخطورة",
+    "high": "عالية",
+    "medium": "متوسطة",
+    "low": "منخفضة",
+    "allChapters": "جميع الفصول",
+    "allStatuses": "جميع الحالات",
+    "allBloomLevels": "جميع المستويات",
+    "searchLessons": "البحث في الدروس...",
+    "noLessonsFound": "لم يتم العثور على دروس",
+    "bloomLevels": "مستويات بلوم",
+    "periods": "الحصص",
+    "filterByChapter": "تصفية حسب الفصل",
+    "filterByStatus": "تصفية حسب الحالة",
+    "filterByBloom": "تصفية حسب مستوى بلوم",
+    "notifications": "الإشعارات"
+  },
+  "sidebar": {
+    "home": "الرئيسية",
+    "lessons": "الدروس",
+    "lessonPlans": "تحضير الدروس",
+    "students": "الطلاب",
+    "assessments": "التقييمات",
+    "misconceptions": "المفاهيم الخاطئة",
+    "reports": "التقارير",
+    "settings": "الإعدادات",
+    "aiChat": "المحادثة الذكية"
+  }
+}

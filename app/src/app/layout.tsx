@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import { Noto_Sans_Arabic, Geist_Mono } from "next/font/google";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 
 const notoSansArabic = Noto_Sans_Arabic({
@@ -13,22 +13,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "محلل الرياضيات الذكي — SMA",
-  description:
-    "منصة تعليم الرياضيات بالذكاء الاصطناعي — المرحلة الثانوية في قطر",
-};
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const dir = locale === "ar" ? "rtl" : "ltr";
+
   return (
     <html
-      lang="ar"
-      dir="rtl"
+      lang={locale}
+      dir={dir}
       className={`${notoSansArabic.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
