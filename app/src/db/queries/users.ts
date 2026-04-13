@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import { db } from '@/db';
-import { users, schools } from '@/db/schema';
+import { users } from '@/db/schema';
 import type { User } from '@/db/schema';
 
 // ---------------------------------------------------------------------------
