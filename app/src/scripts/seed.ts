@@ -7,8 +7,16 @@
  * - 15 lessons
  * - 37 learning outcomes
  * - 18 misconception types
+ * - XP config (6 Bloom levels)
+ * - Badge definitions
  *
- * Usage: pnpm db:seed
+ * Pilot data (seed:pilot):
+ * - 1 classroom (Grade 11 Arts - A)
+ * - 15 students (realistic Qatari names)
+ * - 1 sample assessment (absolute value function, 5 questions)
+ *
+ * Usage: pnpm db:seed       (curriculum only)
+ *        pnpm seed:pilot    (curriculum + pilot data)
  */
 
 import bcrypt from 'bcryptjs';
@@ -24,6 +32,10 @@ import {
   misconceptionTypes,
   xpConfig,
   badgeDefinitions,
+  classrooms,
+  classroomStudents,
+  assessments,
+  assessmentQuestions,
 } from '../db/schema';
 import { MISCONCEPTION_CATALOG } from '../lib/misconceptions/catalog';
 import { BADGE_DEFINITIONS } from '../lib/gamification/badges';
@@ -35,7 +47,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 0. Demo Teacher (S1-6)
   // -------------------------------------------------------------------------
-  console.log('[0/8] Inserting demo teacher...');
+  console.log('[0/12] Inserting demo teacher...');
   const passwordHash = await bcrypt.hash('Sma2026!', 12);
   const [teacher] = await db
     .insert(users)
@@ -57,7 +69,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 1. Subject
   // -------------------------------------------------------------------------
-  console.log('[1/8] Inserting subject...');
+  console.log('[1/12] Inserting subject...');
   const [insertedSubject] = await db
     .insert(subjects)
     .values({
@@ -73,7 +85,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 2. Grade Level
   // -------------------------------------------------------------------------
-  console.log('[2/8] Inserting grade level...');
+  console.log('[2/12] Inserting grade level...');
   const [insertedGrade] = await db
     .insert(gradeLevels)
     .values({
@@ -92,7 +104,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 3. Chapters
   // -------------------------------------------------------------------------
-  console.log('[3/8] Inserting chapters...');
+  console.log('[3/12] Inserting chapters...');
   const chapterMap: Record<number, string> = {};
 
   for (const unit of curriculumData.units) {
@@ -118,7 +130,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 4. Lessons
   // -------------------------------------------------------------------------
-  console.log('[4/8] Inserting lessons...');
+  console.log('[4/12] Inserting lessons...');
   let lessonCount = 0;
   const lessonIdMap: Record<string, string> = {};
 
@@ -152,7 +164,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 5. Learning Outcomes
   // -------------------------------------------------------------------------
-  console.log('[5/8] Inserting learning outcomes...');
+  console.log('[5/12] Inserting learning outcomes...');
   let loCount = 0;
 
   for (const unit of curriculumData.units) {
@@ -179,7 +191,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 6. Misconception Types
   // -------------------------------------------------------------------------
-  console.log('[6/8] Inserting misconception types...');
+  console.log('[6/12] Inserting misconception types...');
   let mcCount = 0;
 
   for (const mc of MISCONCEPTION_CATALOG) {
@@ -201,7 +213,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 7. XP Config (Bloom level → XP reward mapping)
   // -------------------------------------------------------------------------
-  console.log('[7/8] Inserting XP config (Bloom levels)...');
+  console.log('[7/12] Inserting XP config (Bloom levels)...');
   const xpConfigData = [
     { bloomLevel: 'remember' as const,    xpReward: 10, descriptionAr: 'التذكر — استرجاع المعلومات' },
     { bloomLevel: 'understand' as const,  xpReward: 15, descriptionAr: 'الفهم — شرح الأفكار والمفاهيم' },
@@ -220,7 +232,7 @@ async function seed() {
   // -------------------------------------------------------------------------
   // 8. Badge Definitions
   // -------------------------------------------------------------------------
-  console.log('[8/8] Inserting badge definitions...');
+  console.log('[8/12] Inserting badge definitions...');
   let badgeCount = 0;
   for (const badge of BADGE_DEFINITIONS) {
     await db.insert(badgeDefinitions).values({
@@ -237,6 +249,208 @@ async function seed() {
   console.log(`  Total badge definitions: ${badgeCount}`);
 
   // -------------------------------------------------------------------------
+  // 9–12. Pilot Data (classroom, students, assessment)
+  // -------------------------------------------------------------------------
+  const runPilot = process.argv.includes('--pilot');
+
+  let pilotClassroomCount = 0;
+  let pilotStudentCount = 0;
+  let pilotAssessmentCount = 0;
+  let pilotQuestionCount = 0;
+
+  if (runPilot) {
+    console.log('\n--- Seeding pilot data ---\n');
+
+    // Resolve teacher ID (may have been skipped above if already existed)
+    const existingTeacher = teacher ?? (
+      await db.select().from(users).where(eq(users.email, 'teacher@sma.qa'))
+    )[0];
+    if (!existingTeacher) {
+      throw new Error('Teacher account not found — cannot create pilot data');
+    }
+
+    // -----------------------------------------------------------------------
+    // 9. Classroom
+    // -----------------------------------------------------------------------
+    console.log('[9/12] Inserting pilot classroom...');
+    const [insertedClassroom] = await db
+      .insert(classrooms)
+      .values({
+        teacherId: existingTeacher.id,
+        name: 'الصف الحادي عشر أدبي - أ',
+        nameAr: 'الصف الحادي عشر أدبي - أ',
+        code: 'SMA11A',
+        academicYear: '2025-2026',
+        isActive: true,
+      })
+      .onConflictDoNothing({ target: classrooms.code })
+      .returning();
+    const classroom = insertedClassroom ?? (
+      await db.select().from(classrooms).where(eq(classrooms.code, 'SMA11A'))
+    )[0];
+    if (insertedClassroom) {
+      pilotClassroomCount = 1;
+      console.log(`  -> classroom: ${classroom.id} (${classroom.nameAr})`);
+    } else {
+      console.log('  -> classroom already exists, skipped.');
+    }
+
+    // -----------------------------------------------------------------------
+    // 10. Students (15 realistic Qatari male names)
+    // -----------------------------------------------------------------------
+    console.log('[10/12] Inserting pilot students...');
+    const studentNames = [
+      'محمد', 'أحمد', 'عبدالله', 'يوسف', 'خالد',
+      'عمر', 'سعود', 'حمد', 'فهد', 'ناصر',
+      'علي', 'إبراهيم', 'مبارك', 'جاسم', 'تميم',
+    ];
+
+    // Check existing students to avoid duplicates (no unique constraint on table)
+    const existingStudents = await db
+      .select({ displayName: classroomStudents.displayName })
+      .from(classroomStudents)
+      .where(eq(classroomStudents.classroomId, classroom.id));
+    const existingNames = new Set(existingStudents.map((s) => s.displayName));
+
+    for (const name of studentNames) {
+      if (existingNames.has(name)) continue;
+      const [inserted] = await db
+        .insert(classroomStudents)
+        .values({
+          classroomId: classroom.id,
+          displayName: name,
+          displayNameAr: name,
+          isActive: true,
+        })
+        .returning();
+      if (inserted) {
+        pilotStudentCount++;
+        console.log(`  -> student: ${inserted.id} (${name})`);
+      }
+    }
+    if (pilotStudentCount === 0) {
+      console.log('  -> students already exist, skipped.');
+    } else {
+      console.log(`  Total students inserted: ${pilotStudentCount}`);
+    }
+
+    // -----------------------------------------------------------------------
+    // 11. Sample Assessment (lesson 3-1: absolute value function)
+    // -----------------------------------------------------------------------
+    console.log('[11/12] Inserting sample assessment...');
+    const lessonId31 = lessonIdMap['3-1'];
+    if (!lessonId31) {
+      console.warn('  -> WARNING: lesson 3-1 not found, skipping assessment.');
+    } else {
+      const assessmentTitle = 'تقييم: دالة القيمة المطلقة';
+
+      // Check if assessment already exists (no unique constraint on table)
+      const existingAssessment = (
+        await db
+          .select()
+          .from(assessments)
+          .where(
+            and(
+              eq(assessments.teacherId, existingTeacher.id),
+              eq(assessments.titleAr, assessmentTitle),
+            ),
+          )
+      )[0];
+
+      const assessment = existingAssessment ?? (
+        await db
+          .insert(assessments)
+          .values({
+            lessonId: lessonId31,
+            teacherId: existingTeacher.id,
+            title: 'Assessment: Absolute Value Function',
+            titleAr: assessmentTitle,
+            type: 'formative',
+          })
+          .returning()
+      )[0];
+
+      if (!existingAssessment) {
+        pilotAssessmentCount = 1;
+        console.log(`  -> assessment: ${assessment.id} (${assessmentTitle})`);
+
+        // -------------------------------------------------------------------
+        // 12. Assessment Questions (5 questions)
+        // -------------------------------------------------------------------
+        console.log('[12/12] Inserting assessment questions...');
+
+        const questions: {
+          questionText: string;
+          questionTextAr: string;
+          correctAnswer: string;
+          bloomLevel: 'remember' | 'understand' | 'apply';
+          sortOrder: number;
+        }[] = [
+          {
+            questionText: 'What is the definition of the absolute value function?',
+            questionTextAr: 'ما تعريف دالة القيمة المطلقة؟',
+            correctAnswer: 'f(x) = |x| تُعرَّف بأنها: f(x) = x إذا x ≥ 0، و f(x) = -x إذا x < 0',
+            bloomLevel: 'remember',
+            sortOrder: 1,
+          },
+          {
+            questionText: 'What is the vertex of f(x) = |x|?',
+            questionTextAr: 'ما رأس التمثيل البياني للدالة f(x) = |x|؟',
+            correctAnswer: '(0, 0)',
+            bloomLevel: 'remember',
+            sortOrder: 2,
+          },
+          {
+            questionText: 'Explain why the graph of f(x) = |x| is symmetric about the y-axis.',
+            questionTextAr: 'وضّح لماذا يكون التمثيل البياني للدالة f(x) = |x| متناظرًا حول المحور الصادي.',
+            correctAnswer: 'لأن |x| = |-x| لكل قيمة x، فإن الدالة زوجية وبالتالي متناظرة حول محور الصادي',
+            bloomLevel: 'understand',
+            sortOrder: 3,
+          },
+          {
+            questionText: 'Describe how the graph of g(x) = |x - 3| + 2 differs from f(x) = |x|.',
+            questionTextAr: 'صف كيف يختلف التمثيل البياني للدالة g(x) = |x - 3| + 2 عن التمثيل البياني للدالة f(x) = |x|.',
+            correctAnswer: 'ينتقل التمثيل البياني 3 وحدات إلى اليمين و 2 وحدة إلى الأعلى، فيصبح الرأس عند النقطة (3, 2)',
+            bloomLevel: 'understand',
+            sortOrder: 4,
+          },
+          {
+            questionText: 'Solve the equation |2x - 4| = 6.',
+            questionTextAr: 'حل المعادلة |2x - 4| = 6.',
+            correctAnswer: 'x = 5 أو x = -1',
+            bloomLevel: 'apply',
+            sortOrder: 5,
+          },
+        ];
+
+        for (const q of questions) {
+          const [insertedQ] = await db
+            .insert(assessmentQuestions)
+            .values({
+              assessmentId: assessment.id,
+              questionText: q.questionText,
+              questionTextAr: q.questionTextAr,
+              questionType: 'short_answer',
+              correctAnswer: q.correctAnswer,
+              bloomLevel: q.bloomLevel,
+              points: 1,
+              sortOrder: q.sortOrder,
+            })
+            .returning();
+          if (insertedQ) {
+            pilotQuestionCount++;
+            console.log(`  -> question ${q.sortOrder}: ${q.questionTextAr.substring(0, 40)}...`);
+          }
+        }
+        console.log(`  Total questions inserted: ${pilotQuestionCount}`);
+      } else {
+        console.log('  -> assessment already exists, skipped.');
+        console.log('[12/12] Assessment questions already exist, skipped.');
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // Summary
   // -------------------------------------------------------------------------
   console.log('\n--- Seed complete ---');
@@ -248,7 +462,16 @@ async function seed() {
   console.log(`  misconception_types:${mcCount}`);
   console.log(`  xp_config:          ${xpConfigCount}`);
   console.log(`  badge_definitions:  ${badgeCount}`);
-  console.log(`  TOTAL rows:         ${1 + 1 + Object.keys(chapterMap).length + lessonCount + loCount + mcCount + xpConfigCount + badgeCount}`);
+  if (runPilot) {
+    console.log(`  classrooms:         ${pilotClassroomCount}`);
+    console.log(`  students:           ${pilotStudentCount}`);
+    console.log(`  assessments:        ${pilotAssessmentCount}`);
+    console.log(`  questions:          ${pilotQuestionCount}`);
+  }
+
+  const baseTotal = 1 + 1 + Object.keys(chapterMap).length + lessonCount + loCount + mcCount + xpConfigCount + badgeCount;
+  const pilotTotal = pilotClassroomCount + pilotStudentCount + pilotAssessmentCount + pilotQuestionCount;
+  console.log(`  TOTAL rows:         ${baseTotal + pilotTotal}`);
 
   process.exit(0);
 }
