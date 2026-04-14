@@ -325,7 +325,7 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
                       <div className="text-center space-y-1">
                         <p className="font-medium text-lg">جارٍ إعداد التحضير بالذكاء الاصطناعي...</p>
                         <p className="text-sm text-muted-foreground">
-                          قد يستغرق هذا من ٣٠ إلى ٦٠ ثانية
+                          قد يستغرق هذا من 30 إلى 60 ثانية
                         </p>
                       </div>
                     </CardContent>

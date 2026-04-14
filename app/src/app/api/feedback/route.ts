@@ -44,7 +44,7 @@ function validateBody(
     return { ok: false, error: 'الاسم مطلوب' };
   }
   if (name.trim().length > 100) {
-    return { ok: false, error: 'الاسم يجب ألا يتجاوز ١٠٠ حرف' };
+    return { ok: false, error: 'الاسم يجب ألا يتجاوز 100 حرف' };
   }
 
   if (typeof type !== 'string' || !ALLOWED_TYPES.includes(type as FeedbackType)) {
@@ -55,7 +55,7 @@ function validateBody(
     return { ok: false, error: 'الرسالة مطلوبة' };
   }
   if (message.trim().length > 2000) {
-    return { ok: false, error: 'الرسالة يجب ألا تتجاوز ٢٠٠٠ حرف' };
+    return { ok: false, error: 'الرسالة يجب ألا تتجاوز 2000 حرف' };
   }
 
   return {

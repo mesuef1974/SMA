@@ -105,9 +105,11 @@ export function ReportsView({ classrooms }: ReportsViewProps) {
   /** Format number according to locale. */
   const num = (n: number) => (locale === 'ar' ? toArabicIndic(n) : String(n));
 
-  /** Percentage display. */
-  const pct = (n: number) =>
-    locale === 'ar' ? `${toArabicIndic(n)}٪` : `${n}%`;
+  /**
+   * Percentage display.
+   * Founder requirement 2026-04-14: Latin digits + Latin '%' in both locales.
+   */
+  const pct = (n: number) => `${n}%`;
 
   if (classrooms.length === 0) {
     return (

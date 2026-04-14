@@ -113,13 +113,11 @@ export function DashboardHome({
           icon={TrendingUp}
           label={t('completionRate')}
           value={stats.totalPlans > 0 ? Math.round((stats.approved / stats.totalPlans) * 100) : 0}
-          detail={
+          detail={`${
             stats.totalPlans > 0
-              ? (locale === 'ar'
-                  ? `${toArabicIndic(Math.round((stats.approved / stats.totalPlans) * 100))}٪`
-                  : `${Math.round((stats.approved / stats.totalPlans) * 100)}%`)
-              : (locale === 'ar' ? '٠٪' : '0%')
-          }
+              ? Math.round((stats.approved / stats.totalPlans) * 100)
+              : 0
+          }%`}
           iconClassName="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
         />
       </div>

@@ -82,8 +82,8 @@ export function StudentsView({
   const locale = useLocale();
 
   const num = (n: number) => (locale === 'ar' ? toArabicIndic(n) : String(n));
-  const pct = (n: number) =>
-    locale === 'ar' ? `${toArabicIndic(n)}٪` : `${n}%`;
+  // Founder requirement 2026-04-14: Latin digits + Latin '%' everywhere.
+  const pct = (n: number) => `${n}%`;
 
   const displayClassName = locale === 'ar' ? classroomNameAr : classroomName;
 
