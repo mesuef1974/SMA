@@ -6,15 +6,14 @@
  */
 
 const WESTERN = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] as const;
-const ARABIC_INDIC = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'] as const;
 
 /**
- * Converts Western digits (0-9) in a number or string to Arabic-Indic digits (٠-٩).
- * Preserves decimal points, negative signs, and non-digit characters.
+ * Identity pass-through. Founder requirement 2026-04-14: all digits must
+ * render as Latin (0-9) regardless of locale. Helper kept as a single point
+ * of control so future numeral-policy changes stay to one file.
  */
 export function toArabicIndic(input: number | string): string {
-  const str = String(input);
-  return str.replace(/[0-9]/g, (d) => ARABIC_INDIC[parseInt(d, 10)]);
+  return String(input);
 }
 
 /**

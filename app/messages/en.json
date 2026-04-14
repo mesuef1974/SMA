@@ -47,6 +47,7 @@
     "completionRate": "Completion Rate",
     "averageScore": "Average Score",
     "totalLessonPlans": "Lesson Plans",
+    "totalLessons": "Total Lessons",
     "totalStudents": "Total Students",
     "detectedThisWeek": "Detected this week",
     "recentMisconceptions": "Recent Misconceptions",
@@ -396,5 +397,32 @@
     },
     "footerSupport": "Need more help? Contact the support team",
     "backToHome": "Back to Home"
+  },
+  "dashboardStubs": {
+    "lessonPlans": {
+      "title": "Lesson Plans",
+      "comingSoon": "This feature is under development — we'll let you know when it's ready."
+    },
+    "assessments": {
+      "title": "Assessments",
+      "comingSoon": "This feature is under development — we'll let you know when it's ready."
+    },
+    "misconceptions": {
+      "title": "Misconceptions",
+      "comingSoon": "This feature is under development — we'll let you know when it's ready."
+    },
+    "aiChat": {
+      "title": "AI Chat",
+      "comingSoon": "This feature is under development — we'll let you know when it's ready."
+    },
+    "settings": {
+      "title": "Settings",
+      "comingSoon": "This feature is under development — we'll let you know when it's ready."
+    }
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "body": "Sorry, the page you're looking for doesn't exist.",
+    "cta": "Back to Dashboard"
   }
 }
