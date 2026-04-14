@@ -31,6 +31,7 @@ import {
   SidebarFooter,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
+import { Logo } from '@/components/brand/Logo';
 
 interface NavItem {
   key: string;
@@ -76,9 +77,8 @@ export function DashboardSidebar() {
           className="flex items-center gap-2 font-bold text-lg"
           aria-label={t('home')}
         >
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-            م
-          </div>
+          <Logo variant="mono-white" size={32} />
+
           <span className="truncate group-data-[collapsible=icon]:hidden">SMA</span>
         </Link>
       </SidebarHeader>

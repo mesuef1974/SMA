@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Link } from '@/i18n/navigation';
+import { Logo } from '@/components/brand/Logo';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
@@ -18,8 +19,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 dark:bg-black">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-lg bg-primary text-primary-foreground text-lg font-bold">
-            م
+          <div className="mx-auto mb-4 flex size-12 items-center justify-center">
+            <Logo variant="color" size={48} />
           </div>
           <CardTitle className="text-2xl font-bold">
             تسجيل الدخول
