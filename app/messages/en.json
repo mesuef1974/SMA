@@ -394,17 +394,6 @@
       "q4": "How do I see my grades?",
       "a4": "From the Leaderboard page you can see your rank and points"
     },
-    "contact": "Contact Us",
-    "contactDescription": "Have a question or suggestion? Send us a message",
-    "nameLabel": "Name",
-    "typeLabel": "Message Type",
-    "typeBug": "Technical Issue",
-    "typeSuggestion": "Suggestion",
-    "typeQuestion": "Question",
-    "messageLabel": "Message",
-    "submitFeedback": "Submit",
-    "feedbackSuccess": "Your feedback was sent successfully. Thank you!",
-    "feedbackError": "An error occurred while sending. Please try again.",
     "footerSupport": "Need more help? Contact the support team",
     "backToHome": "Back to Home"
   }
