@@ -94,7 +94,14 @@ async function seed() {
       subjectId: subject.id,
       academicYear: '2025-2026',
     })
-    .onConflictDoNothing()
+    .onConflictDoNothing({
+      target: [
+        gradeLevels.grade,
+        gradeLevels.track,
+        gradeLevels.subjectId,
+        gradeLevels.academicYear,
+      ],
+    })
     .returning();
   const gradeLevel = insertedGrade ?? (await db.select().from(gradeLevels).where(
     and(eq(gradeLevels.grade, 11), eq(gradeLevels.track, 'literary'), eq(gradeLevels.subjectId, subject.id))
@@ -118,7 +125,9 @@ async function seed() {
         semester: curriculumData.semester,
         sortOrder: unit.number,
       })
-      .onConflictDoNothing()
+      .onConflictDoNothing({
+        target: [chapters.gradeLevelId, chapters.number],
+      })
       .returning();
     const chapter = insertedChapter ?? (await db.select().from(chapters).where(
       and(eq(chapters.gradeLevelId, gradeLevel.id), eq(chapters.number, unit.number))
@@ -149,7 +158,9 @@ async function seed() {
           periodCount: lsn.periods ?? 2,
           sortOrder: sortIdx++,
         })
-        .onConflictDoNothing()
+        .onConflictDoNothing({
+          target: [lessons.chapterId, lessons.number],
+        })
         .returning();
       const lesson = insertedLesson ?? (await db.select().from(lessons).where(
         and(eq(lessons.chapterId, chapterId), eq(lessons.number, lsn.number))
@@ -180,7 +191,9 @@ async function seed() {
           descriptionAr: outcomeDesc,
           bloomLevel: 'understand',
           sortOrder: sortIdx,
-        }).onConflictDoNothing();
+        }).onConflictDoNothing({
+          target: [learningOutcomes.lessonId, learningOutcomes.code],
+        });
         loCount++;
         sortIdx++;
       }
@@ -205,7 +218,7 @@ async function seed() {
       severity: mc.severity,
       remediationHint: mc.remediationHintEn,
       remediationHintAr: mc.remediationHintAr,
-    }).onConflictDoNothing();
+    }).onConflictDoNothing({ target: misconceptionTypes.code });
     mcCount++;
   }
   console.log(`  Total misconception types: ${mcCount}`);
@@ -224,7 +237,10 @@ async function seed() {
   ];
   let xpConfigCount = 0;
   for (const cfg of xpConfigData) {
-    await db.insert(xpConfig).values(cfg).onConflictDoNothing();
+    await db
+      .insert(xpConfig)
+      .values(cfg)
+      .onConflictDoNothing({ target: xpConfig.bloomLevel });
     xpConfigCount++;
   }
   console.log(`  Total XP config entries: ${xpConfigCount}`);
@@ -243,7 +259,7 @@ async function seed() {
       category: badge.category,
       xpReward: badge.xpReward,
       criteriaJson: badge.criteriaJson,
-    }).onConflictDoNothing();
+    }).onConflictDoNothing({ target: badgeDefinitions.code });
     badgeCount++;
   }
   console.log(`  Total badge definitions: ${badgeCount}`);
