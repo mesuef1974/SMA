@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="SMA mark">
+  <title>SMA — Square Mīm mark</title>
+  <!-- Arabic letter "م" reimagined: the loop becomes a perfect square
+       (a geometric pun on squares / root / coordinate grid).
+       Two shapes. No fills. Monochrome-safe at any size. -->
+  <g fill="none" stroke="#2D2B7E" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="32" y="26" width="48" height="48" rx="6"/>
+    <path d="M42 74 L42 96"/>
+  </g>
+</svg>

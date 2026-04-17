@@ -44,12 +44,22 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  render,
+  nativeButton,
   ...props
 }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+  // Base UI defaults `nativeButton` to `true`. When a `render` slot is
+  // provided (e.g. `<Button render={<Link href="…" />} />`), the root element
+  // becomes an <a> — which triggers Base UI's "expected a native <button>"
+  // warning. Auto-flip the flag unless the caller set it explicitly.
+  const resolvedNativeButton = nativeButton ?? render === undefined
+
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      nativeButton={resolvedNativeButton}
+      render={render}
       {...props}
     />
   )

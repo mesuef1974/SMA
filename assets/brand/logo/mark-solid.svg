@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="SMA mark (solid)">
+  <title>SMA — Square Mīm mark, solid tile version (for favicons / app icons)</title>
+  <!-- Rounded indigo tile with the white Square Mīm inside -->
+  <rect width="120" height="120" rx="24" fill="#2D2B7E"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="32" y="26" width="48" height="48" rx="6"/>
+    <path d="M42 74 L42 96"/>
+  </g>
+</svg>

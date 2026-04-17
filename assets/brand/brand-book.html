@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SMA — دليل العلامة التجارية | Brand Guidelines</title>
+<link rel="icon" type="image/svg+xml" href="logo/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --najm-50:  #eeedf6;
+    --najm-100: #dcd9ed;
+    --najm-300: #9b94cf;
+    --najm-500: #5a50af;
+    --najm-700: #2d2b7e;
+    --najm-900: #1a1852;
+    --najm-950: #0f0e2a;
+
+    --qamar-100: #fbf0d2;
+    --qamar-300: #f2cf7d;
+    --qamar-500: #e9b949;
+    --qamar-700: #b98620;
+    --qamar-900: #6f4f0f;
+
+    --sahla-100: #ccf3ee;
+    --sahla-300: #6fddcf;
+    --sahla-500: #14b8a6;
+    --sahla-700: #0d7f72;
+    --sahla-900: #064a42;
+
+    --ink-950: #0f0e1f;
+    --ink-800: #2b2a3d;
+    --ink-600: #55546b;
+    --ink-400: #9e9daf;
+    --ink-300: #c4c3cf;
+    --ink-200: #e4e3eb;
+    --ink-100: #f2f1f6;
+    --paper:    #fafafb;
+
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error:   #dc2626;
+    --info:    #3b82f6;
+
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 16px;
+    --r-xl: 24px;
+
+    --ff-ar: "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif;
+    --ff-en: "IBM Plex Sans", system-ui, sans-serif;
+    --ff-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--ff-ar);
+    background: var(--paper);
+    color: var(--ink-950);
+    line-height: 1.65;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    /* Subtle graph-paper dot pattern — brand graphic element */
+    background-image: radial-gradient(circle, rgba(45,43,126,0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .container { max-width: 1080px; margin: 0 auto; padding: 40px 24px; }
+  .wrap { background: #fff; border: 1px solid var(--ink-200); border-radius: var(--r-xl); padding: 48px; margin-bottom: 32px; box-shadow: 0 1px 0 rgba(15,14,31,.03), 0 20px 40px -30px rgba(45,43,126,.15); }
+
+  /* Typography ----------------------------------------------------------- */
+  h1, h2, h3, h4 { margin: 0 0 .4em; line-height: 1.25; font-weight: 700; color: var(--najm-900); }
+  h1 { font-size: 44px; letter-spacing: -0.02em; }
+  h2 { font-size: 32px; letter-spacing: -0.015em; padding-bottom: 12px; border-bottom: 2px solid var(--najm-100); margin-top: 0; }
+  h3 { font-size: 22px; color: var(--najm-700); margin-top: 28px; }
+  h4 { font-size: 16px; color: var(--ink-800); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  p  { margin: .5em 0; color: var(--ink-800); }
+  .lead { font-size: 20px; color: var(--ink-600); max-width: 680px; }
+  .en { font-family: var(--ff-en); direction: ltr; display: inline-block; }
+  .mono { font-family: var(--ff-mono); font-size: .92em; background: var(--ink-100); padding: 2px 8px; border-radius: var(--r-sm); direction: ltr; display: inline-block; }
+  .muted { color: var(--ink-600); }
+  .label { text-transform: uppercase; letter-spacing: .1em; font-size: 12px; font-weight: 600; color: var(--najm-500); font-family: var(--ff-en); direction: ltr; }
+
+  /* Hero ----------------------------------------------------------------- */
+  .hero {
+    background: linear-gradient(135deg, var(--najm-950) 0%, var(--najm-700) 60%, var(--najm-500) 100%);
+    color: #fff;
+    border-radius: var(--r-xl);
+    padding: 72px 56px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,.08) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+  }
+  .hero-grid { display: grid; grid-template-columns: auto 1fr; gap: 48px; align-items: center; position: relative; }
+  .hero-mark { width: 160px; height: 160px; background: rgba(255,255,255,.08); border-radius: var(--r-xl); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.12); }
+  .hero h1 { color: #fff; font-size: 56px; }
+  .hero p { color: rgba(255,255,255,.8); font-size: 22px; max-width: 560px; }
+  .hero .tag { display: inline-block; font-family: var(--ff-en); direction: ltr; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); padding: 6px 14px; border-radius: 999px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 16px; }
+
+  /* Logo showcase -------------------------------------------------------- */
+  .logo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+  .logo-cell { background: var(--ink-100); border-radius: var(--r-md); padding: 32px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: 200px; border: 1px solid var(--ink-200); }
+  .logo-cell.dark { background: var(--najm-950); color: #fff; }
+  .logo-cell .caption { font-size: 12px; color: var(--ink-600); font-family: var(--ff-en); direction: ltr; text-transform: uppercase; letter-spacing: .08em; }
+  .logo-cell.dark .caption { color: rgba(255,255,255,.55); }
+  .logo-cell svg { max-width: 90px; max-height: 90px; }
+
+  /* Wordmark compositions */
+  .wordmark { display: flex; align-items: center; gap: 16px; }
+  .wordmark svg { width: 56px; height: 56px; flex-shrink: 0; }
+  .wordmark-text { display: flex; flex-direction: column; line-height: 1; }
+  .wordmark-text .primary { font-family: var(--ff-en); font-weight: 700; font-size: 32px; letter-spacing: -0.03em; direction: ltr; color: var(--najm-900); }
+  .wordmark-text .secondary { font-family: var(--ff-ar); font-weight: 500; font-size: 14px; color: var(--ink-600); margin-top: 4px; }
+  .wordmark.reverse .primary { color: #fff; }
+  .wordmark.reverse .secondary { color: rgba(255,255,255,.7); }
+
+  /* Color palette -------------------------------------------------------- */
+  .palette { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 20px 0; }
+  .swatch { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--ink-200); }
+  .swatch .chip { height: 110px; position: relative; }
+  .swatch .chip .name { position: absolute; top: 12px; inset-inline-start: 12px; font-family: var(--ff-en); direction: ltr; font-size: 13px; font-weight: 600; }
+  .swatch .meta { padding: 12px; font-family: var(--ff-mono); font-size: 11px; direction: ltr; background: #fff; }
+  .swatch .meta .hex { font-weight: 600; color: var(--ink-950); }
+  .swatch .meta .role { display: block; font-family: var(--ff-ar); color: var(--ink-600); margin-top: 4px; font-size: 12px; }
+
+  /* Typography scale ----------------------------------------------------- */
+  .typescale .row { display: grid; grid-template-columns: 140px 1fr auto; gap: 24px; align-items: baseline; padding: 14px 0; border-bottom: 1px dashed var(--ink-200); }
+  .typescale .row:last-child { border: 0; }
+  .typescale .row .key { color: var(--ink-600); font-family: var(--ff-mono); font-size: 12px; direction: ltr; }
+  .typescale .row .specs { color: var(--ink-600); font-family: var(--ff-mono); font-size: 11px; direction: ltr; }
+  .t-h1 { font-size: 40px; font-weight: 700; line-height: 1.15; }
+  .t-h2 { font-size: 32px; font-weight: 700; line-height: 1.2; }
+  .t-h3 { font-size: 24px; font-weight: 600; line-height: 1.3; }
+  .t-h4 { font-size: 20px; font-weight: 600; line-height: 1.4; }
+  .t-body { font-size: 16px; font-weight: 400; line-height: 1.6; }
+  .t-small { font-size: 14px; font-weight: 400; line-height: 1.5; color: var(--ink-600); }
+
+  /* Brand platform ------------------------------------------------------- */
+  .platform { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .platform .card { background: var(--najm-50); border-radius: var(--r-md); padding: 24px; border-right: 4px solid var(--najm-700); }
+  .platform .card h4 { color: var(--najm-700); margin: 0 0 8px; }
+  .platform .card p { margin: 0; color: var(--ink-800); font-size: 15px; }
+
+  .three-words { display: flex; gap: 16px; justify-content: center; margin: 32px 0 8px; flex-wrap: wrap; }
+  .three-words .word { background: var(--najm-700); color: #fff; padding: 16px 28px; border-radius: 999px; font-size: 20px; font-weight: 600; }
+
+  /* Dos & Don'ts --------------------------------------------------------- */
+  .rules { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .rules .col { background: var(--ink-100); border-radius: var(--r-md); padding: 20px; }
+  .rules .col.do { border-inline-start: 4px solid var(--success); }
+  .rules .col.dont { border-inline-start: 4px solid var(--error); }
+  .rules ul { margin: 8px 0 0; padding-inline-start: 20px; color: var(--ink-800); font-size: 14px; }
+  .rules li { margin: 6px 0; }
+  .rules h4 { margin-top: 0; }
+  .rules .do h4 { color: var(--success); }
+  .rules .dont h4 { color: var(--error); }
+
+  /* Applications --------------------------------------------------------- */
+  .app-mockups { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 16px; }
+  .mock { border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--ink-200); background: #fff; }
+  .mock .mock-head { background: var(--najm-950); color: #fff; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
+  .mock .mock-head svg { width: 28px; height: 28px; }
+  .mock .mock-head .title { font-family: var(--ff-en); font-weight: 600; font-size: 14px; letter-spacing: -.01em; direction: ltr; }
+  .mock .mock-body { padding: 20px; }
+  .mock .mock-body h5 { margin: 0 0 4px; font-size: 16px; color: var(--najm-900); }
+  .mock .mock-body p { margin: 0; font-size: 13px; color: var(--ink-600); }
+  .mock .btn { display: inline-block; background: var(--najm-700); color: #fff; padding: 8px 16px; border-radius: var(--r-sm); font-size: 13px; font-weight: 500; margin-top: 12px; }
+  .mock .btn.gold { background: var(--qamar-500); color: var(--najm-950); }
+  .mock .btn.teal { background: var(--sahla-500); color: #fff; }
+
+  /* Table of tokens ------------------------------------------------------ */
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }
+  table th, table td { text-align: start; padding: 10px 12px; border-bottom: 1px solid var(--ink-200); }
+  table th { background: var(--ink-100); font-weight: 600; color: var(--ink-800); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  table td.mono { background: transparent; padding: 10px 12px; }
+
+  /* Voice examples ------------------------------------------------------- */
+  .voice { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .voice .card { border-radius: var(--r-md); padding: 18px 22px; }
+  .voice .yes { background: #ecfdf5; border-inline-start: 3px solid var(--success); }
+  .voice .no  { background: #fef2f2; border-inline-start: 3px solid var(--error); }
+  .voice .card .label { display: block; margin-bottom: 6px; }
+  .voice .card p { margin: 4px 0; font-size: 14px; }
+
+  /* Section spacing */
+  section { margin-top: 56px; }
+  section:first-of-type { margin-top: 0; }
+
+  /* Footer */
+  footer { text-align: center; color: var(--ink-400); font-size: 13px; padding: 24px 0 40px; }
+  footer .mono { background: transparent; padding: 0; }
+
+  /* Utility */
+  .sep { height: 1px; background: var(--ink-200); margin: 40px 0; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ============================ HERO ============================ -->
+  <div class="hero">
+    <div class="hero-grid">
+      <div class="hero-mark">
+        <!-- Square Mīm mark, white, large -->
+        <svg viewBox="0 0 120 120" width="120" height="120" aria-label="SMA">
+          <g fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="32" y="26" width="48" height="48" rx="6"/>
+            <path d="M42 74 L42 96"/>
+          </g>
+        </svg>
+      </div>
+      <div>
+        <span class="tag">Brand Guidelines — v1.0</span>
+        <h1>SMA</h1>
+        <p>محلل الرياضيات الذكي — دليل الهوية البصرية الكامل<br/>
+        <span class="en" style="color:rgba(255,255,255,.65);font-size:16px;letter-spacing:-.01em;">Smart Math Analyzer — Complete Visual Identity System</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ 1. STRATEGY ============================ -->
+  <div class="wrap">
+    <section>
+      <span class="label">01 · Brand Platform</span>
+      <h2>الاستراتيجية والمنصّة</h2>
+      <p class="lead">قبل كل قرار بصري، يجب أن تكون الفكرة أوضح من الشكل. إليك الدستور الذي تنبثق منه كل تفصيلة في هذا الدليل.</p>
+
+      <div class="three-words">
+        <div class="word">دقيق</div>
+        <div class="word">ذكي</div>
+        <div class="word">عربي الأصل</div>
+      </div>
+
+      <div class="platform" style="margin-top:28px">
+        <div class="card">
+          <h4>الغرض · Purpose</h4>
+          <p>نُحوِّل تدريس الرياضيات من تلقين إلى فهم، عبر تقنية ذكية تفهم الطالب قبل أن تُعلّمه.</p>
+        </div>
+        <div class="card">
+          <h4>الوعد · Promise</h4>
+          <p>"نفهم الطالب قبل أن نُعلّمه." نشخّص المفاهيم الخاطئة قبل أن نصحّحها.</p>
+        </div>
+        <div class="card">
+          <h4>الشخصية · Archetype</h4>
+          <p>الحكيم + الساحر (Sage + Magician). حكمة بيداغوجية صارمة، مع تحوّل سحري يلمسه الطالب.</p>
+        </div>
+        <div class="card">
+          <h4>نبرة الصوت · Tone</h4>
+          <p>مهنية وواثقة، واضحة بلا ترهّل. نتحدث كمعلّم متمكّن، لا كتطبيق ترفيهي.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================ 2. LOGO ============================ -->
+  <div class="wrap">
+    <section>
+      <span class="label">02 · Logo System</span>
+      <h2>الشعار ومنظومته</h2>
+      <p class="lead">
+        الفكرة: حرف <strong>م</strong> العربي، حيث حلقته مرسومة كمربّع هندسي تامّ — إزدواجية خالصة بين اللغة العربية والرياضيات. شكلان فقط: مربّع وخط. يشتغل من 16 بكسل إلى لافتة بعرض عشرة أمتار.
+      </p>
+
+      <h3>التنويعات الأساسية</h3>
+      <div class="logo-grid">
+        <div class="logo-cell">
+          <svg viewBox="0 0 120 120" width="90" height="90" aria-label="Primary">
+            <g fill="none" stroke="#2d2b7e" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="32" y="26" width="48" height="48" rx="6"/>
+              <path d="M42 74 L42 96"/>
+            </g>
+          </svg>
+          <span class="caption">Primary · Najm Indigo</span>
+        </div>
+        <div class="logo-cell">
+          <svg viewBox="0 0 120 120" width="90" height="90" aria-label="Mono Black">
+            <g fill="none" stroke="#000" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="32" y="26" width="48" height="48" rx="6"/>
+              <path d="M42 74 L42 96"/>
+            </g>
+          </svg>
+          <span class="caption">Mono · Black</span>
+        </div>
+        <div class="logo-cell dark">
+          <svg viewBox="0 0 120 120" width="90" height="90" aria-label="Mono White">
+            <g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="32" y="26" width="48" height="48" rx="6"/>
+              <path d="M42 74 L42 96"/>
+            </g>
+          </svg>
+          <span class="caption">Mono · White (Reverse)</span>
+        </div>
+      </div>
+
+      <h3>الاستخدام التركيبي (Lockup)</h3>
+      <div class="logo-grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="logo-cell" style="align-items:flex-start">
+          <div class="wordmark">
+            <svg viewBox="0 0 120 120" aria-label="SMA">
+              <g fill="none" stroke="#2d2b7e" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="32" y="26" width="48" height="48" rx="6"/>
+                <path d="M42 74 L42 96"/>
+              </g>
+            </svg>
+            <div class="wordmark-text">
+              <span class="primary">SMA</span>
+              <span class="secondary">محلل الرياضيات الذكي</span>
+            </div>
+          </div>
+          <span class="caption">Horizontal Lockup · Bilingual</span>
+        </div>
+        <div class="logo-cell dark" style="align-items:flex-start">
+          <div class="wordmark reverse">
+            <svg viewBox="0 0 120 120" aria-label="SMA">
+              <g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="32" y="26" width="48" height="48" rx="6"/>
+                <path d="M42 74 L42 96"/>
+              </g>
+            </svg>
+            <div class="wordmark-text">
+              <span class="primary">SMA</span>
+              <span class="secondary">Smart Math Analyzer</span>
+            </div>
+          </div>
+          <span class="caption">Horizontal Lockup · Reversed</span>
+        </div>
+      </div>
+
+      <h3>المنطقة الآمنة والحد الأدنى</h3>
+      <table>
+        <tr><th>القياس</th><th>الاستخدام</th><th>الحد الأدنى</th></tr>
+        <tr><td>رقمي (Web/App)</td><td>واجهات، أيقونات تطبيق</td><td class="mono">24 × 24 px</td></tr>
+        <tr><td>طباعة (Print)</td><td>ورق، بطاقات، مطبوعات</td><td class="mono">12 × 12 mm</td></tr>
+        <tr><td>منطقة آمنة (Clear Space)</td><td>المسافة حول الشعار</td><td class="mono">= عرض ذيل المِيم × 2</td></tr>
+      </table>
+
+      <h3>قواعد الاستخدام</h3>
+      <div class="rules">
+        <div class="col do">
+          <h4>مسموح · Do</h4>
+          <ul>
+            <li>استخدم الشعار كما هو دون تعديل نسبه</li>
+            <li>ضعه على خلفيات توفّر تبايناً كافياً (4.5:1+)</li>
+            <li>استخدم النسخة المعكوسة على الخلفيات الداكنة</li>
+            <li>حافظ على المنطقة الآمنة حوله</li>
+          </ul>
+        </div>
+        <div class="col dont">
+          <h4>ممنوع · Don't</h4>
+          <ul>
+            <li>لا تُدوِّر الشعار أو تُميله</li>
+            <li>لا تضف ظلال أو تدرّجات أو تأثيرات</li>
+            <li>لا تغيّر ألوانه خارج اللوحة المعتمدة</li>
+            <li>لا تضعه على خلفيات مزدحمة أو منخفضة التباين</li>
+            <li>لا تمدّد/تضغط نسبه (Horizontal stretch)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================ 3. COLOR ============================ -->
+  <div class="wrap">
+    <section>
+      <span class="label">03 · Color System</span>
+      <h2>منظومة الألوان</h2>
+      <p class="lead">
+        ثلاثة ألوان جوهرية. كل لون له اسم عربي، ومبرّر استراتيجي، ودور وظيفي محدّد في الواجهة.
+      </p>
+
+      <h3>الألوان الجوهرية (Brand Colors)</h3>
+      <div class="palette" style="grid-template-columns: repeat(3, 1fr);">
+
+        <div class="swatch">
+          <div class="chip" style="background:var(--najm-700)">
+            <span class="name" style="color:#fff">Najm Indigo</span>
+          </div>
+          <div class="meta">
+            <div class="hex">#2D2B7E</div>
+            <div style="color:var(--ink-600)">oklch(0.30 0.14 280)</div>
+            <span class="role">نجم — الثقة، العمق، السلطة العلمية. للشعار والإجراءات الرئيسية.</span>
+          </div>
+        </div>
+
+        <div class="swatch">
+          <div class="chip" style="background:var(--qamar-500)">
+            <span class="name" style="color:var(--najm-900)">Qamar Gold</span>
+          </div>
+          <div class="meta">
+            <div class="hex">#E9B949</div>
+            <div style="color:var(--ink-600)">oklch(0.80 0.14 85)</div>
+            <span class="role">قمر — الإنجاز، النقاط، الشارات. لحظات المكافأة واللوحات.</span>
+          </div>
+        </div>
+
+        <div class="swatch">
+          <div class="chip" style="background:var(--sahla-500)">
+            <span class="name" style="color:#fff">Sahla Teal</span>
+          </div>
+          <div class="meta">
+            <div class="hex">#14B8A6</div>
+            <div style="color:var(--ink-600)">oklch(0.70 0.12 180)</div>
+            <span class="role">سهلة — الذكاء الاصطناعي، الإرشاد، الوضوح. لمحادثة AI والتلميحات.</span>
+          </div>
+        </div>
+      </div>
+
+      <h3>المقاييس (Scales)</h3>
+      <div class="palette">
+        <div class="swatch"><div class="chip" style="background:var(--najm-100)"></div><div class="meta"><div class="hex">najm-100</div><div style="color:var(--ink-600)">#DCD9ED</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--najm-300)"></div><div class="meta"><div class="hex">najm-300</div><div style="color:var(--ink-600)">#9B94CF</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--najm-500)"></div><div class="meta"><div class="hex">najm-500</div><div style="color:var(--ink-600)">#5A50AF</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--najm-950)"></div><div class="meta"><div class="hex">najm-950</div><div style="color:var(--ink-600)">#0F0E2A</div></div></div>
+      </div>
+      <div class="palette">
+        <div class="swatch"><div class="chip" style="background:var(--qamar-100)"></div><div class="meta"><div class="hex">qamar-100</div><div style="color:var(--ink-600)">#FBF0D2</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--qamar-300)"></div><div class="meta"><div class="hex">qamar-300</div><div style="color:var(--ink-600)">#F2CF7D</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--qamar-700)"></div><div class="meta"><div class="hex">qamar-700</div><div style="color:var(--ink-600)">#B98620</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--qamar-900)"></div><div class="meta"><div class="hex">qamar-900</div><div style="color:var(--ink-600)">#6F4F0F</div></div></div>
+      </div>
+      <div class="palette">
+        <div class="swatch"><div class="chip" style="background:var(--sahla-100)"></div><div class="meta"><div class="hex">sahla-100</div><div style="color:var(--ink-600)">#CCF3EE</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--sahla-300)"></div><div class="meta"><div class="hex">sahla-300</div><div style="color:var(--ink-600)">#6FDDCF</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--sahla-700)"></div><div class="meta"><div class="hex">sahla-700</div><div style="color:var(--ink-600)">#0D7F72</div></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--sahla-900)"></div><div class="meta"><div class="hex">sahla-900</div><div style="color:var(--ink-600)">#064A42</div></div></div>
+      </div>
+
+      <h3>الألوان المحايدة والدلالية</h3>
+      <div class="palette">
+        <div class="swatch"><div class="chip" style="background:var(--ink-950)"><span class="name" style="color:#fff">Ink</span></div><div class="meta"><div class="hex">#0F0E1F</div><span class="role">نصوص رئيسية</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--ink-600)"><span class="name" style="color:#fff">Muted</span></div><div class="meta"><div class="hex">#55546B</div><span class="role">نصوص ثانوية</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--ink-200)"><span class="name" style="color:var(--ink-950)">Border</span></div><div class="meta"><div class="hex">#E4E3EB</div><span class="role">حدود وفواصل</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--paper);border-bottom:1px solid var(--ink-200)"><span class="name" style="color:var(--ink-950)">Paper</span></div><div class="meta"><div class="hex">#FAFAFB</div><span class="role">خلفية افتراضية</span></div></div>
+      </div>
+      <div class="palette">
+        <div class="swatch"><div class="chip" style="background:var(--success)"><span class="name" style="color:#fff">Success</span></div><div class="meta"><div class="hex">#10B981</div><span class="role">نجاح، إجابة صحيحة</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--warning)"><span class="name" style="color:var(--najm-950)">Warning</span></div><div class="meta"><div class="hex">#F59E0B</div><span class="role">تنبيه، مراجعة</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--error)"><span class="name" style="color:#fff">Error</span></div><div class="meta"><div class="hex">#DC2626</div><span class="role">خطأ، مفهوم خاطئ</span></div></div>
+        <div class="swatch"><div class="chip" style="background:var(--info)"><span class="name" style="color:#fff">Info</span></div><div class="meta"><div class="hex">#3B82F6</div><span class="role">معلومة، تلميح</span></div></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================ 4. TYPOGRAPHY ============================ -->
+  <div class="wrap">
+    <section>
+      <span class="label">04 · Typography</span>
+      <h2>منظومة الطباعة</h2>
+      <p class="lead">
+        خطّان من عائلة IBM Plex — هندسية، دقيقة، مفتوحة المصدر، ومدعومة للعربية والإنجليزية معاً. الرياضيات تبقى بخط Mono للتمييز البصري.
+      </p>
+
+      <h3>عائلات الخطوط</h3>
+      <table>
+        <tr><th>الاستخدام</th><th>الخط</th><th>الأوزان</th><th>الحالة</th></tr>
+        <tr><td>عربي — عناوين ونصوص</td><td><span class="en">IBM Plex Sans Arabic</span></td><td class="mono">300, 400, 500, 600, 700</td><td>أساسي</td></tr>
+        <tr><td>لاتيني — للنصوص الثنائية</td><td><span class="en">IBM Plex Sans</span></td><td class="mono">400, 500, 600, 700</td><td>مرافق</td></tr>
+        <tr><td>رقمي — أرقام وكود</td><td><span class="en">IBM Plex Mono</span></td><td class="mono">400, 500, 600</td><td>رياضيات، بيانات</td></tr>
+      </table>
+
+      <h3>السلّم الطباعي (Type Scale)</h3>
+      <div class="typescale">
+        <div class="row">
+          <span class="key">Heading-XL</span>
+          <div class="t-h1">نُحَوِّل تَدريس الرياضيات</div>
+          <span class="specs">40 / 46 / 700</span>
+        </div>
+        <div class="row">
+          <span class="key">Heading-L</span>
+          <div class="t-h2">دليل المعلّم لتخطيط الدرس</div>
+          <span class="specs">32 / 40 / 700</span>
+        </div>
+        <div class="row">
+          <span class="key">Heading-M</span>
+          <div class="t-h3">تحليل المفاهيم الخاطئة</div>
+          <span class="specs">24 / 32 / 600</span>
+        </div>
+        <div class="row">
+          <span class="key">Heading-S</span>
+          <div class="t-h4">الوحدة الثالثة — الدالة التربيعية</div>
+          <span class="specs">20 / 28 / 600</span>
+        </div>
+        <div class="row">
+          <span class="key">Body</span>
+          <div class="t-body">تشخّص المنصّة الأخطاء الشائعة في حلّ المعادلات من الدرجة الثانية وتقترح مساراً علاجياً مخصّصاً لكل طالب بناءً على أسلوب تفكيره.</div>
+          <span class="specs">16 / 26 / 400</span>
+        </div>
+        <div class="row">
+          <span class="key">Small / Caption</span>
+          <div class="t-small">آخر تحديث: قبل ساعتين — مكتبة المفاهيم: 18 مفهوماً خاطئاً مرصوداً</div>
+          <span class="specs">14 / 20 / 400</span>
+        </div>
+        <div class="row">
+          <span class="key">Numeric</span>
+          <div class="t-h3" style="font-family:var(--ff-mono);direction:ltr;">f(x) = ax² + bx + c  →  Δ = b² − 4ac</div>
+          <span class="specs">mono / ltr</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================ 5. GRAPHIC ELEMENT ============================ -->
+  <div class="wrap">
+    <section>
+      <span class="label">05 · Signature Element</span>
+      <h2>العنصر البصري المميّز</h2>
+      <p class="lead">
+        "شبكة النقاط" — نمط هندسي خفيف من نقاط رصينة على شبكة منتظمة، يعكس ثلاثة مرجعيات في آن: (1) ورق الرسم البياني، (2) أنظمة الإحداثيات، (3) الهندسة الإسلامية المربّعة. يظهر كخلفية لا كبطل.
+      </p>
+      <div style="background:var(--paper);background-image:radial-gradient(circle,rgba(45,43,126,.12) 1.5px,transparent 1.5px);background-size:20px 20px;height:180px;border-radius:var(--r-md);border:1px solid var(--ink-200);margin-top:16px;display:flex;align-items:center;justify-content:center;">
+        <div style="background:#fff;border:1px solid var(--ink-200);padding:20px 32px;border-radius:var(--r-md);">
+          <span class="label">Graph-Paper Pattern</span>
+          <p style="margin:6px 0 0;color:var(--ink-800);">20px spacing · najm-700 @ 12%</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================ 6. APPLICATIONS ============================ -->
+  <div class="wrap">
+    <section>
+      <span class="label">06 · Applications</span>
+      <h2>التطبيقات البصرية</h2>
+      <p class="lead">نماذج سريعة لكيف يتجلّى النظام في البيئة الرقمية الحقيقية.</p>
+
+      <div class="app-mockups">
+
+        <div class="mock">
+          <div class="mock-head">
+            <svg viewBox="0 0 120 120" aria-label="SMA">
+              <g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="32" y="26" width="48" height="48" rx="6"/>
+                <path d="M42 74 L42 96"/>
+              </g>
+            </svg>
+            <span class="title">SMA — Teacher Dashboard</span>
+          </div>
+          <div class="mock-body">
+            <h5>مرحباً أستاذ محمد</h5>
+            <p>لديك 3 خطط دروس جاهزة للمراجعة اليوم.</p>
+            <span class="btn">فتح خطة الدرس</span>
+          </div>
+        </div>
+
+        <div class="mock">
+          <div class="mock-head" style="background:var(--sahla-700)">
+            <svg viewBox="0 0 120 120" aria-label="SMA">
+              <g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="32" y="26" width="48" height="48" rx="6"/>
+                <path d="M42 74 L42 96"/>
+              </g>
+            </svg>
+            <span class="title">AI Chat — المساعد الذكي</span>
+          </div>
+          <div class="mock-body">
+            <h5>ما الخطأ الذي يقع فيه الطلاب في الدالة التربيعية؟</h5>
+            <p>تحليل فوري للمفاهيم الخاطئة الشائعة بناءً على إجابات صفّك.</p>
+            <span class="btn teal">ابدأ المحادثة</span>
+          </div>
+        </div>
+
+        <div class="mock">
+          <div class="mock-head" style="background:var(--qamar-700)">
+            <svg viewBox="0 0 120 120" aria-label="SMA">
+              <g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="32" y="26" width="48" height="48" rx="6"/>
+                <path d="M42 74 L42 96"/>
+              </g>
+            </svg>
+            <span class="title">Leaderboard — لوحة الشرف</span>
+          </div>
+          <div class="mock-body">
+            <h5>🏆 أحمد في المركز الأول</h5>
+            <p>حصل على 1,280 XP هذا الأسبوع — مستوى "عالِم مُحقّق".</p>
+            <span class="btn gold">عرض اللوحة</span>
+          </div>
+        </div>
+
+        <div class="mock">
+          <div class="mock-head">
+            <svg viewBox="0 0 120 120" aria-label="SMA">
+              <g fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="32" y="26" width="48" height="48" rx="6"/>
+                <path d="M42 74 L42 96"/>
+              </g>
+            </svg>
+            <span class="title">Challenge — تحدّي الحصة</span>
+          </div>
+          <div class="mock-body">
+            <h5>تحدّي الجذور التربيعية</h5>
+            <p>5 أسئلة · 10 دقائق · 150 XP للفائز · وضع العرض المباشر مُفعَّل.</p>
+            <span class="btn">ابدأ التحدّي</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================ 7. VOICE ============================ -->
+  <div class="wrap">
+    <section>
+      <span class="label">07 · Voice & Tone</span>
+      <h2>نبرة الصوت</h2>
+      <p class="lead">نتحدّث كمعلّم متمكّن يحترم وقت الطالب وذكاءه. لا نتنازل للطفولة، ولا نرتفع للتعالي الأكاديمي.</p>
+
+      <div class="voice">
+        <div class="card yes">
+          <span class="label" style="color:var(--success)">نقول · We say</span>
+          <p>"يبدو أن هناك خلطاً بين قانون التوزيع وقانون التجميع. دعنا نراجعه."</p>
+          <p>"ممتاز، خطوة خطوة. الآن: ما القيمة التي تُصفّر المقام؟"</p>
+          <p>"هذه محاولة ذكية، لكن الجواب ليس دقيقاً بعد."</p>
+        </div>
+        <div class="card no">
+          <span class="label" style="color:var(--error)">لا نقول · We don't</span>
+          <p>"أووبس! خطأ! 😅 حاول مرة ثانية يا بطل!"</p>
+          <p>"إجابة خاطئة. يُرجى إعادة المحاولة." (جافّ، آلي)</p>
+          <p>"واضحٌ أنّ الطالب لم يستوعب المفهوم الجوهري..."</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================ 8. DELIVERABLES ============================ -->
+  <div class="wrap">
+    <section>
+      <span class="label">08 · Deliverables</span>
+      <h2>ملفات التسليم</h2>
+      <p class="lead">كل ما تحتاجه لتطبيق الهوية فوراً. الملفات في مجلد <span class="mono">brand/</span> بجذر المشروع.</p>
+
+      <table>
+        <tr><th>الملف</th><th>المسار</th><th>الاستخدام</th></tr>
+        <tr><td>الشعار — أساسي</td><td class="mono">brand/logo/mark.svg</td><td>الواجهات والمطبوعات</td></tr>
+        <tr><td>الشعار — أسود</td><td class="mono">brand/logo/mark-mono-black.svg</td><td>الطباعة أحادية اللون</td></tr>
+        <tr><td>الشعار — أبيض</td><td class="mono">brand/logo/mark-mono-white.svg</td><td>الخلفيات الداكنة</td></tr>
+        <tr><td>الشعار — مربّع مُلوّن</td><td class="mono">brand/logo/mark-solid.svg</td><td>أيقونة التطبيق، Social</td></tr>
+        <tr><td>Favicon</td><td class="mono">brand/logo/favicon.svg</td><td>علامة تبويب المتصفح</td></tr>
+        <tr><td>توكنز الألوان</td><td class="mono">brand/tokens.css</td><td>استبدال globals.css</td></tr>
+        <tr><td>دليل العلامة</td><td class="mono">brand/brand-book.html</td><td>هذا المستند</td></tr>
+      </table>
+
+      <h3>خطوات التطبيق في التطبيق (Integration)</h3>
+      <ol style="color:var(--ink-800);">
+        <li>انسخ محتوى <span class="mono">brand/tokens.css</span> إلى <span class="mono">app/src/app/globals.css</span> (استبدل <span class="mono">:root</span> و <span class="mono">.dark</span> فقط).</li>
+        <li>انقل <span class="mono">favicon.svg</span> إلى <span class="mono">app/public/</span> وأضف <span class="mono">&lt;link rel="icon" type="image/svg+xml" href="/favicon.svg"/&gt;</span> في <span class="mono">layout.tsx</span>.</li>
+        <li>استبدل حرف "م" placeholder في <span class="mono">dashboard-sidebar.tsx</span> و <span class="mono">login/page.tsx</span> بمكوّن SVG من <span class="mono">mark.svg</span>.</li>
+        <li>أضف <span class="mono">IBM Plex Sans Arabic</span> عبر <span class="mono">next/font/google</span> في <span class="mono">layout.tsx</span>.</li>
+      </ol>
+    </section>
+  </div>
+
+  <footer>
+    <p class="mono">SMA Brand Guidelines v1.0 · Designed by SMA_Design Agency · 2026</p>
+  </footer>
+
+</div>
+</body>
+</html>

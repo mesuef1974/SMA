@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="SMA favicon">
+  <!-- Favicon-optimized solid tile. Simplified geometry for 16–32px rendering. -->
+  <rect width="32" height="32" rx="6" fill="#2D2B7E"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="8" y="7" width="14" height="14" rx="2"/>
+    <path d="M11 21 L11 26"/>
+  </g>
+</svg>
