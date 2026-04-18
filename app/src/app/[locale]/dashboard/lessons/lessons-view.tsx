@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Search, Sparkles } from 'lucide-react';
+import { Search, Sparkles, BookOpen, ChevronUp } from 'lucide-react';
+import { PageHeader } from '@/components/dashboard/page-header';
 import { Link } from '@/i18n/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -118,8 +119,8 @@ export function LessonsView({ chapters }: LessonsViewProps) {
   const hasFilters = search || filterChapter || filterStatus;
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">{t('viewAllLessons')}</h2>
+    <div className="space-y-6 p-6">
+      <PageHeader title="الدروس" subtitle="منهج الرياضيات — الصف الحادي عشر" icon={BookOpen} />
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
@@ -202,7 +203,7 @@ export function LessonsView({ chapters }: LessonsViewProps) {
                       {num(chapterLessons.length)}
                     </Badge>
                     <span className={cn('ms-auto transition-transform text-muted-foreground', isCollapsed && 'rotate-180 rtl:-rotate-180')}>
-                      &#9650;
+                      <ChevronUp className="size-4" />
                     </span>
                   </CardTitle>
                 </CardHeader>
