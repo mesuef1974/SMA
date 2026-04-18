@@ -1,5 +1,6 @@
+import { getAIModel } from '@/lib/ai/provider';
 import { generateObject } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
+
 import { z } from 'zod';
 
 import { buildBloomPromptReference, type BloomLevel } from '@/lib/bloom-keywords';
@@ -57,7 +58,7 @@ const outcomeAnalysisSchema = z.object({
 // Prompt construction
 // ---------------------------------------------------------------------------
 
-const MODEL_ID = 'claude-sonnet-4-6';
+
 
 function buildSystemPrompt(locale: 'ar' | 'en'): string {
   const bloomRef = buildBloomPromptReference();
@@ -129,7 +130,7 @@ export async function classifyOutcome(
   const locale = options?.locale ?? 'ar';
 
   const { object } = await generateObject({
-    model: anthropic(MODEL_ID),
+    model: getAIModel(),
     schema: outcomeAnalysisSchema,
     system: buildSystemPrompt(locale),
     prompt: outcomeText,

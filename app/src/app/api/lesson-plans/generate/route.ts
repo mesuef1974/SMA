@@ -17,7 +17,7 @@ import { generateObject } from 'ai';
 import { auth } from '@/lib/auth';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { validateOrigin, csrfForbiddenResponse } from '@/lib/security/csrf';
-import { isAIConfigured, getAnthropicModel } from '@/lib/ai/anthropic';
+import { isAIConfigured, getAIModel } from '@/lib/ai/provider';
 import { lessonPlanSchema } from '@/lib/lesson-plans/schema';
 import { buildSystemPrompt } from '@/lib/lesson-plans/prompt';
 import type { LessonContext } from '@/lib/lesson-plans/prompt';
@@ -133,7 +133,7 @@ export async function POST(req: Request): Promise<Response> {
     const systemPrompt = buildSystemPrompt(context);
 
     const result = await generateObject({
-      model: getAnthropicModel(),
+      model: getAIModel(),
       schema: lessonPlanSchema,
       system: systemPrompt,
       prompt: `أنشئ تحضير الحصة ${periodNumber} لدرس "${lesson.titleAr}" من الفصل ${lesson.chapter?.number ?? ''} (${lesson.chapter?.titleAr ?? ''}). التزم بالتوقيتات المحددة والمخرجات التعليمية.`,
