@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { DashboardFooter } from '@/components/dashboard/dashboard-footer';
 import { auth } from '@/lib/auth';
 
 type Props = {
@@ -32,6 +33,7 @@ export default async function DashboardLayout({ children, params }: Props) {
           <main id="main-content" className="flex-1 overflow-y-auto">
             {children}
           </main>
+          <DashboardFooter />
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
