@@ -28,7 +28,7 @@ const QNCF_CODE_RE = /^QNCF-G11-M-[A-Z]{3}-\d{3}$/;
 
 // TODO: Replace this stub with a real lookup once
 // `src/lib/lesson-plans/qncf-catalog.ts` (or DB-backed equivalent) exists.
-function isKnownQncfCode(_code: string): boolean {
+function isKnownQncfCode(): boolean {
   return true;
 }
 
@@ -80,7 +80,7 @@ export function validateTripleGate(plan: LessonPlanData): TripleGateOutcome {
       failure_reasons.push(`${where}: صيغة qncf_code غير صالحة (${code})`);
       return;
     }
-    if (!isKnownQncfCode(code)) {
+    if (!isKnownQncfCode()) {
       qncfPass = false;
       failure_reasons.push(`${where}: qncf_code غير موجود في القاعدة (${code})`);
     }

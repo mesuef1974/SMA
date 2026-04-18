@@ -25,7 +25,6 @@ export default function DotPlot({
   const paddingLeft = 30;
   const paddingRight = 20;
   const paddingBottom = 40;
-  const paddingTop = title ? 30 : 10;
   const axisY = height - paddingBottom;
   const plotWidth = width - paddingLeft - paddingRight;
   const range = max - min;

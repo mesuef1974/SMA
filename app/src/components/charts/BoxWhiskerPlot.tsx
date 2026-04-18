@@ -27,7 +27,6 @@ export default function BoxWhiskerPlot({
   const paddingLeft = 30;
   const paddingRight = 20;
   const paddingBottom = 45;
-  const paddingTop = title ? 30 : 16;
   const axisY = height - paddingBottom;
   const plotWidth = width - paddingLeft - paddingRight;
   const boxHeight = 40;

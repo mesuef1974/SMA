@@ -1,7 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { ClipboardCheck, FileQuestion, BookOpen, Stethoscope } from 'lucide-react';
+import { ClipboardCheck, FileQuestion, BookOpen } from 'lucide-react';
 import { eq, count } from 'drizzle-orm';
 
 import { auth } from '@/lib/auth';
@@ -9,7 +9,6 @@ import { db } from '@/db';
 import { assessments, assessmentQuestions } from '@/db/schema';
 import { PageHeader } from '@/components/dashboard/page-header';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 type Props = { params: Promise<{ locale: string }> };

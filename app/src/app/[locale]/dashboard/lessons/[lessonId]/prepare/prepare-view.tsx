@@ -200,7 +200,7 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
     [lesson.id],
   );
 
-  const useTemplate = useCallback(
+  const handleUseTemplate = useCallback(
     async (periodNumber: number) => {
       setPeriodStates((prev) => ({
         ...prev,
@@ -438,7 +438,7 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => useTemplate(p)}
+                            onClick={() => handleUseTemplate(p)}
                           >
                             <FileText className="size-3.5" />
                             استبدال بالقالب
@@ -478,7 +478,7 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
                             size="lg"
                             variant="outline"
                             className="gap-2"
-                            onClick={() => useTemplate(p)}
+                            onClick={() => handleUseTemplate(p)}
                           >
                             <FileText className="size-4" />
                             استخدام قالب جاهز
