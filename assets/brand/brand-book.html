@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SMA — Brand Guidelines v2.0</title>
+<title>SMA — Brand Guidelines v2.1</title>
+<!--
+  SMA Brand Guidelines
+  Version: 2.1
+  Updated: 2026-04-18
+  Changelog:
+    v2.1 — Added: Loading/Error/Empty/Form states, Medal + Team tokens, explicit Breakpoints + Spacing scale.
+    v2.0 — Full brand system (Icon System, Components, Accessibility, Patterns, Motion, Dark Mode, RTL).
+-->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -60,6 +68,17 @@
     --warning: #f59e0b;
     --error:   #dc2626;
     --info:    #3b82f6;
+
+    /* Medal tokens (leaderboards, achievements, podium) */
+    --medal-gold:   #E9B949; /* = qamar-500 */
+    --medal-silver: #c4c3cf; /* = ink-300 */
+    --medal-bronze: #9e7222; /* = qamar-700 */
+
+    /* Team tokens (group challenges — distinct, not semantic) */
+    --team-1: oklch(0.63 0.20 258); /* Blue  */
+    --team-2: oklch(0.60 0.23 25);  /* Red   */
+    --team-3: oklch(0.70 0.17 162); /* Green */
+    --team-4: oklch(0.77 0.15 85);  /* Amber */
 
     --bg: var(--paper);
     --fg: var(--ink-950);
@@ -1034,6 +1053,227 @@
     direction: ltr;
   }
 
+  /* ---------- v2.1: Medal + Team swatches ---------- */
+  .medal-grid, .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .medal-chip, .team-chip {
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+  }
+  .medal-chip .swatch, .team-chip .swatch {
+    height: 96px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-family: var(--ff-mono);
+    font-size: 12px;
+  }
+  .medal-chip .meta, .team-chip .meta {
+    padding: 12px 14px;
+  }
+  .medal-chip .name, .team-chip .name {
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0 0 4px;
+  }
+  .medal-chip .tech, .team-chip .tech {
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ---------- v2.1: Loading / Skeleton ---------- */
+  @keyframes skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .55; }
+  }
+  @keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .skeleton {
+    display: block;
+    background: var(--ink-200);
+    border-radius: var(--r-sm);
+    animation: skeleton-pulse 1.4s ease-in-out infinite;
+  }
+  .dark .skeleton { background: var(--ink-800); }
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, var(--ink-200) 25%, var(--ink-100) 50%, var(--ink-200) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s linear infinite;
+  }
+  .dark .skeleton-shimmer {
+    background: linear-gradient(90deg, var(--ink-800) 25%, var(--ink-700) 50%, var(--ink-800) 75%);
+    background-size: 200% 100%;
+  }
+  .skeleton-line { height: 12px; border-radius: var(--r-sm); margin-bottom: 8px; }
+  .skeleton-title { height: 20px; width: 60%; }
+  .skeleton-block { height: 80px; border-radius: var(--r-md); }
+  .skeleton-circle { width: 48px; height: 48px; border-radius: 999px; }
+  .spinner {
+    width: 28px; height: 28px;
+    border: 3px solid var(--ink-200);
+    border-top-color: var(--najm-700);
+    border-radius: 999px;
+    animation: spinner-rotate 800ms linear infinite;
+  }
+  .dark .spinner { border-color: var(--ink-800); border-top-color: var(--sahla-400); }
+  @keyframes spinner-rotate { to { transform: rotate(360deg); } }
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--ink-200);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .dark .progress-bar { background: var(--ink-800); }
+  .progress-bar .fill {
+    height: 100%;
+    width: 62%;
+    background: var(--najm-700);
+    border-radius: 999px;
+  }
+  .dark .progress-bar .fill { background: var(--sahla-500); }
+
+  /* ---------- v2.1: Error templates ---------- */
+  .error-fatal {
+    text-align: center;
+    padding: 48px 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+  }
+  .error-fatal .ico {
+    width: 64px; height: 64px;
+    color: var(--error);
+    margin: 0 auto 16px;
+    display: block;
+  }
+  .error-fatal h3 { margin: 0 0 6px; font-size: 22px; }
+  .error-fatal p { color: var(--muted); margin: 0 0 20px; max-width: 420px; margin-inline: auto; }
+  .error-fatal .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .error-banner {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 16px 20px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-right: 4px solid var(--error);
+    border-radius: var(--r-md);
+    color: #991b1b;
+  }
+  .dark .error-banner { background: rgba(220,38,38,.12); border-color: rgba(220,38,38,.35); color: #fca5a5; }
+  .error-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--error);
+    margin-top: 4px;
+  }
+
+  /* ---------- v2.1: Empty states ---------- */
+  .empty-state {
+    text-align: center;
+    padding: 40px 24px;
+    background: var(--card);
+    border: 1px dashed var(--border);
+    border-radius: var(--r-lg);
+  }
+  .empty-state .ico {
+    width: 64px; height: 64px;
+    color: var(--ink-400);
+    margin: 0 auto 14px;
+    display: block;
+  }
+  .empty-state h4 { margin: 0 0 6px; font-size: 18px; }
+  .empty-state p { color: var(--muted); margin: 0 0 16px; font-size: 14px; max-width: 360px; margin-inline: auto; }
+
+  /* ---------- v2.1: Form validation states ---------- */
+  .input-error {
+    border-color: var(--error) !important;
+    box-shadow: 0 0 0 3px rgba(220,38,38,.15);
+  }
+  .input-success {
+    border-color: var(--success) !important;
+    box-shadow: 0 0 0 3px rgba(16,185,129,.15);
+  }
+  .input:disabled, .textarea:disabled, .select:disabled,
+  .input-disabled {
+    background: var(--ink-100);
+    color: var(--ink-500);
+    cursor: not-allowed;
+    opacity: .7;
+  }
+  .dark .input:disabled, .dark .textarea:disabled, .dark .select:disabled, .dark .input-disabled {
+    background: var(--najm-900);
+    color: var(--ink-400);
+  }
+  .field-msg {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  .field-msg.error   { color: var(--error); }
+  .field-msg.success { color: var(--success); }
+  .field-msg.help    { color: var(--muted); }
+  .field-msg.pending { color: var(--info); }
+
+  /* ---------- v2.1: Breakpoint + Spacing tables ---------- */
+  .bp-table, .sp-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    margin-top: 16px;
+  }
+  .bp-table th, .sp-table th,
+  .bp-table td, .sp-table td {
+    padding: 12px 16px;
+    text-align: start;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .bp-table th, .sp-table th {
+    background: var(--ink-50);
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+  }
+  .dark .bp-table th, .dark .sp-table th { background: var(--najm-900); }
+  .bp-table tr:last-child td, .sp-table tr:last-child td { border-bottom: none; }
+  .bp-table code, .sp-table code {
+    font-family: var(--ff-mono);
+    font-size: 12px;
+    background: var(--ink-100);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .dark .bp-table code, .dark .sp-table code { background: var(--najm-900); }
+  .sp-swatch {
+    display: inline-block;
+    background: var(--najm-700);
+    height: 12px;
+    border-radius: 2px;
+    vertical-align: middle;
+  }
+  .dark .sp-swatch { background: var(--sahla-500); }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0ms !important;
@@ -1056,7 +1296,7 @@
         </svg>
       </span>
       <span>SMA</span>
-      <span class="nav-version">v2.0</span>
+      <span class="nav-version">v2.1</span>
     </a>
     <div class="nav-links">
       <a class="nav-link" href="#philosophy">الفلسفة</a>
@@ -1065,9 +1305,12 @@
       <a class="nav-link" href="#typography">الطباعة</a>
       <a class="nav-link" href="#icons">الأيقونات</a>
       <a class="nav-link" href="#components">المكوّنات</a>
+      <a class="nav-link" href="#states">الحالات</a>
       <a class="nav-link" href="#voice">الصوت</a>
       <a class="nav-link" href="#a11y">الوصول</a>
       <a class="nav-link" href="#patterns">الأنماط</a>
+      <a class="nav-link" href="#breakpoints">النقاط</a>
+      <a class="nav-link" href="#spacing">المسافات</a>
       <a class="nav-link" href="#motion">الحركة</a>
       <a class="nav-link" href="#integration">التطبيق</a>
     </div>
@@ -1091,7 +1334,7 @@
     </div>
     <h1>SMA — محلل الرياضيات الذكي</h1>
     <p class="hero-en">Smart Math Analyzer</p>
-    <span class="hero-badge">BRAND GUIDELINES · v2.0 · 2026</span>
+    <span class="hero-badge">BRAND GUIDELINES · v2.1 · 2026</span>
     <p class="hero-tagline">نظام هوية بصرية كامل — من التوكنز إلى المكوّنات، من الصوت إلى الحركة. كل قرار مُبرَّر، لا ذوقاً.</p>
   </div>
 </header>
@@ -1316,6 +1559,69 @@
     <div class="sys-chip" style="background:#f59e0b" data-hex="#f59e0b"><strong>Warning</strong><span>#f59e0b</span></div>
     <div class="sys-chip" style="background:#dc2626" data-hex="#dc2626"><strong>Error</strong><span>#dc2626</span></div>
     <div class="sys-chip" style="background:#3b82f6" data-hex="#3b82f6"><strong>Info</strong><span>#3b82f6</span></div>
+  </div>
+
+  <h3 id="medal-tokens" style="margin:40px 0 8px">ألوان الميداليات (Medal Tokens)</h3>
+  <p class="section-subtitle" style="margin-bottom:0">للوحات الصدارة (Leaderboards)، عروض الإنجازات، ومنصّات التتويج (Podium). مشتقّة من اللوحة الأساسية — لا ألوان جديدة.</p>
+  <div class="medal-grid">
+    <div class="medal-chip" data-hex="#E9B949">
+      <div class="swatch" style="background:#E9B949;color:#0f0e2a">#E9B949</div>
+      <div class="meta">
+        <p class="name">ذهب — Gold</p>
+        <div class="tech">--medal-gold<br>= qamar-500</div>
+      </div>
+    </div>
+    <div class="medal-chip" data-hex="#c4c3cf">
+      <div class="swatch" style="background:#c4c3cf;color:#19182a">#c4c3cf</div>
+      <div class="meta">
+        <p class="name">فضّة — Silver</p>
+        <div class="tech">--medal-silver<br>= ink-300</div>
+      </div>
+    </div>
+    <div class="medal-chip" data-hex="#9e7222">
+      <div class="swatch" style="background:#9e7222">#9e7222</div>
+      <div class="meta">
+        <p class="name">برونز — Bronze</p>
+        <div class="tech">--medal-bronze<br>= qamar-700</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 id="team-tokens" style="margin:40px 0 8px">ألوان الفرق (Team Tokens)</h3>
+  <p class="section-subtitle" style="margin-bottom:0">أربعة ألوان تمييز لتحدّيات المجموعات. <strong>ليست ألواناً دلالية</strong> — مهمّتها فقط التفريق بين الفرق. متباينة + تحقّق شروط الوصول.</p>
+  <div class="team-grid">
+    <div class="team-chip">
+      <div class="swatch" style="background:oklch(0.63 0.20 258)">Team 1 · Blue</div>
+      <div class="meta">
+        <p class="name">الفريق الأول — أزرق</p>
+        <div class="tech">--team-1<br>oklch(0.63 0.20 258)</div>
+      </div>
+    </div>
+    <div class="team-chip">
+      <div class="swatch" style="background:oklch(0.60 0.23 25)">Team 2 · Red</div>
+      <div class="meta">
+        <p class="name">الفريق الثاني — أحمر</p>
+        <div class="tech">--team-2<br>oklch(0.60 0.23 25)</div>
+      </div>
+    </div>
+    <div class="team-chip">
+      <div class="swatch" style="background:oklch(0.70 0.17 162);color:#0f0e1f">Team 3 · Green</div>
+      <div class="meta">
+        <p class="name">الفريق الثالث — أخضر</p>
+        <div class="tech">--team-3<br>oklch(0.70 0.17 162)</div>
+      </div>
+    </div>
+    <div class="team-chip">
+      <div class="swatch" style="background:oklch(0.77 0.15 85);color:#0f0e1f">Team 4 · Amber</div>
+      <div class="meta">
+        <p class="name">الفريق الرابع — أمبر</p>
+        <div class="tech">--team-4<br>oklch(0.77 0.15 85)</div>
+      </div>
+    </div>
+  </div>
+  <div class="alert alert-info" style="max-width:none;margin-top:16px">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <div class="body"><strong>تذكير</strong>لا تستخدم ألوان الفرق للدلالة على الحالة (نجاح/خطأ/تحذير). للحالات، استخدم ألوان النظام فقط.</div>
   </div>
 </section>
 
@@ -1550,6 +1856,258 @@
   </div>
 </section>
 
+<!-- ========== 8.5 States (v2.1) ========== -->
+<section id="states">
+  <h2 class="section-title"><span class="num">08·5</span>الحالات (States)</h2>
+  <p class="section-subtitle">حالات التحميل، الخطأ، الفراغ، والتحقّق — كلّ حالة لها مكوّن موحّد ومتى نستخدمه.</p>
+
+  <!-- Loading / Skeleton -->
+  <div class="comp-block">
+    <div class="comp-head"><h4>التحميل / الهياكل الشبحية (Loading / Skeleton)</h4></div>
+    <div class="comp-preview" style="flex-direction:column;align-items:stretch;gap:24px">
+      <div style="display:flex;gap:20px;flex-wrap:wrap;width:100%;justify-content:center">
+        <div style="width:240px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-md)">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line" style="width:80%"></div>
+          <div class="skeleton skeleton-line" style="width:60%"></div>
+        </div>
+        <div style="width:240px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);display:flex;gap:12px;align-items:center">
+          <div class="skeleton skeleton-circle"></div>
+          <div style="flex:1">
+            <div class="skeleton skeleton-line" style="width:70%"></div>
+            <div class="skeleton skeleton-line" style="width:40%;margin-bottom:0"></div>
+          </div>
+        </div>
+        <div style="width:240px">
+          <div class="skeleton skeleton-block skeleton-shimmer"></div>
+          <div style="font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-top:6px;text-align:center">Shimmer variant</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:32px;justify-content:center;align-items:center;flex-wrap:wrap">
+        <div style="text-align:center">
+          <div class="spinner" style="margin:0 auto 6px"></div>
+          <div style="font-family:var(--ff-mono);font-size:11px;color:var(--muted)">Spinner · 800ms</div>
+        </div>
+        <div style="width:220px">
+          <div class="progress-bar"><div class="fill"></div></div>
+          <div style="font-family:var(--ff-mono);font-size:11px;color:var(--muted);margin-top:6px;text-align:center">Progress · 62%</div>
+        </div>
+      </div>
+    </div>
+    <div class="comp-code">
+      <button class="code-copy-btn">نسخ</button>
+<pre>&lt;!-- Skeleton --&gt;
+&lt;div class="skeleton skeleton-title"&gt;&lt;/div&gt;
+&lt;div class="skeleton skeleton-line"&gt;&lt;/div&gt;
+&lt;div class="skeleton skeleton-block skeleton-shimmer"&gt;&lt;/div&gt;
+
+/* CSS */
+.skeleton {
+  background: var(--ink-200); /* dark: var(--ink-800) */
+  border-radius: var(--r-sm);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .55; }
+}</pre>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px">
+    <h3 style="margin:0 0 12px;font-size:16px">متى نستخدم أيّاً منها؟</h3>
+    <ul style="margin:0;padding-inline-start:20px;color:var(--muted);font-size:14px;line-height:1.9">
+      <li><strong style="color:var(--fg)">Skeleton</strong> — عند تحميل محتوى معروف البنية (قائمة، بطاقة، ملف). يحافظ على الإحساس بالاستقرار.</li>
+      <li><strong style="color:var(--fg)">Spinner</strong> — لعمليات قصيرة غير محدّدة المدة (&lt; 3s) أو داخل زرّ قيد التنفيذ.</li>
+      <li><strong style="color:var(--fg)">Progress Bar</strong> — عند معرفة النسبة المئوية فعلياً: رفع ملف، تصدير، حساب دفعة.</li>
+    </ul>
+  </div>
+
+  <!-- Error states -->
+  <div class="comp-block">
+    <div class="comp-head"><h4>حالات الخطأ (Error / 500 / Fatal)</h4></div>
+    <div class="comp-preview" style="flex-direction:column;align-items:stretch;gap:20px">
+      <div class="error-fatal">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h3>حدث خطأ غير متوقّع</h3>
+        <p>نعتذر — تعذّر إكمال طلبك. فريقنا أُبلِغ تلقائياً. يمكنك المحاولة مجدّداً أو العودة للصفحة الرئيسية.</p>
+        <div class="actions">
+          <button class="btn btn-primary btn-md">إعادة المحاولة</button>
+          <button class="btn btn-secondary btn-md">العودة للرئيسية</button>
+          <button class="btn btn-ghost btn-md">تواصل معنا</button>
+        </div>
+      </div>
+      <div class="error-banner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div style="flex:1"><strong>تعذّر تحميل بعض الدروس.</strong> البيانات المعروضة قد لا تكون محدّثة. <a href="#" style="color:inherit;text-decoration:underline">تحديث</a></div>
+      </div>
+      <div>
+        <div class="field">
+          <label>البريد الإلكتروني</label>
+          <input class="input input-error" value="not-an-email" />
+          <span class="field-msg error">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            صيغة البريد غير صحيحة.
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="comp-code">
+      <button class="code-copy-btn">نسخ</button>
+<pre>&lt;!-- Fatal (full-page) --&gt;
+&lt;div class="error-fatal"&gt;
+  &lt;svg class="ico"&gt;&lt;!-- AlertOctagon --&gt;&lt;/svg&gt;
+  &lt;h3&gt;حدث خطأ غير متوقّع&lt;/h3&gt;
+  &lt;p&gt;...&lt;/p&gt;
+  &lt;div class="actions"&gt;
+    &lt;button class="btn btn-primary"&gt;إعادة المحاولة&lt;/button&gt;
+    &lt;button class="btn btn-secondary"&gt;العودة&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Banner (صفحة جزئية) --&gt;
+&lt;div class="error-banner"&gt;...&lt;/div&gt;
+
+&lt;!-- Inline (حقل نموذج) --&gt;
+&lt;input class="input input-error"&gt;
+&lt;span class="field-msg error"&gt;...&lt;/span&gt;</pre>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px">
+    <h3 style="margin:0 0 12px;font-size:16px">إرشادات الأخطاء</h3>
+    <ul style="margin:0;padding-inline-start:20px;color:var(--muted);font-size:14px;line-height:1.9">
+      <li><strong style="color:var(--fg)">الرموز</strong>: <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">AlertOctagon</code> للأخطاء الجسيمة، <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">AlertTriangle</code> للتحذيرات، <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">AlertCircle</code> للأخطاء الحقلية (14px).</li>
+      <li><strong style="color:var(--fg)">الألوان</strong>: <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">--error / destructive</code> فقط — لا أحمر مخصّص.</li>
+      <li><strong style="color:var(--fg)">CTA</strong>: دائماً مخرج واضح — إعادة محاولة (أساسي) + عودة/رجوع (ثانوي) + تواصل (شبح).</li>
+      <li><strong style="color:var(--fg)">الصياغة</strong>: اعتذار قصير، سبب واضح، خطوة تالية. لا تستخدم "Error 500" للطلاب.</li>
+    </ul>
+  </div>
+
+  <!-- Empty states -->
+  <div class="comp-block">
+    <div class="comp-head"><h4>حالات الفراغ (Empty States)</h4></div>
+    <div class="comp-preview" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;background:var(--card)">
+      <div class="empty-state">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h4>ابدأ رحلتك</h4>
+        <p>لم تُنشئ أيّ فصل دراسي بعد. ابدأ بإضافة أوّل فصل لطلّابك.</p>
+        <button class="btn btn-primary btn-sm">إنشاء فصل</button>
+        <div style="font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-top:10px">first-time</div>
+      </div>
+      <div class="empty-state">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <h4>لا توجد نتائج</h4>
+        <p>لم نعثر على شيء يطابق "<strong>كسور تربيعية</strong>". جرّب كلمات أخرى.</p>
+        <button class="btn btn-ghost btn-sm">مسح البحث</button>
+        <div style="font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-top:10px">no-results</div>
+      </div>
+      <div class="empty-state">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <h4>لا بيانات بعد</h4>
+        <p>سيظهر تقدّم الطلّاب هنا بعد إكمالهم أوّل تمرين.</p>
+        <div style="font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-top:10px">no-data</div>
+      </div>
+      <div class="empty-state">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <h4>أنجزت كل المهام!</h4>
+        <p>لا مهام مُعلّقة لهذا الأسبوع. استمتع بوقتك.</p>
+        <button class="btn btn-secondary btn-sm">عرض الأرشيف</button>
+        <div style="font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-top:10px">post-action</div>
+      </div>
+    </div>
+    <div class="comp-code">
+      <button class="code-copy-btn">نسخ</button>
+<pre>&lt;div class="empty-state"&gt;
+  &lt;svg class="ico" stroke-width="1.5"&gt;&lt;!-- 64px, ink-400 --&gt;&lt;/svg&gt;
+  &lt;h4&gt;العنوان&lt;/h4&gt;
+  &lt;p&gt;الوصف القصير.&lt;/p&gt;
+  &lt;button class="btn btn-primary btn-sm"&gt;الإجراء&lt;/button&gt;
+&lt;/div&gt;</pre>
+    </div>
+  </div>
+
+  <!-- Form validation -->
+  <div class="comp-block">
+    <div class="comp-head"><h4>تحقّق النماذج (Form Validation)</h4></div>
+    <div class="comp-preview" style="flex-direction:column;align-items:flex-start;gap:14px;max-width:440px;margin:0 auto">
+      <div class="field">
+        <label>الاسم (default)</label>
+        <input class="input" placeholder="اسم الطالب" />
+        <span class="field-msg help">سيظهر هذا الاسم في الشهادات.</span>
+      </div>
+      <div class="field">
+        <label>البريد (focused)</label>
+        <input class="input" value="focus هنا ↓" autofocus />
+      </div>
+      <div class="field">
+        <label>كلمة المرور (error)</label>
+        <input class="input input-error" type="password" value="123" />
+        <span class="field-msg error">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          ٨ أحرف على الأقل، بينها رقم.
+        </span>
+      </div>
+      <div class="field">
+        <label>اسم المستخدم (success)</label>
+        <input class="input input-success" value="ahmed_qa" />
+        <span class="field-msg success">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          متاح.
+        </span>
+      </div>
+      <div class="field">
+        <label>اسم النطاق (pending · async)</label>
+        <input class="input" value="azkia-school" />
+        <span class="field-msg pending">
+          <span class="spinner" style="width:12px;height:12px;border-width:2px"></span>
+          جارٍ التحقّق...
+        </span>
+      </div>
+      <div class="field">
+        <label>الرقم الجامعي (disabled)</label>
+        <input class="input input-disabled" value="QA-2026-0142" disabled />
+        <span class="field-msg help">يُعيَّن تلقائياً — غير قابل للتعديل.</span>
+      </div>
+    </div>
+    <div class="comp-code">
+      <button class="code-copy-btn">نسخ</button>
+<pre>&lt;!-- Default + help --&gt;
+&lt;input class="input"&gt;
+&lt;span class="field-msg help"&gt;نصّ مساعد&lt;/span&gt;
+
+&lt;!-- Error --&gt;
+&lt;input class="input input-error"&gt;
+&lt;span class="field-msg error"&gt;
+  &lt;svg&gt;&lt;!-- AlertCircle 14px --&gt;&lt;/svg&gt;
+  رسالة الخطأ.
+&lt;/span&gt;
+
+&lt;!-- Success --&gt;
+&lt;input class="input input-success"&gt;
+
+&lt;!-- Async (pending) --&gt;
+&lt;span class="field-msg pending"&gt;
+  &lt;span class="spinner"&gt;&lt;/span&gt; جارٍ التحقّق...
+&lt;/span&gt;
+
+&lt;!-- Disabled --&gt;
+&lt;input class="input" disabled&gt;</pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 12px;font-size:16px">Inline vs Submit validation</h3>
+    <ul style="margin:0;padding-inline-start:20px;color:var(--muted);font-size:14px;line-height:1.9">
+      <li><strong style="color:var(--fg)">Inline (on blur)</strong> — للحقول ذات القواعد الموضوعية: بريد، طول كلمة مرور، تنسيق هاتف. تعليق فوري يمنع تجميع الأخطاء.</li>
+      <li><strong style="color:var(--fg)">On submit</strong> — للتحقّق المترابط بين حقول متعددة (تطابق كلمتي مرور، مجموع درجات). لا تعرض أخطاء قبل أن يُكمل المستخدم.</li>
+      <li><strong style="color:var(--fg)">Async (pending)</strong> — لأيّ تحقّق يحتاج شبكة (توفّر اسم مستخدم، صحّة كود قسيمة). أظهر <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">spinner</code> + رسالة "جارٍ التحقّق..." مع debounce 300ms.</li>
+      <li><strong style="color:var(--fg)">رسائل الخطأ</strong>: 12px، <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">--error</code>، مع رمز AlertCircle 14px. النصّ يشرح <em>ماذا</em> و<em>كيف يُصلَح</em> — لا مجرّد "غير صحيح".</li>
+    </ul>
+  </div>
+</section>
+
 <!-- ========== 9. Voice ========== -->
 <section id="voice">
   <h2 class="section-title"><span class="num">09</span>صوت العلامة</h2>
@@ -1653,9 +2211,90 @@
   </div>
 </section>
 
-<!-- ========== 12. Motion + Integration ========== -->
+<!-- ========== 12. Breakpoints (v2.1) ========== -->
+<section id="breakpoints">
+  <h2 class="section-title"><span class="num">12</span>نقاط التجاوب (Breakpoints)</h2>
+  <p class="section-subtitle">خمسة نقاط قياسية مبنيّة على نظام Tailwind — mobile-first افتراضياً.</p>
+
+  <table class="bp-table">
+    <thead>
+      <tr>
+        <th>المفتاح</th>
+        <th>العرض الأدنى</th>
+        <th>الجهاز الافتراضي</th>
+        <th>Utility مثال</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>sm</code></td><td><code>640px</code></td><td>Mobile landscape</td><td><code>sm:grid-cols-2</code></td></tr>
+      <tr><td><code>md</code></td><td><code>768px</code></td><td>Tablet</td><td><code>md:flex-row</code></td></tr>
+      <tr><td><code>lg</code></td><td><code>1024px</code></td><td>Desktop</td><td><code>lg:text-lg</code></td></tr>
+      <tr><td><code>xl</code></td><td><code>1280px</code></td><td>Wide desktop</td><td><code>xl:max-w-6xl</code></td></tr>
+      <tr><td><code>2xl</code></td><td><code>1536px</code></td><td>Extra-wide / 2K+</td><td><code>2xl:px-12</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="margin-top:20px">
+    <h3 style="margin:0 0 12px;font-size:16px">قواعد الاستخدام</h3>
+    <ul style="margin:0;padding-inline-start:20px;color:var(--muted);font-size:14px;line-height:1.9">
+      <li><strong style="color:var(--fg)">Mobile-first</strong>: ابدأ بالتنسيق الافتراضي للجوال، ثم أضف <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">md:</code> و <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">lg:</code> للتوسعة — لا العكس.</li>
+      <li><strong style="color:var(--fg)">Container</strong>: الحدّ الأقصى لعرض الأقسام <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">1280px</code> (يطابق <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">xl</code>) مع هامش جانبي <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">24px</code>.</li>
+      <li><strong style="color:var(--fg)">لا Magic numbers</strong>: لا تضف media queries مخصّصة دون مبرّر — استخدم Tailwind responsive utilities.</li>
+      <li><strong style="color:var(--fg)">اختبر RTL</strong> على كل نقطة — لا تفترض أن <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">md:</code> تكفي.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ========== 13. Spacing Scale (v2.1) ========== -->
+<section id="spacing">
+  <h2 class="section-title"><span class="num">13</span>سلّم المسافات (Spacing)</h2>
+  <p class="section-subtitle">قيم محدّدة فقط — لا مسافات اعتباطية. الوحدة الأساسية <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">4px</code>.</p>
+
+  <table class="sp-table">
+    <thead>
+      <tr>
+        <th>Token</th>
+        <th>px</th>
+        <th>Tailwind</th>
+        <th>مرئي</th>
+        <th>الاستخدام</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>0</code></td><td><code>0</code></td><td><code>p-0</code></td><td>—</td><td>إلغاء</td></tr>
+      <tr><td><code>1</code></td><td><code>4px</code></td><td><code>p-1</code></td><td><span class="sp-swatch" style="width:4px"></span></td><td>tight — فجوة أيقونة/نص</td></tr>
+      <tr><td><code>2</code></td><td><code>8px</code></td><td><code>p-2</code></td><td><span class="sp-swatch" style="width:8px"></span></td><td>compact — داخل الشارات</td></tr>
+      <tr><td><code>3</code></td><td><code>12px</code></td><td><code>p-3</code></td><td><span class="sp-swatch" style="width:12px"></span></td><td>بين عناصر قائمة</td></tr>
+      <tr><td><code>4</code></td><td><code>16px</code></td><td><code>p-4</code></td><td><span class="sp-swatch" style="width:16px"></span></td><td><strong>default</strong> — نصّ/بطاقة</td></tr>
+      <tr><td><code>5</code></td><td><code>20px</code></td><td><code>p-5</code></td><td><span class="sp-swatch" style="width:20px"></span></td><td>padding بطاقة متوسّطة</td></tr>
+      <tr><td><code>6</code></td><td><code>24px</code></td><td><code>p-6</code></td><td><span class="sp-swatch" style="width:24px"></span></td><td>comfortable — بطاقة كبيرة</td></tr>
+      <tr><td><code>8</code></td><td><code>32px</code></td><td><code>p-8</code></td><td><span class="sp-swatch" style="width:32px"></span></td><td>section inner</td></tr>
+      <tr><td><code>10</code></td><td><code>40px</code></td><td><code>p-10</code></td><td><span class="sp-swatch" style="width:40px"></span></td><td>فواصل محتوى</td></tr>
+      <tr><td><code>12</code></td><td><code>48px</code></td><td><code>p-12</code></td><td><span class="sp-swatch" style="width:48px"></span></td><td>hero padding رأسي</td></tr>
+      <tr><td><code>16</code></td><td><code>64px</code></td><td><code>p-16</code></td><td><span class="sp-swatch" style="width:64px"></span></td><td>section outer</td></tr>
+      <tr><td><code>20</code></td><td><code>80px</code></td><td><code>p-20</code></td><td><span class="sp-swatch" style="width:80px"></span></td><td>فراغ كبير بين أقسام</td></tr>
+      <tr><td><code>24</code></td><td><code>96px</code></td><td><code>p-24</code></td><td><span class="sp-swatch" style="width:96px"></span></td><td>hero / landing</td></tr>
+      <tr><td><code>32</code></td><td><code>128px</code></td><td><code>p-32</code></td><td><span class="sp-swatch" style="width:128px"></span></td><td>خاصّ — صفحات هبوط فقط</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="margin-top:20px">
+    <h3 style="margin:0 0 12px;font-size:16px">قواعد التوظيف</h3>
+    <ul style="margin:0;padding-inline-start:20px;color:var(--muted);font-size:14px;line-height:1.9">
+      <li><strong style="color:var(--fg)">4</strong> = tight — الفجوة بين أيقونة ونصّها.</li>
+      <li><strong style="color:var(--fg)">8</strong> = compact — عناصر قائمة مكتظّة.</li>
+      <li><strong style="color:var(--fg)">16</strong> = default — المسافة الافتراضية لأيّ شكّ.</li>
+      <li><strong style="color:var(--fg)">24</strong> = comfortable — padding البطاقات الكبيرة.</li>
+      <li><strong style="color:var(--fg)">32</strong> = section inner — مسافة عمودية داخل قسم.</li>
+      <li><strong style="color:var(--fg)">64+</strong> = section outer — فصل بين الأقسام الرئيسية.</li>
+      <li><strong style="color:var(--fg)">لا قيم أخرى</strong>: لا <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">13px</code> ولا <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">22px</code>. إن احتجت قيمة ليست في السلّم، فأنت غالباً تحلّ المشكلة الخطأ.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ========== 14. Motion ========== -->
 <section id="motion">
-  <h2 class="section-title"><span class="num">12</span>الحركة والتطبيق</h2>
+  <h2 class="section-title"><span class="num">14</span>الحركة والتطبيق</h2>
   <p class="section-subtitle">حركات هادفة، مدد قصيرة، easing طبيعي — لا استعراض.</p>
 
   <h3 style="margin:24px 0 12px">المدد (Durations)</h3>
@@ -1716,7 +2355,7 @@
 </section>
 
 <section id="integration">
-  <h2 class="section-title"><span class="num">13</span>دليل التطبيق (Integration)</h2>
+  <h2 class="section-title"><span class="num">15</span>دليل التطبيق (Integration)</h2>
   <p class="section-subtitle">خمس خطوات لتطبيق الهوية كاملةً على الكود.</p>
 
   <ol class="integration-list">
@@ -1750,7 +2389,7 @@
 </div>
 
 <footer class="page-foot">
-  SMA Brand Guidelines v2.0 · Designed by SMA_Design Agency · 2026-04-18 · WCAG AA Compliant
+  SMA Brand Guidelines v2.1 · Designed by SMA_Design Agency · 2026-04-18 · WCAG AA Compliant
 </footer>
 
 <script>
