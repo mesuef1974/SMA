@@ -186,9 +186,16 @@ export type Extend = z.infer<typeof extendSchema>;
 // Section 9: Metadata
 // ---------------------------------------------------------------------------
 
-// NOTE: z.record(bloomLevelSchema, ...) generates `propertyNames` which Claude rejects.
-// Use z.string() key — bloom level values are still validated at runtime by Zod post-parse.
-export const bloomDistributionSchema = z.record(z.string(), z.number()).optional();
+// NOTE: z.record() of any kind generates `propertyNames` which Claude Structured Output rejects.
+// Use explicit z.object() with optional keys — guaranteed no propertyNames in JSON Schema.
+export const bloomDistributionSchema = z.object({
+  remember:  z.number().optional(),
+  understand: z.number().optional(),
+  apply:     z.number().optional(),
+  analyze:   z.number().optional(),
+  evaluate:  z.number().optional(),
+  create:    z.number().optional(),
+}).optional();
 
 export const metadataSchema = z.object({
   generated_at: z.string().optional(),
