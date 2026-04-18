@@ -45,7 +45,7 @@ export interface PatternMatch {
 // Constants
 // ---------------------------------------------------------------------------
 
-const MODEL_ID = 'claude-sonnet-4-5-20250929';
+const MODEL_ID = 'claude-sonnet-4-6';
 
 // ---------------------------------------------------------------------------
 // Zod schemas for structured AI output

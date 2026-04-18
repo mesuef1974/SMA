@@ -20,9 +20,9 @@ import { anthropic } from '@ai-sdk/anthropic';
 
 /**
  * Default model for structured generation (lesson plans, etc.).
- * Claude Sonnet 4.5 — faster and cheaper for generation tasks.
+ * Claude Sonnet 4.6 — current production model (April 2026).
  */
-const DEFAULT_MODEL_ID = 'claude-sonnet-4-5-20250929';
+const DEFAULT_MODEL_ID = 'claude-sonnet-4-6';
 
 // ---------------------------------------------------------------------------
 // Public API

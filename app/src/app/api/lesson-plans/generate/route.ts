@@ -150,7 +150,7 @@ export async function POST(req: Request): Promise<Response> {
       status: 'draft',
       sectionData,
       aiSuggestions: {
-        model: 'claude-sonnet-4-5-20250929',
+        model: 'claude-sonnet-4-6',
         generatedAt: new Date().toISOString(),
         usage: result.usage,
       },
