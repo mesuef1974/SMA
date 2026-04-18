@@ -58,7 +58,7 @@ export type QuestionType = z.infer<typeof questionTypeSchema>;
 export const headerSchema = z.object({
   lesson_title_ar: z.string().min(1),
   lesson_title_en: z.string().optional(),
-  unit_number: z.number().int().optional(),
+  unit_number: z.number().optional(),
   period: z.enum(['1', '2']),
   date: z.string().optional(),
   teacher_guide_pages: z.string().optional(),
