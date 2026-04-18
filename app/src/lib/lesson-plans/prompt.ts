@@ -22,6 +22,7 @@
 
 import { buildCatalogPromptReference } from '@/lib/misconceptions/catalog';
 import { getExampleAsPromptString } from './examples/example-3-1';
+import { buildSemesterPlanBlock } from './semester-plan-q2-2025-26';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -260,6 +261,8 @@ ${buildCatalogPromptReference()}
   }
 }
 </output_format>
+
+${buildSemesterPlanBlock()}
 
 <few_shot_example>
 المثال التالي هو تحضير كامل لدرس 3-1 (دالة القيمة المطلقة) الحصة الأولى. استخدمه كمرجع لمستوى الجودة والتفصيل المطلوب:
