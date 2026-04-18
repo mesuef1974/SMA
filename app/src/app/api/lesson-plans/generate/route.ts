@@ -20,7 +20,10 @@ import { validateOrigin, csrfForbiddenResponse } from '@/lib/security/csrf';
 import { isAIConfigured, getAIModel } from '@/lib/ai/provider';
 import { lessonPlanSchema } from '@/lib/lesson-plans/schema';
 import { filterToLatinNumerals } from '@/lib/lesson-plans/numeral-filter';
-import { validateTripleGate } from '@/lib/lesson-plans/triple-gate';
+import {
+  validateTripleGate,
+  validateSourceTraceability,
+} from '@/lib/lesson-plans/triple-gate';
 import { buildSystemPrompt } from '@/lib/lesson-plans/prompt';
 import type { LessonContext } from '@/lib/lesson-plans/prompt';
 import { getLessonById, getMisconceptionStats, createLessonPlan } from '@/db/queries';
@@ -172,8 +175,20 @@ export async function POST(req: Request): Promise<Response> {
     // --- D-34: Triple-gate validation (Bloom + QNCF + Advisor) ---
     const gateResult = validateTripleGate(sectionData);
 
-    if (!gateResult.passed) {
-      // Do NOT reject — persist with the gate failure recorded so the
+    // --- Gate 2.5: Source traceability (founder directive 2026-04-18) ---
+    const traceResult = validateSourceTraceability(sectionData, {
+      pageStartTe: lesson.pageStartTe,
+      pageEndTe: lesson.pageEndTe,
+    });
+
+    if (!traceResult.passed) {
+      // Merge trace failures into gate failures so the UI surfaces them.
+      gateResult.failure_reasons.push(...traceResult.reasons);
+      gateResult.results.failure_reasons.push(...traceResult.reasons);
+    }
+
+    if (!gateResult.passed || !traceResult.passed) {
+      // Persist with gate + traceability failures recorded so the
       // teacher / advisor UI can show what to fix. Status stays 'draft'
       // until the DB enum gains 'rejected_gate' (see TODO in lesson-plans
       // schema; deferred migration).

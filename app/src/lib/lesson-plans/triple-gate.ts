@@ -117,3 +117,66 @@ export function validateTripleGate(plan: LessonPlanData): TripleGateOutcome {
 
   return { passed, results, failure_reasons };
 }
+
+// ---------------------------------------------------------------------------
+// Gate 2.5 — Source Traceability (founder directive 2026-04-18)
+// ---------------------------------------------------------------------------
+
+/**
+ * Validates that every section's `teacher_guide_page` falls within the
+ * lesson's declared page range. Ensures each plan element can be traced
+ * back to the official teacher guide — no fabrication allowed.
+ */
+export function validateSourceTraceability(
+  plan: LessonPlanData,
+  lesson: { pageStartTe: number | null; pageEndTe: number | null },
+): { passed: boolean; reasons: string[] } {
+  const reasons: string[] = [];
+  const minPage = lesson.pageStartTe ?? 1;
+  const maxPage = lesson.pageEndTe ?? 229;
+
+  const sections: { name: string; page: number | undefined }[] = [
+    { name: 'warm_up', page: plan.warm_up?.teacher_guide_page },
+    { name: 'explore', page: plan.explore?.teacher_guide_page },
+    { name: 'explain', page: plan.explain?.teacher_guide_page },
+    { name: 'practice', page: plan.practice?.teacher_guide_page },
+    { name: 'assess', page: plan.assess?.teacher_guide_page },
+  ];
+
+  if (plan.extend) {
+    sections.push({ name: 'extend', page: plan.extend.teacher_guide_page });
+  }
+
+  for (const s of sections) {
+    if (s.page === undefined || s.page === null) {
+      reasons.push(`${s.name}: teacher_guide_page مفقود`);
+      continue;
+    }
+    if (s.page < minPage || s.page > maxPage) {
+      reasons.push(
+        `صفحة المصدر خارج نطاق الدرس: ${s.name} صفحة ${s.page} خارج [${minPage}-${maxPage}]`,
+      );
+    }
+  }
+
+  // Per-item checks (practice + assess)
+  (plan.practice?.items ?? []).forEach((it, i) => {
+    const p = it.teacher_guide_page;
+    if (p !== undefined && p !== null && (p < minPage || p > maxPage)) {
+      reasons.push(
+        `صفحة المصدر خارج نطاق الدرس: practice.items[${i}] صفحة ${p} خارج [${minPage}-${maxPage}]`,
+      );
+    }
+  });
+
+  (plan.assess?.items ?? []).forEach((it, i) => {
+    const p = it.teacher_guide_page;
+    if (p !== undefined && p !== null && (p < minPage || p > maxPage)) {
+      reasons.push(
+        `صفحة المصدر خارج نطاق الدرس: assess.items[${i}] صفحة ${p} خارج [${minPage}-${maxPage}]`,
+      );
+    }
+  });
+
+  return { passed: reasons.length === 0, reasons };
+}

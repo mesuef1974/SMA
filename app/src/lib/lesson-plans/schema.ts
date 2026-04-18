@@ -137,7 +137,7 @@ export const warmUpSchema = z.object({
   activity_ar: z.string().min(1),
   qncf_code: qncfCodeSchema, // D-32 (section level)
   teacher_guide_page: teacherGuidePageSchema, // D-33
-  qatar_context: qatarContextSchema, // D-29 (required on warm_up)
+  qatar_context: qatarContextSchema.optional(), // D-29 (optional — founder directive 2026-04-18)
 });
 
 export type WarmUp = z.infer<typeof warmUpSchema>;
@@ -160,7 +160,7 @@ export const exploreSchema = z.object({
   differentiation: differentiationSchema,
   qncf_code: qncfCodeSchema, // D-32
   teacher_guide_page: teacherGuidePageSchema, // D-33
-  qatar_context: qatarContextSchema, // D-29 (required on explore)
+  qatar_context: qatarContextSchema.optional(), // D-29 (optional — founder directive 2026-04-18)
 });
 
 export type Explore = z.infer<typeof exploreSchema>;
