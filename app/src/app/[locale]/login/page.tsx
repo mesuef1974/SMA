@@ -58,7 +58,7 @@ export default function LoginPage() {
 
         {/* شعار الشركة */}
         <div className="relative z-10 mt-auto opacity-50">
-          <AzkiaLogo variant="white" size={88} />
+          <AzkiaLogo variant="white" markSize={28} />
         </div>
       </div>
 
