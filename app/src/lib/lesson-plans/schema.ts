@@ -187,7 +187,7 @@ export type Extend = z.infer<typeof extendSchema>;
 // Section 9: Metadata
 // ---------------------------------------------------------------------------
 
-export const bloomDistributionSchema = z.record(bloomLevelSchema, z.number().int().min(0)).optional();
+export const bloomDistributionSchema = z.record(bloomLevelSchema, z.number().int()).optional();
 
 export const metadataSchema = z.object({
   generated_at: z.string().optional(),
