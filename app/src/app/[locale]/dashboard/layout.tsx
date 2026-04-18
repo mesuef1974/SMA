@@ -29,7 +29,7 @@ export default async function DashboardLayout({ children, params }: Props) {
         <DashboardSidebar />
         <SidebarInset>
           <DashboardHeader userName={session?.user?.name} />
-          <main id="main-content" className="flex-1 overflow-y-auto p-4 md:p-6">
+          <main id="main-content" className="flex-1 overflow-y-auto">
             {children}
           </main>
         </SidebarInset>
