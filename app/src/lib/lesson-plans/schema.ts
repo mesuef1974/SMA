@@ -58,7 +58,7 @@ export type QuestionType = z.infer<typeof questionTypeSchema>;
 export const headerSchema = z.object({
   lesson_title_ar: z.string().min(1),
   lesson_title_en: z.string().optional(),
-  unit_number: z.number().int().optional(),
+  unit_number: z.number().optional(),
   period: z.enum(['1', '2']),
   date: z.string().optional(),
   teacher_guide_pages: z.string().optional(),
@@ -89,7 +89,7 @@ export type LearningOutcomeItem = z.infer<typeof learningOutcomeItemSchema>;
 // ---------------------------------------------------------------------------
 
 export const warmUpSchema = z.object({
-  duration_minutes: z.number().int().default(5),
+  duration_minutes: z.number().default(5),
   activity_ar: z.string().min(1),
   prerequisite_concepts: z.array(z.string()).optional(),
   target_bloom: z.enum(['remember', 'understand']).optional(),
@@ -108,7 +108,7 @@ export const differentiationSchema = z.object({
 });
 
 export const exploreSchema = z.object({
-  duration_minutes: z.number().int().default(15),
+  duration_minutes: z.number().default(15),
   activity_ar: z.string().min(1),
   guiding_questions: z.array(z.string()).optional(),
   differentiation: differentiationSchema.optional(),
@@ -121,7 +121,7 @@ export type Explore = z.infer<typeof exploreSchema>;
 // ---------------------------------------------------------------------------
 
 export const explainSchema = z.object({
-  duration_minutes: z.number().int().default(5),
+  duration_minutes: z.number().default(5),
   concept_ar: z.string().min(1),
   key_vocabulary: z.array(z.string()).optional(),
   formulas: z.array(z.string()).optional(),
@@ -144,7 +144,7 @@ export const practiceItemSchema = z.object({
 });
 
 export const practiceSchema = z.object({
-  duration_minutes: z.number().int().default(12),
+  duration_minutes: z.number().default(12),
   items: z.array(practiceItemSchema).min(1),
 });
 
@@ -163,7 +163,7 @@ export const assessItemSchema = z.object({
 });
 
 export const assessSchema = z.object({
-  duration_minutes: z.number().int().default(5),
+  duration_minutes: z.number().default(5),
   items: z.array(assessItemSchema).min(1),
 });
 
@@ -175,7 +175,7 @@ export type Assess = z.infer<typeof assessSchema>;
 // ---------------------------------------------------------------------------
 
 export const extendSchema = z.object({
-  duration_minutes: z.number().int().default(3),
+  duration_minutes: z.number().default(3),
   challenge_ar: z.string().min(1),
   is_optional: z.boolean().default(true),
   excluded_from_assessments: z.boolean().default(true),
@@ -187,7 +187,7 @@ export type Extend = z.infer<typeof extendSchema>;
 // Section 9: Metadata
 // ---------------------------------------------------------------------------
 
-export const bloomDistributionSchema = z.record(bloomLevelSchema, z.number().int()).optional();
+export const bloomDistributionSchema = z.record(bloomLevelSchema, z.number()).optional();
 
 export const metadataSchema = z.object({
   generated_at: z.string().optional(),
