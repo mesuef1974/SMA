@@ -1,21 +1,20 @@
 /**
- * Lesson Plan Zod Schema — v2
+ * Lesson Plan Zod Schema — v3 (Wave 1 + partial Wave 2)
  *
  * Defines the 8-section lesson preparation structure for Qatar Grade 11
  * Literary-track mathematics, aligned with the 5E instructional model.
  *
- * Sections:
- *   1. header          — Lesson metadata
- *   2. learning_outcomes — 2-4 measurable outcomes (Bloom-tagged)
- *   3. warm_up         — Opening activity (Engage)
- *   4. explore         — Exploration activity (Explore)
- *   5. explain         — Direct instruction (Explain)
- *   6. practice        — Guided / independent practice (Elaborate)
- *   7. assess          — Formative assessment (Evaluate)
- *   8. extend          — Optional enrichment
+ * Wave 1/2 additions (decisions D-27..D-34):
+ *   - D-27: 85/15 split — teacher_minutes + student_minutes per section
+ *   - D-28: enforced via numeral-filter.ts (post-generation)
+ *   - D-29: qatar_context enum on warm_up/explore (and tier=meeting practice)
+ *   - D-32: qncf_code on outcomes/items + per-section
+ *   - D-33: teacher_guide_page on every section + per-item
+ *   - D-34: gate_results root-level field (post-generation only)
  *
- * Design philosophy: v2 reduces optional parameters to ≤24 to satisfy
- * Claude Structured Output API constraints (limit: 24 optional parameters).
+ * Constraint (DEC-SMA-020): Claude Structured Output API rejects
+ * `z.number().int()` and array `.min/.max`. We use `.refine(Number.isInteger)`
+ * and validate array bounds in Zod post-generation only.
  */
 
 import { z } from 'zod';
@@ -50,18 +49,63 @@ export const questionTypeSchema = z.enum([
 
 export type QuestionType = z.infer<typeof questionTypeSchema>;
 
+/** Qatar local context tags (D-29) */
+export const qatarContextSchema = z.enum([
+  'souq_waqif',
+  'corniche_doha',
+  'metro_doha',
+  'katara',
+  'lusail_stadium',
+  'aspire_tower',
+  'pearl_qatar',
+  'education_city',
+  'msheireb',
+  'sealine',
+  'al_shahaniya_school',
+  'other_documented',
+]);
+
+export type QatarContext = z.infer<typeof qatarContextSchema>;
+
+// ---------------------------------------------------------------------------
+// Reusable validators (DEC-SMA-020 compliant)
+// ---------------------------------------------------------------------------
+
+/** Integer 0..45 — used for teacher_minutes / student_minutes */
+const minutesSchema = z
+  .number()
+  .min(0)
+  .max(45)
+  .refine((n) => Number.isInteger(n), {
+    message: 'القيمة يجب أن تكون عدداً صحيحاً',
+  });
+
+/** Integer 1..229 — teacher guide page (D-33) */
+const teacherGuidePageSchema = z
+  .number()
+  .min(1)
+  .max(229, 'صفحة خارج نطاق الدليل')
+  .refine((n) => Number.isInteger(n), {
+    message: 'رقم الصفحة يجب أن يكون عدداً صحيحاً',
+  });
+
+/** QNCF code (D-32) — e.g. QNCF-G11-M-STA-001 */
+const qncfCodeSchema = z
+  .string()
+  .regex(/^QNCF-G11-M-[A-Z]{3}-\d{3}$/, 'كود QNCF غير صالح');
+
 // ---------------------------------------------------------------------------
 // Section 1: Header
 // ---------------------------------------------------------------------------
 
 export const headerSchema = z.object({
   lesson_title_ar: z.string().min(1),
-  lesson_title_en: z.string().optional(),           // optional — kept
-  unit_number: z.number(),                          // required (was optional)
+  lesson_title_en: z.string().optional(),
+  unit_number: z.number(),
   period: z.enum(['1', '2']),
-  date: z.string().optional(),                      // optional — kept
-  teacher_guide_pages: z.string(),                  // required (was optional)
-  student_book_pages: z.string(),                   // required (was optional)
+  date: z.string().optional(),
+  teacher_guide_pages: z.string(),
+  student_book_pages: z.string(),
 });
 
 export type Header = z.infer<typeof headerSchema>;
@@ -73,11 +117,11 @@ export type Header = z.infer<typeof headerSchema>;
 export const learningOutcomeItemSchema = z.object({
   outcome_ar: z.string().min(1),
   bloom_level: bloomLevelSchema,
-  action_verb_ar: z.string(),                       // required (was optional)
+  action_verb_ar: z.string(),
+  qncf_code: qncfCodeSchema, // D-32
 });
 
-// NOTE: .min(2).max(4) removed — Claude Structured Output API rejects
-// minItems > 1 in JSON Schema. Validation is enforced by Zod post-generation.
+// NOTE: array bounds enforced post-generation (DEC-SMA-020).
 export const learningOutcomesSchema = z.array(learningOutcomeItemSchema);
 
 export type LearningOutcomeItem = z.infer<typeof learningOutcomeItemSchema>;
@@ -87,9 +131,13 @@ export type LearningOutcomeItem = z.infer<typeof learningOutcomeItemSchema>;
 // ---------------------------------------------------------------------------
 
 export const warmUpSchema = z.object({
-  duration_minutes: z.number().default(5),          // default — kept
+  // duration_minutes is computed = teacher_minutes + student_minutes (D-27)
+  teacher_minutes: minutesSchema,
+  student_minutes: minutesSchema,
   activity_ar: z.string().min(1),
-  // prerequisite_concepts and target_bloom removed entirely
+  qncf_code: qncfCodeSchema, // D-32 (section level)
+  teacher_guide_page: teacherGuidePageSchema, // D-33
+  qatar_context: qatarContextSchema, // D-29 (required on warm_up)
 });
 
 export type WarmUp = z.infer<typeof warmUpSchema>;
@@ -99,16 +147,20 @@ export type WarmUp = z.infer<typeof warmUpSchema>;
 // ---------------------------------------------------------------------------
 
 export const differentiationSchema = z.object({
-  approaching: z.string(),                          // required (was optional)
-  meeting: z.string(),                              // required (was optional)
-  exceeding: z.string(),                            // required (was optional)
+  approaching: z.string(),
+  meeting: z.string(),
+  exceeding: z.string(),
 });
 
 export const exploreSchema = z.object({
-  duration_minutes: z.number().default(15),         // default — kept
+  teacher_minutes: minutesSchema,
+  student_minutes: minutesSchema,
   activity_ar: z.string().min(1),
-  guiding_questions: z.array(z.string()),           // required (was optional)
-  differentiation: differentiationSchema,           // required (was optional)
+  guiding_questions: z.array(z.string()),
+  differentiation: differentiationSchema,
+  qncf_code: qncfCodeSchema, // D-32
+  teacher_guide_page: teacherGuidePageSchema, // D-33
+  qatar_context: qatarContextSchema, // D-29 (required on explore)
 });
 
 export type Explore = z.infer<typeof exploreSchema>;
@@ -118,12 +170,15 @@ export type Explore = z.infer<typeof exploreSchema>;
 // ---------------------------------------------------------------------------
 
 export const explainSchema = z.object({
-  duration_minutes: z.number().default(5),          // default — kept
+  teacher_minutes: minutesSchema,
+  student_minutes: minutesSchema,
   concept_ar: z.string().min(1),
-  key_vocabulary: z.array(z.string()),              // required (was optional)
-  formulas: z.array(z.string()).optional(),          // optional — kept
-  worked_examples: z.array(z.string()),             // required (was optional)
-  misconception_alerts: z.array(z.string()),        // required (was optional)
+  key_vocabulary: z.array(z.string()),
+  formulas: z.array(z.string()).optional(),
+  worked_examples: z.array(z.string()),
+  misconception_alerts: z.array(z.string()),
+  qncf_code: qncfCodeSchema, // D-32
+  teacher_guide_page: teacherGuidePageSchema, // D-33
 });
 
 export type Explain = z.infer<typeof explainSchema>;
@@ -134,15 +189,21 @@ export type Explain = z.infer<typeof explainSchema>;
 
 export const practiceItemSchema = z.object({
   question_ar: z.string().min(1),
-  bloom_level: bloomLevelSchema,                    // required (was optional)
-  tier: tierSchema,                                 // required (was optional)
-  expected_answer: z.string(),                      // required (was optional)
-  source_page: z.string().optional(),               // optional — kept
+  bloom_level: bloomLevelSchema,
+  tier: tierSchema,
+  expected_answer: z.string(),
+  source_page: z.string().optional(),
+  qncf_code: qncfCodeSchema, // D-32 (per item)
+  teacher_guide_page: teacherGuidePageSchema, // D-33 (per item)
+  qatar_context: qatarContextSchema.optional(), // D-29 (optional, intended for tier='meeting')
 });
 
 export const practiceSchema = z.object({
-  duration_minutes: z.number().default(12),         // default — kept
+  teacher_minutes: minutesSchema,
+  student_minutes: minutesSchema,
   items: z.array(practiceItemSchema).min(1),
+  teacher_guide_page: teacherGuidePageSchema, // D-33 (section level)
+  // No section-level qncf_code on practice per spec (items carry their own).
 });
 
 export type PracticeItem = z.infer<typeof practiceItemSchema>;
@@ -154,14 +215,18 @@ export type Practice = z.infer<typeof practiceSchema>;
 
 export const assessItemSchema = z.object({
   question_ar: z.string().min(1),
-  type: questionTypeSchema,                         // required (was optional)
-  model_answer_ar: z.string(),                      // required (was optional)
-  bloom_level: bloomLevelSchema,                    // required (was optional)
+  type: questionTypeSchema,
+  model_answer_ar: z.string(),
+  bloom_level: bloomLevelSchema,
+  qncf_code: qncfCodeSchema, // D-32 (per item)
+  teacher_guide_page: teacherGuidePageSchema, // D-33 (per item)
 });
 
 export const assessSchema = z.object({
-  duration_minutes: z.number().default(5),          // default — kept
+  teacher_minutes: minutesSchema,
+  student_minutes: minutesSchema,
   items: z.array(assessItemSchema).min(1),
+  teacher_guide_page: teacherGuidePageSchema, // D-33 (section level)
 });
 
 export type AssessItem = z.infer<typeof assessItemSchema>;
@@ -172,13 +237,29 @@ export type Assess = z.infer<typeof assessSchema>;
 // ---------------------------------------------------------------------------
 
 export const extendSchema = z.object({
-  duration_minutes: z.number().default(3),          // default — kept
+  teacher_minutes: minutesSchema,
+  student_minutes: minutesSchema,
   challenge_ar: z.string().min(1),
-  is_optional: z.boolean().default(true),           // default — kept
-  excluded_from_assessments: z.boolean().default(true), // default — kept
+  is_optional: z.boolean().default(true),
+  excluded_from_assessments: z.boolean().default(true),
+  qncf_code: qncfCodeSchema, // D-32 (section level)
+  teacher_guide_page: teacherGuidePageSchema, // D-33
 });
 
 export type Extend = z.infer<typeof extendSchema>;
+
+// ---------------------------------------------------------------------------
+// D-34: Triple-Gate results (post-generation, never sent to LLM)
+// ---------------------------------------------------------------------------
+
+export const gateResultsSchema = z.object({
+  bloom_gate: z.enum(['pass', 'fail']),
+  qncf_gate: z.enum(['pass', 'fail']),
+  advisor_gate: z.enum(['pending', 'approved', 'needs_revision']),
+  failure_reasons: z.array(z.string()).default([]),
+});
+
+export type GateResults = z.infer<typeof gateResultsSchema>;
 
 // ---------------------------------------------------------------------------
 // Full Lesson Plan
@@ -192,8 +273,20 @@ export const lessonPlanSchema = z.object({
   explain: explainSchema,
   practice: practiceSchema,
   assess: assessSchema,
-  extend: extendSchema.optional(),                  // optional — kept
-  // metadata removed entirely (was Section 9)
+  extend: extendSchema.optional(),
+  gate_results: gateResultsSchema.optional(), // D-34 — added post-generation
 });
 
 export type LessonPlanData = z.infer<typeof lessonPlanSchema>;
+
+// ---------------------------------------------------------------------------
+// Computed helpers
+// ---------------------------------------------------------------------------
+
+/** D-27: total section duration = teacher_minutes + student_minutes */
+export function sectionDurationMinutes(section: {
+  teacher_minutes: number;
+  student_minutes: number;
+}): number {
+  return section.teacher_minutes + section.student_minutes;
+}

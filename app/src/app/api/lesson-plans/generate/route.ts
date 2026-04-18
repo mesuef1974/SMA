@@ -19,6 +19,8 @@ import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { validateOrigin, csrfForbiddenResponse } from '@/lib/security/csrf';
 import { isAIConfigured, getAIModel } from '@/lib/ai/provider';
 import { lessonPlanSchema } from '@/lib/lesson-plans/schema';
+import { filterToLatinNumerals } from '@/lib/lesson-plans/numeral-filter';
+import { validateTripleGate } from '@/lib/lesson-plans/triple-gate';
 import { buildSystemPrompt } from '@/lib/lesson-plans/prompt';
 import type { LessonContext } from '@/lib/lesson-plans/prompt';
 import { getLessonById, getMisconceptionStats, createLessonPlan } from '@/db/queries';
@@ -152,7 +154,9 @@ export async function POST(req: Request): Promise<Response> {
       maxOutputTokens: 8000,
     });
 
-    const sectionData = result.object;
+    // --- D-28: Latin-numeral filter (deep walk, preserves LaTeX) ---
+    let sectionData = result.object;
+    sectionData = filterToLatinNumerals(sectionData) as typeof sectionData;
 
     // --- Sanity check: ensure generated plan is for the right unit ---
     if (sectionData.header.unit_number !== (lesson.chapter?.number ?? 0)) {
@@ -164,6 +168,33 @@ export async function POST(req: Request): Promise<Response> {
         502,
       );
     }
+
+    // --- D-34: Triple-gate validation (Bloom + QNCF + Advisor) ---
+    const gateResult = validateTripleGate(sectionData);
+
+    if (!gateResult.passed) {
+      // Do NOT reject — persist with the gate failure recorded so the
+      // teacher / advisor UI can show what to fix. Status stays 'draft'
+      // until the DB enum gains 'rejected_gate' (see TODO in lesson-plans
+      // schema; deferred migration).
+      const rejectedPlan = await createLessonPlan({
+        lessonId,
+        teacherId: session.user.id,
+        periodNumber,
+        status: 'draft',
+        sectionData: { ...sectionData, gate_results: gateResult.results },
+        aiSuggestions: {
+          model: 'claude-sonnet-4-6',
+          generatedAt: new Date().toISOString(),
+          usage: result.usage,
+          gate_status: 'rejected_gate',
+          gate_failures: gateResult.failure_reasons,
+        },
+      });
+      return Response.json(rejectedPlan, { status: 201 });
+    }
+
+    sectionData.gate_results = gateResult.results;
 
     // --- Persist to DB ---
     const plan = await createLessonPlan({

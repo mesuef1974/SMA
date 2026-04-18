@@ -32,6 +32,7 @@ import {
 import { MathDisplay, MathText } from '@/components/math/math-display';
 import { cn } from '@/lib/utils';
 import type { LessonPlanData } from '@/lib/lesson-plans/schema';
+import { Check, X as XIcon, Clock as ClockIcon } from 'lucide-react';
 import DotPlot from '@/components/charts/DotPlot';
 import BoxWhiskerPlot from '@/components/charts/BoxWhiskerPlot';
 import Histogram from '@/components/charts/Histogram';
@@ -64,6 +65,7 @@ interface Slide {
   title: string;
   icon: React.ComponentType<{ className?: string }>;
   render: () => React.ReactNode;
+  teacherGuidePage?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -105,6 +107,103 @@ const questionTypeLabels: Record<string, string> = {
   short_answer: 'إجابة قصيرة',
   problem_solving: 'حل مسائل',
 };
+
+// ---------------------------------------------------------------------------
+// D-27: total section duration = teacher_minutes + student_minutes
+// ---------------------------------------------------------------------------
+
+function sectionTotal(section: {
+  teacher_minutes: number;
+  student_minutes: number;
+}): number {
+  return section.teacher_minutes + section.student_minutes;
+}
+
+// ---------------------------------------------------------------------------
+// D-UX1: 85/15 split bar (projector-sized)
+// ---------------------------------------------------------------------------
+
+function PresentSplitBar({ plan }: { plan: LessonPlanData }) {
+  const sections = [
+    plan.warm_up,
+    plan.explore,
+    plan.explain,
+    plan.practice,
+    plan.assess,
+    ...(plan.extend ? [plan.extend] : []),
+  ];
+  const student = sections.reduce((a, s) => a + s.student_minutes, 0);
+  const teacher = sections.reduce((a, s) => a + s.teacher_minutes, 0);
+  const total = student + teacher;
+  const studentPct = total > 0 ? Math.round((student / total) * 100) : 0;
+  const teacherPct = 100 - studentPct;
+
+  return (
+    <div className="flex items-center gap-3 text-sm md:text-base">
+      <span className="shrink-0 text-zinc-400">
+        الطالب <span className="font-bold text-white">{studentPct}%</span>
+      </span>
+      <div
+        className="flex-1 h-2 bg-white/10 rounded overflow-hidden"
+        role="progressbar"
+        aria-valuenow={studentPct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
+        <div
+          className="h-full bg-emerald-500 transition-all"
+          style={{ width: `${studentPct}%` }}
+        />
+      </div>
+      <span className="shrink-0 text-zinc-400">
+        <span className="font-bold text-white">{teacherPct}%</span> المعلم
+      </span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// D-36: Triple-gate badges (projector-sized)
+// ---------------------------------------------------------------------------
+
+function PresentGateBadges({
+  gates,
+}: {
+  gates: NonNullable<LessonPlanData['gate_results']>;
+}) {
+  const gateItem = (
+    label: string,
+    state: 'pass' | 'fail' | 'approved' | 'pending' | 'needs_revision',
+  ) => {
+    const isOk = state === 'pass' || state === 'approved';
+    const isPending = state === 'pending';
+    const Icon = isOk ? Check : isPending ? ClockIcon : XIcon;
+    const color = isOk
+      ? 'bg-emerald-900/40 text-emerald-200 border-emerald-700/50'
+      : isPending
+      ? 'bg-amber-900/40 text-amber-200 border-amber-700/50'
+      : 'bg-red-900/40 text-red-200 border-red-700/50';
+    return (
+      <span
+        className={cn(
+          'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1 text-sm md:text-base',
+          color,
+        )}
+      >
+        <Icon className="size-4" />
+        {label}
+      </span>
+    );
+  };
+
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-2">
+      {gateItem('Bloom', gates.bloom_gate)}
+      {gateItem('QNCF', gates.qncf_gate)}
+      {gateItem('المستشار', gates.advisor_gate)}
+    </div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Presentation badge components
@@ -206,6 +305,16 @@ function buildSlides(
             <span>دليل المعلم: ص {plan.header.teacher_guide_pages}</span>
           )}
         </div>
+        {/* D-UX1: 85/15 split bar */}
+        <div className="mt-4 w-full max-w-2xl">
+          <PresentSplitBar plan={plan} />
+        </div>
+        {/* D-36: Triple-gate badges on title slide */}
+        {plan.gate_results && (
+          <div className="mt-4">
+            <PresentGateBadges gates={plan.gate_results} />
+          </div>
+        )}
       </div>
     ),
   });
@@ -251,11 +360,12 @@ function buildSlides(
     id: 'warm_up',
     title: 'التهيئة',
     icon: Lightbulb,
+    teacherGuidePage: plan.warm_up.teacher_guide_page,
     render: () => (
       <div className="flex h-full flex-col justify-center gap-8 px-4">
         <div className="text-center space-y-2">
           <h2 className="text-4xl font-bold md:text-5xl">التهيئة</h2>
-          <p className="text-xl text-zinc-400">{plan.warm_up.duration_minutes} دقائق</p>
+          <p className="text-xl text-zinc-400">{sectionTotal(plan.warm_up)} دقائق</p>
         </div>
         <div className="max-w-4xl mx-auto w-full space-y-6">
           <p className="text-2xl leading-relaxed text-center md:text-3xl">
@@ -271,11 +381,12 @@ function buildSlides(
     id: 'explore',
     title: 'الاستكشاف',
     icon: Compass,
+    teacherGuidePage: plan.explore.teacher_guide_page,
     render: () => (
       <div className="flex h-full flex-col justify-center gap-6 px-4">
         <div className="text-center space-y-2">
           <h2 className="text-4xl font-bold md:text-5xl">الاستكشاف</h2>
-          <p className="text-xl text-zinc-400">{plan.explore.duration_minutes} دقائق</p>
+          <p className="text-xl text-zinc-400">{sectionTotal(plan.explore)} دقائق</p>
         </div>
         <div className="max-w-4xl mx-auto w-full space-y-6">
           <p className="text-2xl leading-relaxed text-center md:text-3xl">
@@ -304,11 +415,12 @@ function buildSlides(
     id: 'explain',
     title: 'الشرح',
     icon: GraduationCap,
+    teacherGuidePage: plan.explain.teacher_guide_page,
     render: () => (
       <div className="flex h-full flex-col justify-center gap-6 px-4 overflow-y-auto">
         <div className="text-center space-y-2">
           <h2 className="text-4xl font-bold md:text-5xl">الشرح</h2>
-          <p className="text-xl text-zinc-400">{plan.explain.duration_minutes} دقائق</p>
+          <p className="text-xl text-zinc-400">{sectionTotal(plan.explain)} دقائق</p>
         </div>
         <div className="max-w-4xl mx-auto w-full space-y-6">
           <p className="text-2xl leading-relaxed text-center">
@@ -415,6 +527,7 @@ function buildSlides(
         id: `practice-${i}`,
         title: `تمرين ${i + 1}`,
         icon: PenTool,
+        teacherGuidePage: item.teacher_guide_page ?? plan.practice.teacher_guide_page,
         render: () => (
           <div className="flex h-full flex-col justify-center gap-8 px-4">
             <div className="text-center space-y-2">
@@ -463,6 +576,7 @@ function buildSlides(
         id: `assess-${i}`,
         title: `تقويم ${i + 1}`,
         icon: ClipboardCheck,
+        teacherGuidePage: item.teacher_guide_page ?? plan.assess.teacher_guide_page,
         render: () => (
           <div className="flex h-full flex-col justify-center gap-8 px-4">
             <div className="text-center space-y-2">
@@ -509,6 +623,7 @@ function buildSlides(
       id: 'extend',
       title: 'الإثراء',
       icon: Rocket,
+      teacherGuidePage: plan.extend.teacher_guide_page,
       render: () => (
         <div className="flex h-full flex-col justify-center gap-8 px-4">
           <div className="text-center space-y-2">
@@ -517,7 +632,7 @@ function buildSlides(
               <span className="inline-flex items-center rounded-lg bg-purple-800 px-4 py-1.5 text-lg font-bold text-purple-100">
                 اختياري
               </span>
-              <span className="text-xl text-zinc-400">{plan.extend?.duration_minutes} دقائق</span>
+              <span className="text-xl text-zinc-400">{plan.extend ? sectionTotal(plan.extend) : 0} دقائق</span>
             </div>
           </div>
           <div className="max-w-4xl mx-auto w-full">
@@ -637,8 +752,14 @@ export function PresentationView({
       </div>
 
       {/* Slide content area */}
-      <div className="flex-1 min-h-0 px-8 py-4 md:px-16 lg:px-24">
+      <div className="flex-1 min-h-0 px-8 py-4 md:px-16 lg:px-24 relative">
         {slide.render()}
+        {/* Sticky footer: teacher guide page for current section */}
+        {slide.teacherGuidePage != null && (
+          <div className="absolute bottom-2 start-2 rounded-lg bg-white/10 px-3 py-1.5 text-sm text-zinc-300 backdrop-blur-sm">
+            <span aria-hidden>📖</span> دليل المعلم ص. {slide.teacherGuidePage}
+          </div>
+        )}
       </div>
 
       {/* Bottom navigation bar */}

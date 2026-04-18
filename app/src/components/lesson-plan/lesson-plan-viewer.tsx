@@ -39,7 +39,141 @@ import {
   Rocket,
   Clock,
   AlertTriangle,
+  Check,
+  X,
+  Clock as ClockIcon,
 } from 'lucide-react';
+
+// ---------------------------------------------------------------------------
+// Qatar context labels (D-29)
+// ---------------------------------------------------------------------------
+
+const qatarContextLabels: Record<string, string> = {
+  souq_waqif: 'سوق واقف',
+  corniche_doha: 'كورنيش الدوحة',
+  metro_doha: 'مترو الدوحة',
+  katara: 'كتارا',
+  lusail_stadium: 'استاد لوسيل',
+  aspire_tower: 'برج أسباير',
+  pearl_qatar: 'اللؤلؤة-قطر',
+  education_city: 'المدينة التعليمية',
+  msheireb: 'مشيرب',
+  sealine: 'سيلين',
+  al_shahaniya_school: 'مدرسة الشحانية',
+  other_documented: 'سياق قطري موثّق',
+};
+
+// ---------------------------------------------------------------------------
+// Helper: compute total duration for a section (D-27)
+// ---------------------------------------------------------------------------
+
+function sectionTotal(section: {
+  teacher_minutes: number;
+  student_minutes: number;
+}): number {
+  return section.teacher_minutes + section.student_minutes;
+}
+
+// ---------------------------------------------------------------------------
+// D-UX1: Student/Teacher split bar (target 85/15)
+// ---------------------------------------------------------------------------
+
+function StudentTeacherBar({ plan }: { plan: LessonPlanData }) {
+  const sections = [
+    plan.warm_up,
+    plan.explore,
+    plan.explain,
+    plan.practice,
+    plan.assess,
+    ...(plan.extend ? [plan.extend] : []),
+  ];
+  const student = sections.reduce((a, s) => a + s.student_minutes, 0);
+  const teacher = sections.reduce((a, s) => a + s.teacher_minutes, 0);
+  const total = student + teacher;
+  const studentPct = total > 0 ? Math.round((student / total) * 100) : 0;
+  const teacherPct = 100 - studentPct;
+
+  return (
+    <div className="flex items-center gap-3 text-xs">
+      <span className="shrink-0 text-muted-foreground">
+        الطالب <span className="font-bold text-foreground">{studentPct}%</span>
+      </span>
+      <div
+        className="flex-1 h-2 bg-muted rounded overflow-hidden"
+        role="progressbar"
+        aria-valuenow={studentPct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`نسبة الطالب ${studentPct} بالمئة`}
+      >
+        <div
+          className="h-full bg-primary transition-all"
+          style={{ width: `${studentPct}%` }}
+        />
+      </div>
+      <span className="shrink-0 text-muted-foreground">
+        <span className="font-bold text-foreground">{teacherPct}%</span> المعلم
+      </span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// D-36: Triple-gate badges (Bloom / QNCF / Advisor)
+// ---------------------------------------------------------------------------
+
+function TripleGateBadges({ gates }: { gates: NonNullable<LessonPlanData['gate_results']> }) {
+  const gateItem = (
+    label: string,
+    state: 'pass' | 'fail' | 'approved' | 'pending' | 'needs_revision',
+  ) => {
+    const isOk = state === 'pass' || state === 'approved';
+    const isPending = state === 'pending';
+    const Icon = isOk ? Check : isPending ? ClockIcon : X;
+    const color = isOk
+      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
+      : isPending
+      ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+    return (
+      <Badge className={cn('gap-1', color)}>
+        <Icon className="size-3" />
+        {label}
+      </Badge>
+    );
+  };
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {gateItem('Bloom', gates.bloom_gate)}
+      {gateItem('QNCF', gates.qncf_gate)}
+      {gateItem('المستشار', gates.advisor_gate)}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Small badges: teacher guide page + Qatar context
+// ---------------------------------------------------------------------------
+
+function TeacherGuidePageBadge({ page }: { page: number }) {
+  return (
+    <Badge variant="outline" className="gap-1 text-xs shrink-0">
+      <BookOpen className="size-3" />
+      ص. {page}
+    </Badge>
+  );
+}
+
+function QatarContextBadge({ context }: { context: string }) {
+  const label = qatarContextLabels[context] ?? context;
+  return (
+    <Badge variant="secondary" className="gap-1 text-xs shrink-0">
+      <span aria-hidden>🇶🇦</span>
+      {label}
+    </Badge>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Bloom color mapping
@@ -111,6 +245,8 @@ function SectionCard({
   accent,
   children,
   className,
+  teacherGuidePage,
+  qatarContext,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
@@ -118,13 +254,17 @@ function SectionCard({
   accent?: string;
   children: React.ReactNode;
   className?: string;
+  teacherGuidePage?: number;
+  qatarContext?: string;
 }) {
   return (
     <Card className={cn(accent, className)}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex flex-wrap items-center gap-2">
           <Icon className="size-5 shrink-0" />
           <span className="flex-1">{title}</span>
+          {qatarContext && <QatarContextBadge context={qatarContext} />}
+          {teacherGuidePage != null && <TeacherGuidePageBadge page={teacherGuidePage} />}
           {duration != null && <DurationBadge minutes={duration} />}
         </CardTitle>
       </CardHeader>
@@ -225,7 +365,9 @@ function WarmUpSection({ data }: { data: LessonPlanData['warm_up'] }) {
     <SectionCard
       icon={Lightbulb}
       title="التهيئة"
-      duration={data.duration_minutes}
+      duration={sectionTotal(data)}
+      teacherGuidePage={data.teacher_guide_page}
+      qatarContext={data.qatar_context}
     >
       <div className="space-y-3">
         <p className="text-sm leading-relaxed"><MathText text={data.activity_ar} /></p>
@@ -249,7 +391,9 @@ function ExploreSection({ data }: { data: LessonPlanData['explore'] }) {
     <SectionCard
       icon={Compass}
       title="الاستكشاف"
-      duration={data.duration_minutes}
+      duration={sectionTotal(data)}
+      teacherGuidePage={data.teacher_guide_page}
+      qatarContext={data.qatar_context}
     >
       <div className="space-y-4">
         <p className="text-sm leading-relaxed"><MathText text={data.activity_ar} /></p>
@@ -322,7 +466,8 @@ function ExplainSection({ data }: { data: LessonPlanData['explain'] }) {
     <SectionCard
       icon={GraduationCap}
       title="الشرح"
-      duration={data.duration_minutes}
+      duration={sectionTotal(data)}
+      teacherGuidePage={data.teacher_guide_page}
     >
       <div className="space-y-4">
         <p className="text-sm leading-relaxed"><MathText text={data.concept_ar} /></p>
@@ -423,7 +568,8 @@ function PracticeSection({ data }: { data: LessonPlanData['practice'] }) {
     <SectionCard
       icon={PenTool}
       title="التمارين"
-      duration={data.duration_minutes}
+      duration={sectionTotal(data)}
+      teacherGuidePage={data.teacher_guide_page}
     >
       <div className="space-y-3">
         {data.items.map((item: PracticeItem, i: number) => (
@@ -478,7 +624,8 @@ function AssessSection({ data }: { data: LessonPlanData['assess'] }) {
     <SectionCard
       icon={ClipboardCheck}
       title="التقويم"
-      duration={data.duration_minutes}
+      duration={sectionTotal(data)}
+      teacherGuidePage={data.teacher_guide_page}
     >
       <div className="space-y-3">
         {data.items.map((item: AssessItem, i: number) => (
@@ -531,7 +678,8 @@ function ExtendSection({ data }: { data: NonNullable<LessonPlanData['extend']> }
           <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
             اختياري
           </Badge>
-          <DurationBadge minutes={data.duration_minutes} />
+          <TeacherGuidePageBadge page={data.teacher_guide_page} />
+          <DurationBadge minutes={sectionTotal(data)} />
         </CardTitle>
         <CardDescription>نشاط إثرائي اختياري لا يُقيّم ضمن الدرجات</CardDescription>
       </CardHeader>
@@ -562,6 +710,14 @@ interface LessonPlanViewerProps {
 export function LessonPlanViewer({ plan, className }: LessonPlanViewerProps) {
   return (
     <div className={cn('space-y-4', className)}>
+      {/* D-UX1: 85/15 bar + D-36: Triple-gate badges */}
+      <Card>
+        <CardContent className="pt-6 space-y-3">
+          <StudentTeacherBar plan={plan} />
+          {plan.gate_results && <TripleGateBadges gates={plan.gate_results} />}
+        </CardContent>
+      </Card>
+
       {/* 1. Header */}
       <HeaderSection data={plan} />
 
