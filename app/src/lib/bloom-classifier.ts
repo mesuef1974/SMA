@@ -57,7 +57,7 @@ const outcomeAnalysisSchema = z.object({
 // Prompt construction
 // ---------------------------------------------------------------------------
 
-const MODEL_ID = 'claude-sonnet-4-5-20250929';
+const MODEL_ID = 'claude-sonnet-4-6';
 
 function buildSystemPrompt(locale: 'ar' | 'en'): string {
   const bloomRef = buildBloomPromptReference();
