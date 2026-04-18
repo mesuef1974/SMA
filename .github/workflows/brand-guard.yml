@@ -1,0 +1,30 @@
+name: brand-guard
+on: [pull_request]
+
+jobs:
+  hex-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: app/pnpm-lock.yaml
+      - name: Install deps
+        run: pnpm -C app install --frozen-lockfile
+      - name: Hex guard
+        shell: bash
+        run: |
+          FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- 'app/src/components/**/*.tsx' 'app/src/app/**/*.tsx')
+          if [ -z "$FILES" ]; then
+            echo "No component/app files changed; skipping."
+            exit 0
+          fi
+          # Strip `app/` prefix so paths resolve from app/ as cwd
+          REL_FILES=$(echo "$FILES" | sed 's#^app/##')
+          cd app
+          node scripts/check-hex.mjs $REL_FILES
