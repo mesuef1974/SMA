@@ -177,8 +177,8 @@ export type Assess = z.infer<typeof assessSchema>;
 export const extendSchema = z.object({
   duration_minutes: z.number().int().default(3),
   challenge_ar: z.string().min(1),
-  is_optional: z.literal(true).default(true as const),
-  excluded_from_assessments: z.literal(true).default(true as const),
+  is_optional: z.boolean().default(true),
+  excluded_from_assessments: z.boolean().default(true),
 });
 
 export type Extend = z.infer<typeof extendSchema>;
