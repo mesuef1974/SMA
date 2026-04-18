@@ -141,6 +141,7 @@ export async function POST(req: Request): Promise<Response> {
       // in the 5-minute Anthropic cache, cutting input-token cost by ~90%.
       system: [
         {
+          role: 'system' as const,
           content: systemPrompt,
           providerOptions: {
             anthropic: { cacheControl: { type: 'ephemeral' } },
