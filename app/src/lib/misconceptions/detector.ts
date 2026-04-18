@@ -1,10 +1,11 @@
+import { getAIModel } from '@/lib/ai/provider';
 // ---------------------------------------------------------------------------
 // Misconception Detection Engine
 // Uses Claude AI (structured output) + regex-based pre-screening
 // ---------------------------------------------------------------------------
 
 import { generateObject } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
+
 import { z } from 'zod';
 
 import {
@@ -45,7 +46,7 @@ export interface PatternMatch {
 // Constants
 // ---------------------------------------------------------------------------
 
-const MODEL_ID = 'claude-sonnet-4-6';
+
 
 // ---------------------------------------------------------------------------
 // Zod schemas for structured AI output
@@ -195,7 +196,7 @@ export async function detectMisconceptions(
   const locale = context.locale ?? 'ar';
 
   const { object } = await generateObject({
-    model: anthropic(MODEL_ID),
+    model: getAIModel(),
     schema: detectionResultSchema,
     system: buildSystemPrompt(locale),
     prompt: buildUserPrompt(studentResponse, context),

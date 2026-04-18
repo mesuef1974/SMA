@@ -1,7 +1,7 @@
 export const runtime = 'edge';
 
 import { streamText } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
+import { getAIModel } from '@/lib/ai/provider';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const result = streamText({
-    model: anthropic('claude-sonnet-4-6'),
+    model: getAIModel(),
     system: `<role>معلم رياضيات صبور ومشجع للمرحلة الثانوية في قطر</role>
 <constraints>التزم بمنهج قطر للصف 11 أدبي، لا تعطِ إجابات مباشرة</constraints>
 <math_formatting>استخدم $...$ للرياضيات المضمنة و $$...$$ للمعروضة</math_formatting>
