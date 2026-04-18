@@ -173,7 +173,6 @@ export function ChallengeView(props: ChallengeViewProps) {
         body: JSON.stringify({
           questionIndex: currentQuestion,
           response: response.trim(),
-          isCorrect: true, // In a full implementation, this comes from the question data
           timeMs: 0,
         }),
       });

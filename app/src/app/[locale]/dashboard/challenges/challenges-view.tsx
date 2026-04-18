@@ -24,6 +24,7 @@ import {
   Monitor,
   FileBarChart,
 } from 'lucide-react';
+import { PageHeader } from '@/components/dashboard/page-header';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { toArabicIndic } from '@/lib/numerals';
@@ -371,7 +372,11 @@ export function ChallengesView({ challenges, classrooms }: ChallengesViewProps) 
                     size="lg"
                     variant="destructive"
                     className="px-12 py-6 text-lg"
-                    onClick={() => handleEnd(controllingId)}
+                    onClick={() => {
+                      if (window.confirm(t('endChallengeConfirm'))) {
+                        handleEnd(controllingId);
+                      }
+                    }}
                   >
                     <Square className="size-5 me-2" />
                     {t('endChallenge')}
@@ -456,15 +461,18 @@ export function ChallengesView({ challenges, classrooms }: ChallengesViewProps) 
   // Main list view
   // ---------------------------------------------------------------------------
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus className="size-4 me-2" />
-          {t('newChallenge')}
-        </Button>
-      </div>
+    <div className="space-y-6 p-6">
+      <PageHeader
+        title="التحديات"
+        subtitle="إدارة التحديات الحية"
+        icon={Swords}
+        action={
+          <Button onClick={() => setShowCreate(true)}>
+            <Plus className="size-4 me-2" />
+            {t('newChallenge')}
+          </Button>
+        }
+      />
 
       {/* Create modal */}
       {showCreate && (

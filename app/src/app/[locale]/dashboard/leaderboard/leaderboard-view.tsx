@@ -20,6 +20,7 @@ import {
   Shield,
   GraduationCap,
 } from 'lucide-react';
+import { PageHeader } from '@/components/dashboard/page-header';
 import { toArabicIndic } from '@/lib/numerals';
 import { cn } from '@/lib/utils';
 
@@ -112,8 +113,8 @@ export function LeaderboardView({ classrooms }: LeaderboardViewProps) {
   // Empty state
   if (classrooms.length === 0) {
     return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold">{t('title')}</h2>
+      <div className="space-y-6 p-6">
+        <PageHeader title="لوحة الشرف" subtitle="ترتيب الطلاب" icon={Trophy} />
         <Card>
           <CardContent className="py-12 text-center">
             <div className="flex flex-col items-center gap-3">
@@ -129,31 +130,28 @@ export function LeaderboardView({ classrooms }: LeaderboardViewProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page header + classroom selector */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
-            <Trophy className="size-5 text-amber-500" aria-hidden="true" />
-          </div>
-          <h2 className="text-2xl font-bold">{t('title')}</h2>
-        </div>
-
-        {classrooms.length > 1 && (
-          <select
-            value={selectedId}
-            onChange={(e) => setSelectedId(e.target.value)}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            aria-label={t('selectClassroom')}
-          >
-            {classrooms.map((c) => (
-              <option key={c.id} value={c.id}>
-                {locale === 'ar' ? c.nameAr : c.name}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+    <div className="space-y-6 p-6">
+      <PageHeader
+        title="لوحة الشرف"
+        subtitle="ترتيب الطلاب"
+        icon={Trophy}
+        action={
+          classrooms.length > 1 ? (
+            <select
+              value={selectedId}
+              onChange={(e) => setSelectedId(e.target.value)}
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              aria-label={t('selectClassroom')}
+            >
+              {classrooms.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {locale === 'ar' ? c.nameAr : c.name}
+                </option>
+              ))}
+            </select>
+          ) : undefined
+        }
+      />
 
       {/* Privacy notice */}
       <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-300">

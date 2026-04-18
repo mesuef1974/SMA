@@ -82,7 +82,10 @@
     "classrooms": "Classroom Management",
     "leaderboard": "Leaderboard",
     "challenges": "Challenges",
-    "help": "Help"
+    "help": "Help",
+    "groupTeaching": "Teaching",
+    "groupStudents": "Students",
+    "groupAnalytics": "Analytics"
   },
   "student": {
     "title": "Student Portal",
@@ -279,6 +282,7 @@
     "completed": "Completed",
     "startChallenge": "Start Challenge",
     "endChallenge": "End Challenge",
+    "endChallengeConfirm": "Are you sure you want to end the challenge? This action cannot be undone",
     "controlPanel": "Control Panel",
     "backToList": "Back to List",
     "leaderboard": "Team Leaderboard",

@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { PageHeader } from '@/components/dashboard/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -91,12 +92,8 @@ export function StudentsView({
   const NavChevron = locale === 'ar' ? ChevronLeft : ChevronRight;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold">{t('title')}</h2>
-        <p className="text-muted-foreground">{displayClassName}</p>
-      </div>
+    <div className="space-y-6 p-6">
+      <PageHeader title="الطلاب" subtitle={displayClassName} icon={Users} />
 
       {/* Class Stats Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
