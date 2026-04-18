@@ -1,17 +1,18 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
-import { desc, eq, sql } from 'drizzle-orm';
+import { desc, eq, sql, inArray } from 'drizzle-orm';
 
 import { auth } from '@/lib/auth';
 import { getTeacherClassrooms } from '@/db/queries';
-import { getClassLeaderboard, getStudentBadges } from '@/db/queries';
+import { getClassLeaderboard } from '@/db/queries';
 import { db } from '@/db';
 import {
   challengeTeams,
   challengeParticipants,
   challenges,
   studentXp,
+  studentBadges,
 } from '@/db/schema';
 import { getLevelInfo, getNextLevelXP } from '@/lib/gamification/levels';
 import { LeaderboardView } from './leaderboard-view';
@@ -49,10 +50,24 @@ export default async function LeaderboardPage({ params }: Props) {
       // 1. Get individual leaderboard
       const leaderboard = await getClassLeaderboard(classroom.id);
 
-      // 2. Get badges count for each student
-      const studentsWithDetails = await Promise.all(
-        leaderboard.map(async (entry) => {
-          const badges = await getStudentBadges(entry.studentId);
+      // 2. Bulk-fetch badge counts for all students in one query (avoids N+1)
+      const studentIds = leaderboard.map((e) => e.studentId);
+      const badgeCountRows = studentIds.length > 0
+        ? await db
+            .select({
+              studentId: studentBadges.studentId,
+              count: sql<number>`COUNT(*)`.as('count'),
+            })
+            .from(studentBadges)
+            .where(inArray(studentBadges.studentId, studentIds))
+            .groupBy(studentBadges.studentId)
+        : [];
+      const badgeCountMap = new Map(
+        badgeCountRows.map((r) => [r.studentId, Number(r.count)]),
+      );
+
+      const studentsWithDetails = leaderboard.map((entry) => {
+          const badgesCount = badgeCountMap.get(entry.studentId) ?? 0;
           const xpTotal = entry.xpTotal ?? 0;
           const level = entry.level ?? 1;
           const levelInfo = getLevelInfo(level);
@@ -73,11 +88,10 @@ export default async function LeaderboardPage({ params }: Props) {
             xpTotal,
             level,
             levelNameAr: levelInfo.nameAr,
-            badgesCount: badges.length,
+            badgesCount,
             progressPercent,
           };
-        }),
-      );
+        });
 
       // 3. Get team leaderboard — aggregate XP per team from completed challenges
       const teamRows = await db
