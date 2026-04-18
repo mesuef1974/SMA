@@ -230,7 +230,7 @@ export function LeaderboardView({ classrooms }: LeaderboardViewProps) {
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="font-semibold truncate">{displayedName}</span>
-                            <Badge className="bg-[#1e3a5f] text-white text-[10px]">
+                            <Badge className="bg-[var(--sma-najm-700)] text-white text-[10px]">
                               {student.levelNameAr} ({num(student.level)})
                             </Badge>
                           </div>
@@ -246,7 +246,7 @@ export function LeaderboardView({ classrooms }: LeaderboardViewProps) {
                               aria-label={t('progressToNext')}
                             >
                               <div
-                                className="h-full rounded-full bg-[#22c55e] transition-all"
+                                className="h-full rounded-full bg-success transition-all"
                                 style={{ width: `${student.progressPercent}%` }}
                               />
                             </div>
@@ -259,7 +259,7 @@ export function LeaderboardView({ classrooms }: LeaderboardViewProps) {
                         {/* Stats */}
                         <div className="flex items-center gap-4 text-sm shrink-0">
                           <div className="text-center">
-                            <div className="font-bold text-[#f59e0b] tabular-nums">{num(student.xpTotal)}</div>
+                            <div className="font-bold text-[var(--medal-gold)] tabular-nums">{num(student.xpTotal)}</div>
                             <div className="text-[10px] text-muted-foreground">{t('xpUnit')}</div>
                           </div>
                           <div className="text-center">
@@ -324,7 +324,7 @@ export function LeaderboardView({ classrooms }: LeaderboardViewProps) {
                             <Users className="size-3.5" aria-hidden="true" />
                             <span>{t('teamMembers', { count: num(team.memberCount) })}</span>
                           </div>
-                          <div className="flex items-center gap-1.5 font-bold text-[#f59e0b]">
+                          <div className="flex items-center gap-1.5 font-bold text-[var(--medal-gold)]">
                             <Star className="size-3.5" aria-hidden="true" />
                             <span className="tabular-nums">{num(team.totalXp)}</span>
                             <span className="text-xs font-normal">{t('xpUnit')}</span>
@@ -342,7 +342,7 @@ export function LeaderboardView({ classrooms }: LeaderboardViewProps) {
                             aria-label={t('totalTeamXp')}
                           >
                             <div
-                              className="h-full rounded-full bg-[#1e3a5f] transition-all"
+                              className="h-full rounded-full bg-[var(--sma-najm-700)] transition-all"
                               style={{
                                 width: `${Math.round(
                                   (team.totalXp / Math.max(...selected.teams.map((t) => t.totalXp), 1)) * 100,

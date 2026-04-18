@@ -230,7 +230,7 @@ export function ProjectorView({
                         className="h-full rounded-full transition-all duration-700 ease-in-out"
                         style={{
                           width: `${barWidth}%`,
-                          backgroundColor: team.color ?? '#6366F1',
+                          backgroundColor: team.color ?? 'var(--team-1)',
                         }}
                       />
                     </div>
@@ -257,7 +257,7 @@ export function ProjectorView({
           {winnerTeam && (
             <div className="flex flex-col items-center gap-4">
               <Trophy className="size-24 text-amber-400" />
-              <div className="text-[4rem] font-bold" style={{ color: winnerTeam.color ?? '#F59E0B' }}>
+              <div className="text-[4rem] font-bold" style={{ color: winnerTeam.color ?? 'var(--medal-gold)' }}>
                 {winnerTeam.nameAr}
               </div>
               <div className="text-[2.5rem] text-white/80">
@@ -278,7 +278,7 @@ export function ProjectorView({
                 </span>
                 <div
                   className="size-5 shrink-0 rounded-full"
-                  style={{ backgroundColor: team.color ?? '#666' }}
+                  style={{ backgroundColor: team.color ?? 'var(--muted-foreground)' }}
                 />
                 <span className="flex-1 text-[1.75rem] font-semibold">
                   {team.nameAr}

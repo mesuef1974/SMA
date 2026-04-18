@@ -2,17 +2,30 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+type CardVariant = "default" | "elevated" | "bordered" | "interactive"
+
 function Card({
   className,
   size = "default",
+  variant = "default",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & {
+  size?: "default" | "sm"
+  variant?: CardVariant
+}) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-variant={variant}
       className={cn(
         "group/card flex flex-col gap-4 overflow-hidden rounded-xl bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10 has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        // Variants from brand-book §Components > Card
+        variant === "elevated" && "shadow-md ring-0",
+        variant === "bordered" &&
+          "ring-0 border-2 border-[var(--sma-najm-700)] dark:border-[var(--sma-sahla-400)]",
+        variant === "interactive" &&
+          "cursor-pointer transition-all duration-[var(--duration-normal)] ease-[var(--ease-standard)] hover:-translate-y-0.5 hover:shadow-lg",
         className
       )}
       {...props}

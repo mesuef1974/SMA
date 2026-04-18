@@ -1,3 +1,4 @@
+// BRAND-APPROVED: Logo SVG — sole file where brand hex is allowed per brand-book §Logo
 /**
  * SMA — Square Mīm Logo
  *
@@ -46,7 +47,12 @@ export function Logo({
         className={className}
       >
         <title>SMA — Square Mīm mark, solid tile version</title>
-        <rect width="120" height="120" rx="24" fill="#2D2B7E" />
+        <rect
+          width="120"
+          height="120"
+          rx="24"
+          fill="var(--sma-najm-700, #2D2B7E)"
+        />
         <g
           fill="none"
           stroke="#FFFFFF"
@@ -61,12 +67,14 @@ export function Logo({
     );
   }
 
+  // Default colors kept as hex fallbacks so the mark renders even if CSS vars
+  // aren't loaded (e.g. email, print, external embeds).
   const stroke =
     variant === 'mono-black'
       ? '#000000'
       : variant === 'mono-white'
         ? '#FFFFFF'
-        : '#2D2B7E';
+        : 'var(--sma-najm-700, #2D2B7E)';
 
   return (
     <svg

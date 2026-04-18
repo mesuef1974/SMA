@@ -294,7 +294,7 @@ export function ChallengeView(props: ChallengeViewProps) {
                   </div>
                   <div
                     className="size-3 rounded-full"
-                    style={{ backgroundColor: team.color ?? '#666' }}
+                    style={{ backgroundColor: team.color ?? 'var(--muted-foreground)' }}
                   />
                   <div className="flex-1 font-semibold">{team.nameAr}</div>
                   <div className="font-bold">
@@ -474,7 +474,7 @@ export function ChallengeView(props: ChallengeViewProps) {
                 <div key={team.id} className="text-center">
                   <div
                     className="size-3 rounded-full mx-auto mb-1"
-                    style={{ backgroundColor: team.color ?? '#666' }}
+                    style={{ backgroundColor: team.color ?? 'var(--muted-foreground)' }}
                   />
                   <div className="text-xs font-semibold truncate max-w-[5rem]">
                     {team.nameAr}

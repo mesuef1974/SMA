@@ -69,7 +69,7 @@ export default async function StudentChallengePage({ params }: Props) {
         questionCount={challenge.questionCount}
         timeLimitSeconds={challenge.timeLimitSeconds}
         teamNameAr={team?.nameAr ?? ''}
-        teamColor={team?.color ?? '#3B82F6'}
+        teamColor={team?.color ?? 'var(--team-1)'}
         participantId={participant.id}
         locale={locale}
       />

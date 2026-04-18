@@ -282,7 +282,7 @@ export function ReportView({ report }: ReportViewProps) {
                   </span>
                   <div
                     className="size-3 rounded-full shrink-0"
-                    style={{ backgroundColor: team.color ?? '#666' }}
+                    style={{ backgroundColor: team.color ?? 'var(--muted-foreground)' }}
                   />
                   <span className="flex-1 font-medium">{team.nameAr}</span>
                   <span className="font-bold">{toArabicIndic(team.score)} XP</span>
@@ -314,10 +314,10 @@ export function ReportView({ report }: ReportViewProps) {
                       width: `${Math.max(q.correctPercentage, 4)}%`,
                       backgroundColor:
                         q.correctPercentage >= 70
-                          ? '#22c55e'
+                          ? 'var(--success)'
                           : q.correctPercentage >= 40
-                            ? '#f59e0b'
-                            : '#ef4444',
+                            ? 'var(--warning)'
+                            : 'var(--destructive)',
                     }}
                   >
                     {q.correctPercentage >= 15 && (
@@ -388,7 +388,7 @@ export function ReportView({ report }: ReportViewProps) {
                       <div className="flex items-center gap-2">
                         <div
                           className="size-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: student.teamColor ?? '#666' }}
+                          style={{ backgroundColor: student.teamColor ?? 'var(--muted-foreground)' }}
                         />
                         <span>{student.teamNameAr}</span>
                       </div>
@@ -426,7 +426,7 @@ export function ReportView({ report }: ReportViewProps) {
           nav, header, aside, [data-sidebar], .print\\:hidden { display: none !important; }
           main { padding: 0 !important; margin: 0 !important; }
           .print\\:shadow-none { box-shadow: none !important; }
-          .print\\:border { border: 1px solid #e5e7eb !important; }
+          .print\\:border { border: 1px solid var(--border) !important; }
           @page { margin: 1cm; }
         }
       `}</style>
@@ -460,7 +460,7 @@ function PodiumCard({
       </span>
       <div
         className="size-4 rounded-full"
-        style={{ backgroundColor: team.color ?? '#666' }}
+        style={{ backgroundColor: team.color ?? 'var(--muted-foreground)' }}
       />
       <h3 className={`text-lg font-bold text-center ${style.text}`}>
         {team.nameAr}

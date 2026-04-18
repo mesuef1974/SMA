@@ -23,6 +23,19 @@
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-medal-gold: var(--medal-gold);
+  --color-medal-silver: var(--medal-silver);
+  --color-medal-bronze: var(--medal-bronze);
+  --color-team-1: var(--team-1);
+  --color-team-2: var(--team-2);
+  --color-team-3: var(--team-3);
+  --color-team-4: var(--team-4);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -46,6 +59,11 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Tailwind v4 duration utilities (brand-book §Motion) */
+  --duration-fast:   150ms;
+  --duration-normal: 300ms;
+  --duration-slow:   500ms;
 }
 
 :root {
@@ -123,6 +141,15 @@
   --accent-foreground:     oklch(0.99 0 0);
 
   --destructive:           oklch(0.58 0.210 25);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  /* ----- Semantic status tokens (brand-book §Alert) -------------------- */
+  --success:               oklch(0.62 0.170 150);
+  --success-foreground:    oklch(0.99 0 0);
+  --warning:               var(--sma-qamar-700);
+  --warning-foreground:    var(--sma-najm-950);
+  --info:                  var(--sma-sahla-600);
+  --info-foreground:       oklch(0.99 0 0);
 
   --border:                var(--sma-ink-300);
   --input:                 var(--sma-ink-300);
@@ -206,6 +233,15 @@
   --accent-foreground:     var(--sma-najm-950);
 
   --destructive:           oklch(0.68 0.190 25);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  /* Semantic status tokens — dark variants */
+  --success:               oklch(0.72 0.170 150);
+  --success-foreground:    var(--sma-najm-950);
+  --warning:               var(--sma-qamar-500);
+  --warning-foreground:    var(--sma-najm-950);
+  --info:                  var(--sma-sahla-400);
+  --info-foreground:       var(--sma-najm-950);
 
   --border:                oklch(1 0 0 / 10%);
   --input:                 oklch(1 0 0 / 14%);

@@ -32,6 +32,7 @@ interface ToastItemProps {
 // Config per toast type
 // ---------------------------------------------------------------------------
 
+// Brand-book §Components > Toast: ink-950 bg + accent stripe per type
 const TOAST_CONFIG: Record<
   Toast['type'],
   { icon: string; className: string }
@@ -39,27 +40,27 @@ const TOAST_CONFIG: Record<
   xp: {
     icon: '\u2B50', // star
     className:
-      'bg-gradient-to-r from-yellow-400 to-amber-500 text-amber-950',
+      'bg-[var(--sma-ink-950)] text-[var(--sma-qamar-500)] border-s-4 border-[var(--sma-qamar-500)]',
   },
   badge: {
     icon: '\uD83C\uDFC5', // medal
     className:
-      'bg-gradient-to-r from-purple-500 to-violet-600 text-white',
+      'bg-[var(--sma-ink-950)] text-[var(--sma-sahla-400)] border-s-4 border-[var(--sma-sahla-500)]',
   },
   levelUp: {
     icon: '\u2B06\uFE0F', // up arrow
     className:
-      'bg-gradient-to-r from-emerald-500 to-green-600 text-white',
+      'bg-[var(--sma-ink-950)] text-success border-s-4 border-success',
   },
   correct: {
     icon: '\u2705', // check mark
     className:
-      'bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-200',
+      'bg-[var(--sma-ink-950)] text-success border-s-4 border-success',
   },
   streak: {
     icon: '\uD83D\uDD25', // fire
     className:
-      'bg-gradient-to-r from-orange-400 to-orange-600 text-white',
+      'bg-[var(--sma-ink-950)] text-warning border-s-4 border-warning',
   },
 };
 
@@ -89,9 +90,9 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
       type="button"
       onClick={startExit}
       className={[
-        'flex items-center gap-3 rounded-xl px-4 py-3 shadow-lg',
+        'flex items-center gap-3 rounded-[var(--r-md)] px-5 py-3 shadow-lg',
         'cursor-pointer select-none min-w-[260px] max-w-[360px]',
-        'transition-all',
+        'transition-all duration-[var(--duration-normal)] ease-[var(--ease-standard)]',
         config.className,
         exiting ? 'toast-slide-out' : 'toast-slide-in',
       ].join(' ')}
@@ -130,7 +131,7 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
 
   return (
     <div
-      className="fixed bottom-4 left-4 z-[9999] flex flex-col-reverse gap-2 pointer-events-none"
+      className="fixed bottom-4 inset-x-0 mx-auto z-[9999] flex w-fit flex-col-reverse items-center gap-2 pointer-events-none"
       aria-label="الإشعارات"
     >
       {visible.map((toast) => (
