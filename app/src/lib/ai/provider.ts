@@ -1,22 +1,26 @@
 /**
- * AI Provider — unified interface for switching between Gemini and Claude
+ * AI Provider — unified interface for switching between Gemini, Claude, and Ollama
  *
- * To switch provider: set AI_PROVIDER env var to 'gemini' or 'anthropic'
+ * To switch provider: set AI_PROVIDER env var to 'gemini', 'anthropic', or 'ollama'
  * Default: 'gemini'
  *
  * Gemini:    GOOGLE_GENERATIVE_AI_API_KEY  (free tier via aistudio.google.com)
  * Anthropic: ANTHROPIC_API_KEY             (paid)
+ * Ollama:    no API key needed — local server at http://localhost:11434
  */
 
 import { anthropic } from '@ai-sdk/anthropic';
 import { google } from '@ai-sdk/google';
+import { ollama } from 'ollama-ai-provider';
 
-const PROVIDER = (process.env.AI_PROVIDER ?? 'gemini') as 'gemini' | 'anthropic';
+const PROVIDER = (process.env.AI_PROVIDER ?? 'gemini') as 'gemini' | 'anthropic' | 'ollama';
 
 const GEMINI_MODEL    = 'gemini-2.0-flash';
 const ANTHROPIC_MODEL = 'claude-sonnet-4-6';
+const OLLAMA_MODEL    = 'qwen3.5:9b';
 
 export function isAIConfigured(): boolean {
+  if (PROVIDER === 'ollama') return true; // local server, no key needed
   if (PROVIDER === 'gemini') {
     const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     return typeof key === 'string' && key.trim().length > 0;
@@ -34,6 +38,10 @@ export function getAIModel(modelOverride?: string) {
     );
   }
 
+  if (PROVIDER === 'ollama') {
+    return ollama(modelOverride ?? OLLAMA_MODEL);
+  }
+
   if (PROVIDER === 'gemini') {
     return google(modelOverride ?? GEMINI_MODEL);
   }
@@ -41,4 +49,4 @@ export function getAIModel(modelOverride?: string) {
   return anthropic(modelOverride ?? ANTHROPIC_MODEL);
 }
 
-export { PROVIDER, GEMINI_MODEL, ANTHROPIC_MODEL };
+export { PROVIDER, GEMINI_MODEL, ANTHROPIC_MODEL, OLLAMA_MODEL };
