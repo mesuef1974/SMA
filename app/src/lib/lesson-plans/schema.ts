@@ -187,11 +187,23 @@ export type Explain = z.infer<typeof explainSchema>;
 // Section 6: Practice (Elaborate)
 // ---------------------------------------------------------------------------
 
+// D-UX2: Interaction type for presentation mode. Optional; defaults applied in UI.
+export const interactionTypeSchema = z.enum([
+  'data_reveal',
+  'guided_drawing',
+  'try_reveal',
+  'think_pair_share',
+  'static',
+]);
+export type InteractionType = z.infer<typeof interactionTypeSchema>;
+
 export const practiceItemSchema = z.object({
   question_ar: z.string().min(1),
   bloom_level: bloomLevelSchema,
   tier: tierSchema,
   expected_answer: z.string(),
+  hint_ar: z.string().optional(), // D-UX2: L1 hint for student (teacher-triggered reveal)
+  interaction_type: interactionTypeSchema.optional(), // D-UX2: presentation interaction
   source_page: z.string().optional(),
   qncf_code: qncfCodeSchema, // D-32 (per item)
   teacher_guide_page: teacherGuidePageSchema, // D-33 (per item)
@@ -218,6 +230,8 @@ export const assessItemSchema = z.object({
   type: questionTypeSchema,
   model_answer_ar: z.string(),
   bloom_level: bloomLevelSchema,
+  hint_ar: z.string().optional(), // D-UX2: L1 hint (teacher-triggered reveal)
+  interaction_type: interactionTypeSchema.optional(), // D-UX2: presentation interaction
   qncf_code: qncfCodeSchema, // D-32 (per item)
   teacher_guide_page: teacherGuidePageSchema, // D-33 (per item)
 });

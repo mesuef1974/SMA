@@ -218,6 +218,10 @@ export const lesson51Period1: LessonPlanData = {
         bloom_level: 'remember',
         qncf_code: 'QNCF-G11-M-DAT-001',
         teacher_guide_page: 169,
+        interaction_type: 'try_reveal',
+        hint_ar:
+          'تذكّر: الملخص الخماسي يُحدّد 5 قيم موقعية فقط. التمثيل بالنقاط يحتاج معرفة كل قيمة '
+          + 'من القيم الاثنتي عشرة منفردة.',
         question_ar:
           'تمرين 15-a (كتاب الطالب ص 104): يمثّل مخطط الصندوق وطرفيه الموضّح أدناه مجموعة '
           + 'بيانات مكوّنة من 12 قيمة. القيمة الصغرى والرُبيع الأول والوسيط والرُبيع الثالث '
@@ -238,6 +242,10 @@ export const lesson51Period1: LessonPlanData = {
         qncf_code: 'QNCF-G11-M-DAT-001',
         teacher_guide_page: 169,
         qatar_context: 'other_documented',
+        interaction_type: 'data_reveal',
+        hint_ar:
+          'رتّب البيانات أولاً من الأصغر إلى الأكبر، ثم أوجد العنصر الأوسط (n=15 فردي → '
+          + 'عنصر واحد في المنتصف).',
         question_ar:
           'تمرين 9 (كتاب الطالب ص 103): استعمل مجموعة البيانات التالية:\n'
           + '7، 13، 9، 5، 7، 10، 8، 11، 1، 15، 8، 12، 4، 8، 10\n'
@@ -254,6 +262,9 @@ export const lesson51Period1: LessonPlanData = {
         bloom_level: 'apply',
         qncf_code: 'QNCF-G11-M-DAT-001',
         teacher_guide_page: 169,
+        interaction_type: 'try_reveal',
+        hint_ar:
+          'بعد الترتيب، ابدأ من أول قيمة أكبر من 7 (ليست 7 نفسها) واعدّ حتى النهاية.',
         question_ar:
           'تمرين 10 (كتاب الطالب ص 103): من نفس مجموعة البيانات:\n'
           + '7، 13، 9، 5، 7، 10، 8، 11، 1، 15، 8، 12، 4، 8، 10\n'
@@ -277,6 +288,10 @@ export const lesson51Period1: LessonPlanData = {
         bloom_level: 'understand',
         qncf_code: 'QNCF-G11-M-DAT-002',
         teacher_guide_page: 170,
+        interaction_type: 'try_reveal',
+        hint_ar:
+          'فكّر: أيّ التمثيلات يُظهر كل قيمة منفردة؟ وأيّها يُظهر الوسيط صراحةً؟ استبعد ما '
+          + 'يُجمِّع البيانات في فئات.',
         question_ar:
           'تمرين 28 (كتاب الطالب ص 105 — تدرّب على اختبار): أيّ طريقة (أو أكثر) من الطرق '
           + 'التالية تبيّن الوسيط لمجموعة بيانات؟\n'
@@ -298,6 +313,10 @@ export const lesson51Period1: LessonPlanData = {
         bloom_level: 'understand',
         qncf_code: 'QNCF-G11-M-DAT-002',
         teacher_guide_page: 170,
+        interaction_type: 'think_pair_share',
+        hint_ar:
+          'تذكّر أن مخطط الصندوق يُلخّص البيانات في 5 قيم موقعية، ولا يُظهر كل قيمة منفردة. '
+          + 'راجع ما يكشفه الصندوق وما يخفيه.',
         question_ar:
           'تمرين 27 (كتاب الطالب ص 105): بالنظر إلى مخطط الصندوق وطرفيه، هل يعرض خصائص '
           + 'مجموعات البيانات التالية؟ اختر نعم أو لا لكل خاصية:\n'
@@ -492,6 +511,8 @@ export const lesson51Period2: LessonPlanData = {
         bloom_level: 'understand',
         qncf_code: 'QNCF-G11-M-DAT-003',
         teacher_guide_page: 174,
+        interaction_type: 'try_reveal',
+        hint_ar: 'امسح القائمة قيمةً قيمةً وعُدّ فقط مرات ظهور العدد 83.',
         question_ar:
           'تمرين 17 (كتاب الطالب ص 104): استعمل مجموعة البيانات:\n'
           + '85، 82، 84، 81، 82، 86، 83، 84، 76، 83، 85، 82، 84، 89، 83، 80، 83، 83\n'
@@ -508,6 +529,10 @@ export const lesson51Period2: LessonPlanData = {
         qncf_code: 'QNCF-G11-M-DAT-003',
         teacher_guide_page: 174,
         qatar_context: 'other_documented',
+        interaction_type: 'try_reveal',
+        hint_ar:
+          'حدّد أوّلاً: هل "بين 7 و9" تشمل الطرفين؟ ثم رتّب البيانات وعُدّ فقط ما يقع ضمن '
+          + 'المجال المختار.',
         question_ar:
           'تمرين 18 (كتاب الطالب ص 104): استعمل مجموعة البيانات:\n'
           + '9.6، 7.2، 11.1، 8.4، 5.5، 11.5، 6.1، 10.5، 8.4، 9.2، 7.2، 10.2، 9.1، 5.2، '
@@ -525,6 +550,10 @@ export const lesson51Period2: LessonPlanData = {
         bloom_level: 'evaluate',
         qncf_code: 'QNCF-G11-M-DAT-004',
         teacher_guide_page: 175,
+        interaction_type: 'think_pair_share',
+        hint_ar:
+          'ما المعلومة الإضافية التي يحتاجها المدرج التكراري ولا يوفّرها الملخص الخماسي؟ '
+          + 'فكّر في التكرارات داخل كل فئة.',
         question_ar:
           'تمرين 15-b (كتاب الطالب ص 104 — مهارات التفكير العليا): القيم الخمسة للملخص: '
           + '6، 8، 10، 12، 14 لمجموعة من 12 قيمة.\n'
@@ -551,6 +580,10 @@ export const lesson51Period2: LessonPlanData = {
         bloom_level: 'apply',
         qncf_code: 'QNCF-G11-M-DAT-004',
         teacher_guide_page: 175,
+        interaction_type: 'try_reveal',
+        hint_ar:
+          'طابق كل هدف مع ما يبرزه التمثيل: شكل التوزيع ↔ المدرج، انتشار حول الوسيط ↔ '
+          + 'مخطط الصندوق، تجميع ضمن فترات ↔ المدرج، القيم المنفردة ↔ التمثيل بالنقاط.',
         question_ar:
           'تمرين 29 (كتاب الطالب ص 105 — مهمة أدائية): تستعمل مجموعة من الطلاب ساعة '
           + 'ميقاتية لتسجيل الأزمنة التي يحققونها في سباق المئة متر:\n'
@@ -577,6 +610,9 @@ export const lesson51Period2: LessonPlanData = {
         bloom_level: 'evaluate',
         qncf_code: 'QNCF-G11-M-DAT-004',
         teacher_guide_page: 175,
+        interaction_type: 'think_pair_share',
+        hint_ar:
+          'قارن من جهتين: ماذا يعرضان من القيم؟ وأين يظهر الانتشار ومقاييس النزعة المركزية؟',
         question_ar:
           'تمرين 2 (كتاب الطالب ص 103 — تواصل بدقة): ما أوجه الشبه والاختلاف بين التمثيل '
           + 'بالنقاط ومخطط الصندوق وطرفيه؟',
