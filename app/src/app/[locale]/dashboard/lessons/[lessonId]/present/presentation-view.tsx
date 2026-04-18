@@ -32,6 +32,9 @@ import {
 import { MathDisplay, MathText } from '@/components/math/math-display';
 import { cn } from '@/lib/utils';
 import type { LessonPlanData } from '@/lib/lesson-plans/schema';
+import DotPlot from '@/components/charts/DotPlot';
+import BoxWhiskerPlot from '@/components/charts/BoxWhiskerPlot';
+import Histogram from '@/components/charts/Histogram';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -166,7 +169,14 @@ function PresentFormula({ formula }: { formula: string }) {
 // Slide builders
 // ---------------------------------------------------------------------------
 
-function buildSlides(plan: LessonPlanData, lesson: LessonInfo, periodNumber: number): Slide[] {
+const LESSON_5_1_ID = '0f3d5c6d-f8e7-4b24-b1e7-528653eafc36';
+
+function buildSlides(
+  plan: LessonPlanData,
+  lesson: LessonInfo,
+  periodNumber: number,
+  lessonId: string,
+): Slide[] {
   const slides: Slide[] = [];
 
   // --- Slide 1: Header ---
@@ -354,6 +364,50 @@ function buildSlides(plan: LessonPlanData, lesson: LessonInfo, periodNumber: num
     ),
   });
 
+  // --- Slide 5b: Visual Aids (Lesson 5-1 only) ---
+  if (lessonId === LESSON_5_1_ID) {
+    slides.push({
+      id: 'visual_aids',
+      title: 'الوسائل التعليمية',
+      icon: BookOpen,
+      render: () => (
+        <div className="flex h-full flex-col justify-start gap-4 px-4 overflow-y-auto py-2">
+          <h2 className="text-3xl font-bold text-center md:text-4xl shrink-0">
+            الوسائل التعليمية — تمثيل البيانات
+          </h2>
+          <p className="text-lg text-zinc-400 text-center shrink-0">
+            درجات 15 طالباً من 20
+          </p>
+          <div className="flex flex-col xl:flex-row items-center justify-center gap-6 flex-1 min-h-0">
+            {/* Dot Plot */}
+            <div className="flex flex-col items-center gap-2 shrink-0">
+              <h3 className="text-xl font-semibold text-blue-300">التمثيل بالنقاط</h3>
+              <div className="rounded-xl bg-white/5 p-3 overflow-hidden">
+                <DotPlot width={340} xLabel="الدرجة من 20" />
+              </div>
+            </div>
+
+            {/* Box-and-Whisker Plot */}
+            <div className="flex flex-col items-center gap-2 shrink-0">
+              <h3 className="text-xl font-semibold text-emerald-300">مخطط الصندوق وطرفيه</h3>
+              <div className="rounded-xl bg-white/5 p-3 overflow-hidden">
+                <BoxWhiskerPlot width={340} min={12} q1={14} median={15} q3={17} max={18} />
+              </div>
+            </div>
+
+            {/* Histogram */}
+            <div className="flex flex-col items-center gap-2 shrink-0">
+              <h3 className="text-xl font-semibold text-amber-300">المدرج التكراري</h3>
+              <div className="rounded-xl bg-white/5 p-3 overflow-hidden">
+                <Histogram width={340} xLabel="فئات الدرجات" yLabel="التكرار" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+    });
+  }
+
   // --- Slide 6: Practice (one item per slide) ---
   if (plan.practice?.items?.length) {
     plan.practice.items.forEach((item, i) => {
@@ -494,8 +548,8 @@ export function PresentationView({
 }: PresentationViewProps) {
   const planData = plan as unknown as LessonPlanData;
   const slides = useMemo(
-    () => buildSlides(planData, lesson, periodNumber),
-    [planData, lesson, periodNumber],
+    () => buildSlides(planData, lesson, periodNumber, lessonId),
+    [planData, lesson, periodNumber, lessonId],
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
