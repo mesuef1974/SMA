@@ -154,6 +154,17 @@ export async function POST(req: Request): Promise<Response> {
 
     const sectionData = result.object;
 
+    // --- Sanity check: ensure generated plan is for the right unit ---
+    if (sectionData.header.unit_number !== (lesson.chapter?.number ?? 0)) {
+      console.error(
+        `[lesson-plans/generate] Unit mismatch: expected ${lesson.chapter?.number}, got ${sectionData.header.unit_number}`,
+      );
+      return errorJson(
+        'الذكاء الاصطناعي أنتج تحضيراً لوحدة خاطئة. يرجى إعادة المحاولة أو استخدام القالب الجاهز.',
+        502,
+      );
+    }
+
     // --- Persist to DB ---
     const plan = await createLessonPlan({
       lessonId,
