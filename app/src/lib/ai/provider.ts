@@ -11,7 +11,7 @@
 
 import { anthropic } from '@ai-sdk/anthropic';
 import { google } from '@ai-sdk/google';
-import { ollama } from 'ollama-ai-provider';
+import { createOpenAI } from '@ai-sdk/openai';
 
 const PROVIDER = (process.env.AI_PROVIDER ?? 'gemini') as 'gemini' | 'anthropic' | 'ollama';
 
@@ -39,7 +39,11 @@ export function getAIModel(modelOverride?: string) {
   }
 
   if (PROVIDER === 'ollama') {
-    return ollama(modelOverride ?? OLLAMA_MODEL);
+    const ollamaClient = createOpenAI({
+      baseURL: 'http://localhost:11434/v1',
+      apiKey: 'ollama',
+    });
+    return ollamaClient(modelOverride ?? OLLAMA_MODEL);
   }
 
   if (PROVIDER === 'gemini') {
