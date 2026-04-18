@@ -149,7 +149,7 @@ export async function POST(req: Request): Promise<Response> {
         },
       ],
       prompt: `أنشئ تحضير الحصة ${periodNumber} لدرس "${lesson.titleAr}" من الفصل ${lesson.chapter?.number ?? ''} (${lesson.chapter?.titleAr ?? ''}). التزم بالتوقيتات المحددة والمخرجات التعليمية.`,
-      maxOutputTokens: 4096,
+      maxOutputTokens: 8000,
     });
 
     const sectionData = result.object;
