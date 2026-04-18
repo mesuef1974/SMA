@@ -77,10 +77,9 @@ export const learningOutcomeItemSchema = z.object({
   action_verb_ar: z.string().optional(),
 });
 
-export const learningOutcomesSchema = z
-  .array(learningOutcomeItemSchema)
-  .min(2)
-  .max(4);
+// NOTE: .min(2).max(4) removed — Claude Structured Output API rejects
+// minItems > 1 in JSON Schema. Validation is enforced by Zod post-generation.
+export const learningOutcomesSchema = z.array(learningOutcomeItemSchema);
 
 export type LearningOutcomeItem = z.infer<typeof learningOutcomeItemSchema>;
 

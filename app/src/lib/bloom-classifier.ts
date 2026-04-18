@@ -51,7 +51,9 @@ const qncfMappingSchema = z.object({
 const outcomeAnalysisSchema = z.object({
   bloom: bloomClassificationSchema,
   qncf: qncfMappingSchema,
-  suggestedActivities: z.array(z.string()).min(3).max(3),
+  // NOTE: .min(3).max(3) removed — Claude Structured Output API rejects
+  // minItems > 1. Validation enforced by Zod post-generation.
+  suggestedActivities: z.array(z.string()),
 });
 
 // ---------------------------------------------------------------------------
