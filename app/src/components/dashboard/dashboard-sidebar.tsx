@@ -31,11 +31,7 @@ import {
   SidebarFooter,
   SidebarSeparator,
 } from '@/components/ui/sidebar';
-<<<<<<< Updated upstream
 import { Logo } from '@/components/brand/Logo';
-=======
-import { LogoMark } from '@/components/brand/logo-mark';
->>>>>>> Stashed changes
 
 interface NavItem {
   key: string;
@@ -81,12 +77,8 @@ export function DashboardSidebar() {
           className="flex items-center gap-2 font-bold text-lg"
           aria-label={t('home')}
         >
-<<<<<<< Updated upstream
           <Logo variant="mono-white" size={32} />
 
-=======
-          <LogoMark className="size-8 shrink-0 text-sidebar-foreground" />
->>>>>>> Stashed changes
           <span className="truncate group-data-[collapsible=icon]:hidden">SMA</span>
         </Link>
       </SidebarHeader>

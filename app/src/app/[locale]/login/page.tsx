@@ -8,11 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Link } from '@/i18n/navigation';
-<<<<<<< Updated upstream
 import { Logo } from '@/components/brand/Logo';
-=======
-import { LogoMark } from '@/components/brand/logo-mark';
->>>>>>> Stashed changes
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
@@ -23,13 +19,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 dark:bg-black">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-<<<<<<< Updated upstream
           <div className="mx-auto mb-4 flex size-12 items-center justify-center">
             <Logo variant="color" size={48} />
           </div>
-=======
-          <LogoMark className="mx-auto mb-4 size-16 text-primary" />
->>>>>>> Stashed changes
           <CardTitle className="text-2xl font-bold">
             تسجيل الدخول
           </CardTitle>
