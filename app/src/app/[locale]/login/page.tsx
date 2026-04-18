@@ -6,6 +6,7 @@ import { loginAction } from '@/lib/auth-actions';
 import { Input } from '@/components/ui/input';
 import { Link } from '@/i18n/navigation';
 import { Logo } from '@/components/brand/Logo';
+import { AzkiaLogo } from '@/components/brand/AzkiaLogo';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
@@ -55,10 +56,10 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* شريط الشركة */}
-        <p className="relative z-10 mt-auto text-xs text-white/30">
-          © ٢٠٢٦ أذكياء للبرمجيات. جميع الحقوق محفوظة.
-        </p>
+        {/* شعار الشركة */}
+        <div className="relative z-10 mt-auto opacity-50">
+          <AzkiaLogo variant="white" size={88} />
+        </div>
       </div>
 
       {/* ── الجانب الأيسر: نموذج الدخول ── */}
