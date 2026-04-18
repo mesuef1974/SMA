@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Presentation,
+  FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -24,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { LessonPlanViewer } from '@/components/lesson-plan/lesson-plan-viewer';
+import { VisualAids51 } from '@/components/lesson-plan/visual-aids-5-1';
 import type { LessonPlanData } from '@/lib/lesson-plans/schema';
 import { cn } from '@/lib/utils';
 
@@ -197,6 +199,60 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
     },
     [lesson.id],
   );
+
+  const useTemplate = useCallback(
+    async (periodNumber: number) => {
+      setPeriodStates((prev) => ({
+        ...prev,
+        [periodNumber]: { loading: true, error: null, plan: prev[periodNumber]?.plan ?? null },
+      }));
+
+      try {
+        const res = await fetch('/api/lesson-plans/template', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lessonId: lesson.id,
+            periodNumber,
+          }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          const errorMsg = getErrorMessage(
+            res.status,
+            (data as { error?: string }).error ?? '',
+          );
+          setPeriodStates((prev) => ({
+            ...prev,
+            [periodNumber]: { loading: false, error: errorMsg, plan: null },
+          }));
+          return;
+        }
+
+        const result = await res.json();
+        const sectionData = result.sectionData as LessonPlanData;
+
+        setPeriodStates((prev) => ({
+          ...prev,
+          [periodNumber]: { loading: false, error: null, plan: sectionData },
+        }));
+      } catch {
+        setPeriodStates((prev) => ({
+          ...prev,
+          [periodNumber]: {
+            loading: false,
+            error: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وإعادة المحاولة.',
+            plan: null,
+          },
+        }));
+      }
+    },
+    [lesson.id],
+  );
+
+  const TEMPLATE_LESSONS = ['0f3d5c6d-f8e7-4b24-b1e7-528653eafc36'];
+  const hasTemplate = TEMPLATE_LESSONS.includes(lesson.id);
 
   const periodCount = lesson.periodCount ?? 2;
   const defaultTab = `period-1`;
@@ -381,6 +437,7 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
                       </div>
                     </div>
                     <LessonPlanViewer plan={state.plan} />
+                    {lesson.id === '0f3d5c6d-f8e7-4b24-b1e7-528653eafc36' && <VisualAids51 />}
                   </div>
                 )}
 
@@ -397,14 +454,27 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
                           اضغط الزر لتوليد التحضير بالذكاء الاصطناعي
                         </p>
                       </div>
-                      <Button
-                        size="lg"
-                        className="gap-2"
-                        onClick={() => generatePlan(p)}
-                      >
-                        <Sparkles className="size-4" />
-                        توليد التحضير — الحصة {p}
-                      </Button>
+                      <div className="flex flex-wrap items-center justify-center gap-3">
+                        <Button
+                          size="lg"
+                          className="gap-2"
+                          onClick={() => generatePlan(p)}
+                        >
+                          <Sparkles className="size-4" />
+                          توليد التحضير — الحصة {p}
+                        </Button>
+                        {hasTemplate && (
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            className="gap-2"
+                            onClick={() => useTemplate(p)}
+                          >
+                            <FileText className="size-4" />
+                            استخدام قالب جاهز
+                          </Button>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 )}
