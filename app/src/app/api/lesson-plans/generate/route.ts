@@ -135,7 +135,18 @@ export async function POST(req: Request): Promise<Response> {
     const result = await generateObject({
       model: getAIModel(),
       schema: lessonPlanSchema,
-      system: systemPrompt,
+      // Pass system as an array so we can attach providerOptions for Anthropic
+      // prompt caching. The large system prompt (misconception catalog + few-shot
+      // example) stays stable across requests — cache_control: ephemeral keeps it
+      // in the 5-minute Anthropic cache, cutting input-token cost by ~90%.
+      system: [
+        {
+          content: systemPrompt,
+          providerOptions: {
+            anthropic: { cacheControl: { type: 'ephemeral' } },
+          },
+        },
+      ],
       prompt: `أنشئ تحضير الحصة ${periodNumber} لدرس "${lesson.titleAr}" من الفصل ${lesson.chapter?.number ?? ''} (${lesson.chapter?.titleAr ?? ''}). التزم بالتوقيتات المحددة والمخرجات التعليمية.`,
       maxOutputTokens: 4096,
     });
