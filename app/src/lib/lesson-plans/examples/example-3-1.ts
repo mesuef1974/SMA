@@ -49,12 +49,6 @@ export const EXAMPLE_3_1: LessonPlanData = {
     duration_minutes: 5,
     activity_ar:
       'راجع مفهوم القيمة المطلقة كمسافة على خط الأعداد. اسأل الطلاب: ما المسافة بين العدد \\(-3\\) والصفر على خط الأعداد؟ وبين \\(3\\) والصفر؟ ماذا تلاحظ؟ ثم اعرض: \\(|{-3}| = 3\\) و \\(|3| = 3\\). ذكّر بتعريف: \\(|x| = x\\) إذا \\(x \\geq 0\\)، و \\(|x| = -x\\) إذا \\(x < 0\\).',
-    prerequisite_concepts: [
-      'القيمة المطلقة كمسافة',
-      'خط الأعداد',
-      'المتباينات الخطية',
-    ],
-    target_bloom: 'remember',
   },
 
   explore: {
@@ -176,20 +170,6 @@ export const EXAMPLE_3_1: LessonPlanData = {
     excluded_from_assessments: true,
   },
 
-  metadata: {
-    generated_at: '2026-04-13T10:00:00.000Z',
-    generated_by: 'ai',
-    bloom_distribution: {
-      remember: 2,
-      understand: 1,
-      apply: 4,
-      analyze: 1,
-      evaluate: 0,
-      create: 0,
-    },
-    teacher_guide_pages: ['5A', '6', '7', '8', '9', '10'],
-    student_book_pages: ['132', '133', '134', '135', '136', '137', '138'],
-  },
 };
 
 /**

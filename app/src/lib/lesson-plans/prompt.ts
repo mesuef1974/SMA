@@ -201,9 +201,7 @@ ${buildCatalogPromptReference()}
   ],
   "warm_up": {
     "duration_minutes": 5,
-    "activity_ar": "وصف النشاط الافتتاحي",
-    "prerequisite_concepts": ["مفهوم سابق 1"],
-    "target_bloom": "remember" أو "understand"
+    "activity_ar": "وصف النشاط الافتتاحي"
   },
   "explore": {
     "duration_minutes": 15,
@@ -252,13 +250,6 @@ ${buildCatalogPromptReference()}
     "is_optional": true,
     "excluded_from_assessments": true
   },
-  "metadata": {
-    "generated_at": "ISO timestamp",
-    "generated_by": "ai",
-    "bloom_distribution": { "remember": N, "understand": N, ... },
-    "teacher_guide_pages": ["X", "Y"],
-    "student_book_pages": ["X", "Y"]
-  }
 }
 </output_format>
 

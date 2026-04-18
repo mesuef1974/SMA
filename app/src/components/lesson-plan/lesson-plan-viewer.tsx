@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * LessonPlanViewer — displays the 9-section lesson plan in a rich, RTL-first layout.
+ * LessonPlanViewer — displays the 8-section lesson plan in a rich, RTL-first layout.
  *
  * Sections:
  *   1. Header          — lesson metadata card
@@ -12,7 +12,6 @@
  *   6. Practice        — exercises with Bloom + Tier badges
  *   7. Assess          — assessment questions with model answers
  *   8. Extend          — optional enrichment (distinct border)
- *   9. Metadata        — technical details (collapsed by default)
  */
 
 import type {
@@ -23,11 +22,11 @@ import type {
   PracticeItem,
   AssessItem,
 } from '@/lib/lesson-plans/schema';
+// Note: Metadata section removed in schema v2 (optional parameter count reduction)
 import { MathDisplay, MathText } from '@/components/math/math-display';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import {
   BookOpen,
@@ -38,10 +37,8 @@ import {
   PenTool,
   ClipboardCheck,
   Rocket,
-  Info,
   Clock,
   AlertTriangle,
-  ChevronDown,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -232,26 +229,6 @@ function WarmUpSection({ data }: { data: LessonPlanData['warm_up'] }) {
     >
       <div className="space-y-3">
         <p className="text-sm leading-relaxed">{data.activity_ar}</p>
-
-        {data.prerequisite_concepts && data.prerequisite_concepts.length > 0 && (
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-1">المفاهيم المطلوبة:</p>
-            <div className="flex flex-wrap gap-1.5">
-              {data.prerequisite_concepts.map((concept, i) => (
-                <Badge key={i} variant="secondary" className="text-xs">
-                  {concept}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {data.target_bloom && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">مستوى بلوم المستهدف:</span>
-            <BloomBadge level={data.target_bloom} />
-          </div>
-        )}
       </div>
     </SectionCard>
   );
@@ -283,7 +260,7 @@ function ExploreSection({ data }: { data: LessonPlanData['explore'] }) {
             <ul className="space-y-1.5">
               {data.guiding_questions.map((q, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm">
-                  <span className="mt-0.5 text-muted-foreground text-xs">&#9679;</span>
+                  <span className="mt-0.5 text-muted-foreground text-xs">•</span>
                   <MathText text={q} />
                 </li>
               ))}
@@ -568,71 +545,6 @@ function ExtendSection({ data }: { data: NonNullable<LessonPlanData['extend']> }
 }
 
 // ---------------------------------------------------------------------------
-// Section 9: Metadata (collapsed by default)
-// ---------------------------------------------------------------------------
-
-function MetadataSection({ data }: { data: NonNullable<LessonPlanData['metadata']> }) {
-  return (
-    <Collapsible>
-      <Card>
-        <CardHeader className="pb-0">
-          <CollapsibleTrigger className="flex w-full items-center gap-2 text-start">
-            <Info className="size-5 shrink-0 text-muted-foreground" />
-            <span className="flex-1 text-base font-medium">تفاصيل تقنية</span>
-            <ChevronDown className="size-4 text-muted-foreground transition-transform data-[state=open]:rotate-180" />
-          </CollapsibleTrigger>
-        </CardHeader>
-        <CollapsibleContent>
-          <CardContent className="pt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-              {data.generated_at && (
-                <div>
-                  <span className="text-muted-foreground">تاريخ التوليد:</span>{' '}
-                  <span className="font-mono text-xs">{data.generated_at}</span>
-                </div>
-              )}
-              <div>
-                <span className="text-muted-foreground">المصدر:</span>{' '}
-                <span className="font-medium">{data.generated_by === 'ai' ? 'ذكاء اصطناعي' : 'المعلم'}</span>
-              </div>
-
-              {data.bloom_distribution && Object.keys(data.bloom_distribution).length > 0 && (
-                <div className="sm:col-span-2">
-                  <span className="text-muted-foreground block mb-1">توزيع مستويات بلوم:</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(Object.entries(data.bloom_distribution) as [BloomLevel, number][]).map(
-                      ([level, count]) =>
-                        count > 0 && (
-                          <Badge key={level} className={cn('gap-1', bloomColors[level])}>
-                            {bloomLabels[level]}: {count}
-                          </Badge>
-                        ),
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {data.teacher_guide_pages && data.teacher_guide_pages.length > 0 && (
-                <div>
-                  <span className="text-muted-foreground">صفحات دليل المعلم:</span>{' '}
-                  <span className="font-medium">{data.teacher_guide_pages.join('، ')}</span>
-                </div>
-              )}
-              {data.student_book_pages && data.student_book_pages.length > 0 && (
-                <div>
-                  <span className="text-muted-foreground">صفحات كتاب الطالب:</span>{' '}
-                  <span className="font-medium">{data.student_book_pages.join('، ')}</span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 
@@ -673,9 +585,6 @@ export function LessonPlanViewer({ plan, className }: LessonPlanViewerProps) {
 
       {/* 8. Extend (optional) */}
       {plan.extend && <ExtendSection data={plan.extend} />}
-
-      {/* 9. Metadata (optional, collapsed) */}
-      {plan.metadata && <MetadataSection data={plan.metadata} />}
     </div>
   );
 }

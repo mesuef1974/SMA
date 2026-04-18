@@ -251,21 +251,6 @@ function buildSlides(plan: LessonPlanData, lesson: LessonInfo, periodNumber: num
           <p className="text-2xl leading-relaxed text-center md:text-3xl">
             <PresentMathText text={plan.warm_up.activity_ar} />
           </p>
-          {plan.warm_up.prerequisite_concepts && plan.warm_up.prerequisite_concepts.length > 0 && (
-            <div className="text-center">
-              <p className="text-lg text-zinc-400 mb-3">المفاهيم المطلوبة:</p>
-              <div className="flex flex-wrap justify-center gap-3">
-                {plan.warm_up.prerequisite_concepts.map((concept, i) => (
-                  <span
-                    key={i}
-                    className="rounded-lg bg-white/10 px-4 py-2 text-xl"
-                  >
-                    {concept}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     ),
@@ -292,7 +277,7 @@ function buildSlides(plan: LessonPlanData, lesson: LessonInfo, periodNumber: num
               <ul className="space-y-3 max-w-3xl mx-auto">
                 {plan.explore.guiding_questions.map((q, i) => (
                   <li key={i} className="flex items-start gap-3 text-xl leading-relaxed">
-                    <span className="mt-1 text-zinc-500 shrink-0">&#9679;</span>
+                    <span className="mt-1 text-zinc-500 shrink-0">•</span>
                     <PresentMathText text={q} />
                   </li>
                 ))}
