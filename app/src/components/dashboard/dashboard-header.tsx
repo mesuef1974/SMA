@@ -7,6 +7,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { LanguageSwitcher } from './language-switcher';
 import { SignOutButton } from './sign-out-button';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface DashboardHeaderProps {
   userName?: string | null;
@@ -25,6 +26,7 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
       <h1 className="text-sm font-medium truncate">{t('title')}</h1>
 
       <div className="ms-auto flex items-center gap-1">
+        <ThemeToggle />
         <LanguageSwitcher />
 
         <Button

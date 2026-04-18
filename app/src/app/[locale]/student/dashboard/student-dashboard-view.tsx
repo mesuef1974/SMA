@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, HelpCircle } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 interface StudentDashboardViewProps {
   studentName: string;
@@ -38,13 +39,16 @@ export function StudentDashboardView({
               </p>
             </div>
           </div>
-          <Link
-            href="/help"
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
-          >
-            <HelpCircle className="size-4" />
-            <span>{t('help')}</span>
-          </Link>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <Link
+              href="/help"
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+            >
+              <HelpCircle className="size-4" />
+              <span>{t('help')}</span>
+            </Link>
+          </div>
         </div>
       </header>
 
