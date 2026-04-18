@@ -34,11 +34,14 @@ export default function LoginPage() {
 
         {/* المحتوى */}
         <div className="relative z-10 flex flex-col items-center gap-6 text-center">
-          <Logo variant="mono-white" size={72} />
-
-          <div>
-            <h1 className="text-3xl font-bold text-white lg:text-4xl">أذكياء SMA</h1>
-            <p className="mt-2 text-base text-white/70">محلل الرياضيات الذكي</p>
+          {/* SMA | mark | محلل الرياضيات الذكي */}
+          <div className="flex flex-col items-center gap-3">
+            <Logo variant="mono-white" size={64} />
+            <div className="flex items-center gap-3">
+              <span className="text-lg font-bold tracking-widest text-white">SMA</span>
+              <span className="text-white/30">|</span>
+              <span className="text-base font-medium text-white/80">محلل الرياضيات الذكي</span>
+            </div>
           </div>
 
           {/* ثلاث ميزات */}
