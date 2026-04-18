@@ -80,12 +80,18 @@ export function DashboardSidebar() {
       <SidebarHeader className="border-b border-white/10 p-4">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 font-bold text-lg"
+          className="flex items-center gap-2"
           aria-label={t('home')}
         >
-          <Logo variant="mono-white" size={32} />
+          {/* Collapsed: mark only */}
+          <Logo variant="mono-white" size={28} className="shrink-0" />
 
-          <span className="truncate group-data-[collapsible=icon]:hidden text-white font-bold">أذكياء SMA</span>
+          {/* Expanded: SMA | mark | محلل الرياضيات الذكي */}
+          <span className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
+            <span className="text-sm font-bold tracking-widest text-white">SMA</span>
+            <span className="text-white/30 text-xs">|</span>
+            <span className="text-xs font-medium text-white/80 truncate">محلل الرياضيات الذكي</span>
+          </span>
         </Link>
       </SidebarHeader>
 
