@@ -19,7 +19,6 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 interface RespondBody {
   questionIndex: number;
   response: string;
-  isCorrect?: boolean;
   timeMs?: number;
 }
 
@@ -42,14 +41,13 @@ function validateBody(
     return { ok: false, error: 'الإجابة يجب ألا تتجاوز 2000 حرف' };
   }
 
-  const { isCorrect, timeMs } = body as Record<string, unknown>;
+  const { timeMs } = body as Record<string, unknown>;
 
   return {
     ok: true,
     data: {
       questionIndex,
       response: response.trim(),
-      isCorrect: typeof isCorrect === 'boolean' ? isCorrect : undefined,
       timeMs: typeof timeMs === 'number' ? timeMs : undefined,
     },
   };
@@ -103,7 +101,7 @@ export async function POST(
       return Response.json({ error: validation.error }, { status: 400 });
     }
 
-    const { questionIndex, response, isCorrect: hintCorrect, timeMs: hintTimeMs } = validation.data;
+    const { questionIndex, response, timeMs: hintTimeMs } = validation.data;
 
     // 1. Verify challenge exists and is active
     const challenge = await db.query.challenges.findFirst({
@@ -168,7 +166,7 @@ export async function POST(
     // passing the expected value for comparison. In a full implementation,
     // questions would be fetched from the DB. For now, we accept an isCorrect hint.
     // If no hint is provided, mark as correct if response is non-empty.
-    const isCorrect = hintCorrect ?? response.length > 0;
+    const isCorrect = response.length > 0;
     const timeMs = hintTimeMs ?? 0;
 
     // 6. Submit and award XP

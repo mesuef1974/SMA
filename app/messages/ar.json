@@ -82,7 +82,10 @@
     "classrooms": "إدارة الصفوف",
     "leaderboard": "المتصدرين",
     "challenges": "التحديات",
-    "help": "مساعدة"
+    "help": "مساعدة",
+    "groupTeaching": "التدريس",
+    "groupStudents": "الطلاب",
+    "groupAnalytics": "التحليلات"
   },
   "student": {
     "title": "واجهة الطالب",
@@ -279,6 +282,7 @@
     "completed": "مكتمل",
     "startChallenge": "ابدأ التحدي",
     "endChallenge": "أنهِ التحدي",
+    "endChallengeConfirm": "هل أنت متأكد من إنهاء التحدي؟ لا يمكن التراجع عن هذا الإجراء",
     "controlPanel": "لوحة التحكم",
     "backToList": "العودة للقائمة",
     "leaderboard": "ترتيب الفرق",

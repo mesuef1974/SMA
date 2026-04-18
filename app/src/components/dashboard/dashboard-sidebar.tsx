@@ -39,17 +39,23 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-const mainNavItems: NavItem[] = [
+const teachingNavItems: NavItem[] = [
   { key: 'home', href: '/dashboard', icon: Home },
   { key: 'lessons', href: '/dashboard/lessons', icon: BookOpen },
   { key: 'lessonPlans', href: '/dashboard/lesson-plans', icon: FileText },
+  { key: 'challenges', href: '/dashboard/challenges', icon: Swords },
+];
+
+const studentsNavItems: NavItem[] = [
   { key: 'students', href: '/dashboard/students', icon: Users },
+  { key: 'classrooms', href: '/dashboard/classroom', icon: GraduationCap },
+  { key: 'leaderboard', href: '/dashboard/leaderboard', icon: Trophy },
+];
+
+const analyticsNavItems: NavItem[] = [
   { key: 'assessments', href: '/dashboard/assessments', icon: ClipboardCheck },
   { key: 'misconceptions', href: '/dashboard/misconceptions', icon: AlertCircle },
   { key: 'reports', href: '/dashboard/reports', icon: BarChart3 },
-  { key: 'classrooms', href: '/dashboard/classroom', icon: GraduationCap },
-  { key: 'leaderboard', href: '/dashboard/leaderboard', icon: Trophy },
-  { key: 'challenges', href: '/dashboard/challenges', icon: Swords },
 ];
 
 const bottomNavItems: NavItem[] = [
@@ -88,11 +94,55 @@ export function DashboardSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">
-            {t('home')}
+            {t('groupTeaching')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNavItems.map((item) => (
+              {teachingNavItems.map((item) => (
+                <SidebarMenuItem key={item.key}>
+                  <SidebarMenuButton
+                    isActive={isActive(item.href)}
+                    tooltip={t(item.key)}
+                    render={<Link href={item.href} />}
+                  >
+                    <item.icon className="size-4" />
+                    <span>{t(item.key)}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">
+            {t('groupStudents')}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {studentsNavItems.map((item) => (
+                <SidebarMenuItem key={item.key}>
+                  <SidebarMenuButton
+                    isActive={isActive(item.href)}
+                    tooltip={t(item.key)}
+                    render={<Link href={item.href} />}
+                  >
+                    <item.icon className="size-4" />
+                    <span>{t(item.key)}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">
+            {t('groupAnalytics')}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {analyticsNavItems.map((item) => (
                 <SidebarMenuItem key={item.key}>
                   <SidebarMenuButton
                     isActive={isActive(item.href)}
