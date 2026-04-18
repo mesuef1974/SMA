@@ -76,8 +76,8 @@ export function DashboardSidebar() {
   }
 
   return (
-    <Sidebar side="right" collapsible="icon">
-      <SidebarHeader className="p-4">
+    <Sidebar side="right" collapsible="icon" className="border-s-0 bg-[var(--sma-najm-950)]">
+      <SidebarHeader className="border-b border-white/10 p-4">
         <Link
           href="/dashboard"
           className="flex items-center gap-2 font-bold text-lg"
@@ -85,7 +85,7 @@ export function DashboardSidebar() {
         >
           <Logo variant="mono-white" size={32} />
 
-          <span className="truncate group-data-[collapsible=icon]:hidden">SMA</span>
+          <span className="truncate group-data-[collapsible=icon]:hidden text-white font-bold">أذكياء SMA</span>
         </Link>
       </SidebarHeader>
 
@@ -93,7 +93,7 @@ export function DashboardSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">
+          <SidebarGroupLabel className="text-white/40 text-xs uppercase tracking-wider group-data-[collapsible=icon]:hidden">
             {t('groupTeaching')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -104,6 +104,7 @@ export function DashboardSidebar() {
                     isActive={isActive(item.href)}
                     tooltip={t(item.key)}
                     render={<Link href={item.href} />}
+                    className="text-white/70 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg"
                   >
                     <item.icon className="size-4" />
                     <span>{t(item.key)}</span>
@@ -115,7 +116,7 @@ export function DashboardSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">
+          <SidebarGroupLabel className="text-white/40 text-xs uppercase tracking-wider group-data-[collapsible=icon]:hidden">
             {t('groupStudents')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -126,6 +127,7 @@ export function DashboardSidebar() {
                     isActive={isActive(item.href)}
                     tooltip={t(item.key)}
                     render={<Link href={item.href} />}
+                    className="text-white/70 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg"
                   >
                     <item.icon className="size-4" />
                     <span>{t(item.key)}</span>
@@ -137,7 +139,7 @@ export function DashboardSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">
+          <SidebarGroupLabel className="text-white/40 text-xs uppercase tracking-wider group-data-[collapsible=icon]:hidden">
             {t('groupAnalytics')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -148,6 +150,7 @@ export function DashboardSidebar() {
                     isActive={isActive(item.href)}
                     tooltip={t(item.key)}
                     render={<Link href={item.href} />}
+                    className="text-white/70 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg"
                   >
                     <item.icon className="size-4" />
                     <span>{t(item.key)}</span>
@@ -159,7 +162,7 @@ export function DashboardSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-white/10 p-2">
         <SidebarSeparator />
         <SidebarMenu>
           {bottomNavItems.map((item) => (
@@ -168,6 +171,7 @@ export function DashboardSidebar() {
                 isActive={isActive(item.href)}
                 tooltip={t(item.key)}
                 render={<Link href={item.href} />}
+                className="text-white/70 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg"
               >
                 <item.icon className="size-4" />
                 <span>{t(item.key)}</span>
@@ -175,6 +179,10 @@ export function DashboardSidebar() {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
+        <div className="mt-2 flex items-center gap-2 rounded-lg p-2 text-white/60 text-xs group-data-[collapsible=icon]:justify-center">
+          <div className="size-6 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold text-white shrink-0">م</div>
+          <span className="truncate group-data-[collapsible=icon]:hidden">معلم الرياضيات</span>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
