@@ -37,12 +37,13 @@ export function MathDisplay({ latex, display = false, className }: MathDisplayPr
       return katex.renderToString(latex, {
         displayMode: display,
         throwOnError: false,
-        errorColor: '#cc0000',
+        // BRAND-APPROVED: KaTeX errorColor API requires a literal CSS color string — brand-book §Typography
+        errorColor: 'var(--destructive)',
         trust: false,
         strict: false,
       });
     } catch {
-      return `<span style="color:#cc0000">خطأ في عرض المعادلة</span>`;
+      return `<span style="color:var(--destructive)">خطأ في عرض المعادلة</span>`;
     }
   }, [latex, display]);
 

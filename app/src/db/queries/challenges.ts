@@ -18,8 +18,17 @@ const XP_PER_CORRECT = 10;
 
 /**
  * Team colour palette for auto-assignment.
+ *
+ * Values are CSS custom properties defined in globals.css (--team-1..--team-4)
+ * per brand-book §Colors/Teams. Consumers use these strings in inline
+ * `style={{ backgroundColor: team.color }}` where CSS vars resolve correctly.
  */
-const TEAM_COLORS = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B'] as const;
+const TEAM_COLORS = [
+  'var(--team-1)',
+  'var(--team-2)',
+  'var(--team-3)',
+  'var(--team-4)',
+] as const;
 
 /**
  * Create a new challenge in draft status.

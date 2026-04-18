@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import { IBM_Plex_Sans_Arabic, IBM_Plex_Mono } from "next/font/google";
 import { getLocale } from "next-intl/server";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
 const arabic = IBM_Plex_Sans_Arabic({
@@ -16,8 +18,18 @@ const mono = IBM_Plex_Mono({
   display: "swap",
 });
 
-export const metadata = {
-  icons: { icon: "/favicon.svg" },
+export const metadata: Metadata = {
+  title: {
+    default: "SMA — محلل الرياضيات الذكي",
+    template: "%s · SMA",
+  },
+  description:
+    "منصّة ذكيّة لتدريس الرياضيات بالعربية — تخطيط الدروس، تشخيص المفاهيم الخاطئة، وتحديات تعليمية للطلاب.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+  },
 };
 
 export default async function RootLayout({
@@ -35,7 +47,16 @@ export default async function RootLayout({
       className={`${arabic.variable} ${mono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

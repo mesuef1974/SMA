@@ -23,6 +23,19 @@
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-medal-gold: var(--medal-gold);
+  --color-medal-silver: var(--medal-silver);
+  --color-medal-bronze: var(--medal-bronze);
+  --color-team-1: var(--team-1);
+  --color-team-2: var(--team-2);
+  --color-team-3: var(--team-3);
+  --color-team-4: var(--team-4);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -46,10 +59,15 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Tailwind v4 duration utilities (brand-book §Motion) */
+  --duration-fast:   150ms;
+  --duration-normal: 300ms;
+  --duration-slow:   500ms;
 }
 
 :root {
-  /* ----- Brand Palette ------------------------------------------------- */
+  /* ----- SMA Brand Palette --------------------------------------------- */
 
   /* Najm Indigo — Primary / Trust / Scholarly */
   --sma-najm-50:   oklch(0.97 0.015 280);
@@ -88,47 +106,56 @@
   --sma-sahla-800: oklch(0.40 0.080 180);
   --sma-sahla-900: oklch(0.30 0.060 180);
 
-  /* Ink & Paper (neutrals, slightly indigo-tinted) */
-  --sma-ink-950:   oklch(0.14 0.025 280);  /* body text */
-  --sma-ink-900:   oklch(0.22 0.020 280);
-  --sma-ink-800:   oklch(0.32 0.015 280);
-  --sma-ink-700:   oklch(0.45 0.012 280);
-  --sma-ink-600:   oklch(0.55 0.010 280);  /* muted */
-  --sma-ink-500:   oklch(0.65 0.008 280);
-  --sma-ink-400:   oklch(0.76 0.007 280);
-  --sma-ink-300:   oklch(0.86 0.006 280);  /* borders */
-  --sma-ink-200:   oklch(0.92 0.005 280);
-  --sma-ink-100:   oklch(0.96 0.004 280);  /* subtle bg */
+  /* Ink & Paper (neutrals, slightly indigo-tinted) — ascending scale */
   --sma-ink-50:    oklch(0.985 0.003 280); /* paper */
+  --sma-ink-100:   oklch(0.96 0.004 280);  /* subtle bg */
+  --sma-ink-200:   oklch(0.92 0.005 280);
+  --sma-ink-300:   oklch(0.86 0.006 280);  /* borders */
+  --sma-ink-400:   oklch(0.76 0.007 280);
+  --sma-ink-500:   oklch(0.65 0.008 280);
+  --sma-ink-600:   oklch(0.55 0.010 280);  /* muted */
+  --sma-ink-700:   oklch(0.45 0.012 280);
+  --sma-ink-800:   oklch(0.32 0.015 280);
+  --sma-ink-900:   oklch(0.22 0.020 280);
+  --sma-ink-950:   oklch(0.14 0.025 280);  /* body text */
 
   /* ----- Semantic Tokens (map brand to shadcn roles) -------------------- */
 
-  --background:          var(--sma-ink-50);
-  --foreground:          var(--sma-ink-950);
-  --card:                oklch(1 0 0);
-  --card-foreground:     var(--sma-ink-950);
-  --popover:             oklch(1 0 0);
-  --popover-foreground:  var(--sma-ink-950);
+  --background:            var(--sma-ink-50);
+  --foreground:            var(--sma-ink-950);
+  --card:                  oklch(1 0 0);
+  --card-foreground:       var(--sma-ink-950);
+  --popover:               oklch(1 0 0);
+  --popover-foreground:    var(--sma-ink-950);
 
-  --primary:             var(--sma-najm-700);
-  --primary-foreground:  oklch(0.985 0.005 280);
+  --primary:               var(--sma-najm-700);
+  --primary-foreground:    oklch(0.985 0.005 280);
 
-  --secondary:           var(--sma-ink-100);
-  --secondary-foreground: var(--sma-najm-800);
+  --secondary:             var(--sma-ink-100);
+  --secondary-foreground:  var(--sma-najm-800);
 
-  --muted:               var(--sma-ink-100);
-  --muted-foreground:    var(--sma-ink-600);
+  --muted:                 var(--sma-ink-100);
+  --muted-foreground:      var(--sma-ink-600);
 
-  --accent:              var(--sma-sahla-500);
-  --accent-foreground:   oklch(0.99 0 0);
+  --accent:                var(--sma-sahla-500);
+  --accent-foreground:     oklch(0.99 0 0);
 
-  --destructive:         oklch(0.58 0.210 25);
+  --destructive:           oklch(0.58 0.210 25);
+  --destructive-foreground: oklch(0.99 0 0);
 
-  --border:              var(--sma-ink-300);
-  --input:               var(--sma-ink-300);
-  --ring:                var(--sma-najm-400);
+  /* ----- Semantic status tokens (brand-book §Alert) -------------------- */
+  --success:               oklch(0.62 0.170 150);
+  --success-foreground:    oklch(0.99 0 0);
+  --warning:               var(--sma-qamar-700);
+  --warning-foreground:    var(--sma-najm-950);
+  --info:                  var(--sma-sahla-600);
+  --info-foreground:       oklch(0.99 0 0);
 
-  /* Charts — use the brand palette harmoniously */
+  --border:                var(--sma-ink-300);
+  --input:                 var(--sma-ink-300);
+  --ring:                  var(--sma-sahla-500);   /* focus ring — brand-book §10 */
+
+  /* Charts — brand palette in harmonic sequence */
   --chart-1: var(--sma-najm-500);
   --chart-2: var(--sma-sahla-500);
   --chart-3: var(--sma-qamar-500);
@@ -136,6 +163,43 @@
   --chart-5: var(--sma-sahla-700);
 
   --radius: 0.75rem;
+
+  /* ----- Explicit radii (brand-book §Radii) ---------------------------- */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+
+  /* ----- Elevation (brand-book §Shadows) -------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(15, 14, 31, 0.06);
+  --shadow-md: 0 4px 14px rgba(15, 14, 31, 0.08);
+  --shadow-lg: 0 12px 40px rgba(15, 14, 31, 0.12);
+
+  /* ----- Motion (brand-book §Motion) ------------------------------------ */
+  --duration-fast:   150ms;
+  --duration-normal: 300ms;
+  --duration-slow:   500ms;
+  --ease-standard:   cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ----- Type scale (brand-book §Typography) --------------------------- */
+  --text-hero:    56px;  --lh-hero:    1.25;
+  --text-h1:      40px;  --lh-h1:      1.2;
+  --text-h2:      32px;  --lh-h2:      1.25;
+  --text-h3:      24px;  --lh-h3:      1.3;
+  --text-h4:      20px;  --lh-h4:      1.4;
+  --text-body:    16px;  --lh-body:    1.7;
+  --text-caption: 14px;  --lh-caption: 1.7;
+
+  /* ----- Medal tokens (CEO decision — leaderboard ranks) --------------- */
+  --medal-gold:   var(--sma-qamar-500);   /* ~#E9B949 */
+  --medal-silver: #c4c3cf;                /* ink-300 tonal */
+  --medal-bronze: #9e7222;                /* qamar-700 tonal */
+
+  /* ----- Team distinguishing colors (CEO decision — challenges) -------- */
+  --team-1: oklch(0.63 0.20 258);  /* blue */
+  --team-2: oklch(0.60 0.23 25);   /* red */
+  --team-3: oklch(0.70 0.17 162);  /* green */
+  --team-4: oklch(0.77 0.15 85);   /* amber */
 
   /* Sidebar */
   --sidebar:                       var(--sma-najm-950);
@@ -149,30 +213,59 @@
 }
 
 .dark {
-  --background:          var(--sma-najm-950);
-  --foreground:          oklch(0.96 0.010 280);
-  --card:                var(--sma-najm-900);
-  --card-foreground:     oklch(0.96 0.010 280);
-  --popover:             var(--sma-najm-900);
-  --popover-foreground:  oklch(0.96 0.010 280);
+  --background:            var(--sma-najm-950);
+  --foreground:            oklch(0.96 0.010 280);
+  --card:                  var(--sma-najm-900);
+  --card-foreground:       oklch(0.96 0.010 280);
+  --popover:               var(--sma-najm-900);
+  --popover-foreground:    oklch(0.96 0.010 280);
 
-  --primary:             var(--sma-sahla-400);
-  --primary-foreground:  var(--sma-najm-950);
+  --primary:               var(--sma-sahla-400);
+  --primary-foreground:    var(--sma-najm-950);
 
-  --secondary:           var(--sma-najm-800);
-  --secondary-foreground: oklch(0.96 0.010 280);
+  --secondary:             var(--sma-najm-800);
+  --secondary-foreground:  oklch(0.96 0.010 280);
 
-  --muted:               var(--sma-najm-800);
-  --muted-foreground:    oklch(0.70 0.020 280);
+  --muted:                 var(--sma-najm-800);
+  --muted-foreground:      oklch(0.70 0.020 280);
 
-  --accent:              var(--sma-qamar-500);
-  --accent-foreground:   var(--sma-najm-950);
+  --accent:                var(--sma-qamar-500);
+  --accent-foreground:     var(--sma-najm-950);
 
-  --destructive:         oklch(0.68 0.190 25);
+  --destructive:           oklch(0.68 0.190 25);
+  --destructive-foreground: oklch(0.99 0 0);
 
-  --border:              oklch(1 0 0 / 10%);
-  --input:               oklch(1 0 0 / 14%);
-  --ring:                var(--sma-sahla-500);
+  /* Semantic status tokens — dark variants */
+  --success:               oklch(0.72 0.170 150);
+  --success-foreground:    var(--sma-najm-950);
+  --warning:               var(--sma-qamar-500);
+  --warning-foreground:    var(--sma-najm-950);
+  --info:                  var(--sma-sahla-400);
+  --info-foreground:       var(--sma-najm-950);
+
+  --border:                oklch(1 0 0 / 10%);
+  --input:                 oklch(1 0 0 / 14%);
+  --ring:                  var(--sma-sahla-500);
+
+  --chart-1: var(--sma-sahla-400);
+  --chart-2: var(--sma-qamar-500);
+  --chart-3: var(--sma-najm-300);
+  --chart-4: var(--sma-sahla-600);
+  --chart-5: var(--sma-qamar-300);
+
+  /* Dark-mode elevations — deeper alpha for contrast on dark bg */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+
+  --sidebar:                     var(--sma-najm-950);
+  --sidebar-foreground:          oklch(0.96 0.010 280);
+  --sidebar-primary:             var(--sma-sahla-500);
+  --sidebar-primary-foreground:  var(--sma-najm-950);
+  --sidebar-accent:              var(--sma-najm-800);
+  --sidebar-accent-foreground:   oklch(0.98 0.010 280);
+  --sidebar-border:              oklch(1 0 0 / 10%);
+  --sidebar-ring:                var(--sma-sahla-400);
 }
 
 @layer base {
@@ -184,6 +277,11 @@
   }
   html {
     @apply font-sans;
+  }
+  /* Focus ring — brand-book §10 Accessibility */
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
   }
 }
 
@@ -229,4 +327,16 @@
 
 .toast-slide-out {
   animation: toast-slide-out 0.3s ease-in forwards;
+}
+
+/* Respect user's motion preference — brand-book §10 + §Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,0 +1,2475 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SMA — Brand Guidelines v2.1</title>
+<!--
+  SMA Brand Guidelines
+  Version: 2.1
+  Updated: 2026-04-18
+  Changelog:
+    v2.1 — Added: Loading/Error/Empty/Form states, Medal + Team tokens, explicit Breakpoints + Spacing scale.
+    v2.0 — Full brand system (Icon System, Components, Accessibility, Patterns, Motion, Dark Mode, RTL).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --najm-50:  #f0efff;
+    --najm-100: #dcdaff;
+    --najm-200: #b9b5fb;
+    --najm-300: #9087ed;
+    --najm-400: #6d60d7;
+    --najm-500: #5a50af;
+    --najm-600: #3f3a95;
+    --najm-700: #2D2B7E;
+    --najm-800: #20205e;
+    --najm-900: #141341;
+    --najm-950: #0f0e2a;
+
+    --qamar-50:  #fffaec;
+    --qamar-100: #fff0c6;
+    --qamar-200: #ffe18a;
+    --qamar-300: #f2cf7d;
+    --qamar-400: #ecc360;
+    --qamar-500: #E9B949;
+    --qamar-600: #c89630;
+    --qamar-700: #9e7222;
+    --qamar-800: #6d4e18;
+    --qamar-900: #44300f;
+
+    --sahla-50:  #e9fbf7;
+    --sahla-100: #c7f5ea;
+    --sahla-200: #8fead6;
+    --sahla-300: #6fddcf;
+    --sahla-400: #3fd0bd;
+    --sahla-500: #14B8A6;
+    --sahla-600: #0c8f80;
+    --sahla-700: #0a6b61;
+    --sahla-800: #084a43;
+    --sahla-900: #062c28;
+
+    --ink-50:  #fafafb;
+    --ink-100: #f2f1f6;
+    --ink-200: #e4e3eb;
+    --ink-300: #c4c3cf;
+    --ink-400: #9996a8;
+    --ink-500: #77748a;
+    --ink-600: #55546b;
+    --ink-700: #3f3e52;
+    --ink-800: #2b2a3d;
+    --ink-900: #19182a;
+    --ink-950: #0f0e1f;
+    --paper:   #fafafb;
+
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error:   #dc2626;
+    --info:    #3b82f6;
+
+    /* Medal tokens (leaderboards, achievements, podium) */
+    --medal-gold:   #E9B949; /* = qamar-500 */
+    --medal-silver: #c4c3cf; /* = ink-300 */
+    --medal-bronze: #9e7222; /* = qamar-700 */
+
+    /* Team tokens (group challenges — distinct, not semantic) */
+    --team-1: oklch(0.63 0.20 258); /* Blue  */
+    --team-2: oklch(0.60 0.23 25);  /* Red   */
+    --team-3: oklch(0.70 0.17 162); /* Green */
+    --team-4: oklch(0.77 0.15 85);  /* Amber */
+
+    --bg: var(--paper);
+    --fg: var(--ink-950);
+    --card: #ffffff;
+    --border: var(--ink-200);
+    --muted: var(--ink-600);
+
+    --ff-ar: "IBM Plex Sans Arabic", system-ui, sans-serif;
+    --ff-en: "IBM Plex Sans", system-ui, sans-serif;
+    --ff-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 16px;
+    --r-xl: 24px;
+
+    --shadow-sm: 0 1px 2px rgba(15,14,31,.06);
+    --shadow-md: 0 4px 14px rgba(15,14,31,.08);
+    --shadow-lg: 0 12px 40px rgba(15,14,31,.12);
+  }
+
+  .dark {
+    --bg: var(--najm-950);
+    --fg: #e8e7f5;
+    --card: #1a1840;
+    --border: rgba(255,255,255,0.1);
+    --muted: #a6a4c2;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--ff-ar);
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    transition: background 240ms ease, color 240ms ease;
+  }
+
+  a { color: var(--najm-700); text-decoration: none; }
+  .dark a { color: var(--sahla-400); }
+
+  /* ---------- Navigation ---------- */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in oklab, var(--bg) 92%, transparent);
+    backdrop-filter: saturate(160%) blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    color: var(--fg);
+  }
+  .nav-brand-mark {
+    width: 28px; height: 28px;
+    background: var(--najm-700);
+    border-radius: 8px;
+    display: grid; place-items: center;
+  }
+  .nav-brand-mark svg { width: 18px; height: 18px; }
+  .nav-version {
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--qamar-100);
+    color: var(--qamar-900);
+    border: 1px solid var(--qamar-300);
+  }
+  .dark .nav-version { background: rgba(233,185,73,.15); color: var(--qamar-300); border-color: rgba(233,185,73,.3); }
+  .nav-links {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    flex: 1;
+    justify-content: center;
+  }
+  .nav-link {
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: var(--r-sm);
+    color: var(--muted);
+    transition: all 160ms;
+  }
+  .nav-link:hover { background: var(--ink-100); color: var(--fg); }
+  .dark .nav-link:hover { background: var(--najm-800); }
+  .theme-toggle {
+    width: 36px; height: 36px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--fg);
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: all 160ms;
+  }
+  .theme-toggle:hover { transform: scale(1.05); }
+
+  /* ---------- Layout ---------- */
+  section {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 72px 24px;
+    scroll-margin-top: 80px;
+  }
+  h1, h2, h3, h4 { font-family: var(--ff-ar); font-weight: 700; line-height: 1.25; }
+  h2.section-title {
+    font-size: 32px;
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  h2.section-title .num {
+    font-family: var(--ff-mono);
+    font-size: 14px;
+    padding: 4px 10px;
+    background: var(--najm-700);
+    color: #fff;
+    border-radius: var(--r-sm);
+  }
+  .section-subtitle {
+    color: var(--muted);
+    font-size: 16px;
+    margin: 0 0 32px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    background: linear-gradient(135deg, #2D2B7E 0%, #5a50af 100%);
+    color: #fff;
+    text-align: center;
+    padding: 120px 24px 100px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 30%, rgba(233,185,73,.18), transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(20,184,166,.15), transparent 50%);
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; max-width: 900px; margin: 0 auto; }
+  .hero-mark {
+    width: 160px; height: 160px;
+    margin: 0 auto 28px;
+    background: rgba(255,255,255,.08);
+    border: 2px solid rgba(255,255,255,.2);
+    border-radius: var(--r-xl);
+    display: grid; place-items: center;
+    backdrop-filter: blur(10px);
+  }
+  .hero-mark svg { width: 110px; height: 110px; }
+  .hero h1 { font-size: 56px; margin: 0 0 10px; letter-spacing: -0.02em; }
+  .hero-en { font-family: var(--ff-en); font-size: 22px; opacity: .8; margin: 0 0 20px; direction: ltr; }
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--qamar-500);
+    color: var(--najm-950);
+    font-family: var(--ff-mono);
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 999px;
+    margin-bottom: 24px;
+  }
+  .hero-tagline {
+    font-size: 20px;
+    line-height: 1.6;
+    max-width: 620px;
+    margin: 0 auto;
+    opacity: .92;
+  }
+
+  /* ---------- Cards / grids ---------- */
+  .grid { display: grid; gap: 20px; }
+  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-elevated { box-shadow: var(--shadow-md); border: none; }
+  .card-bordered { border: 2px solid var(--najm-700); }
+  .card-interactive { cursor: pointer; transition: all 200ms; }
+  .card-interactive:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+  .card h3 { margin: 0 0 8px; font-size: 18px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  /* ---------- Philosophy ---------- */
+  .philosophy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  .pill-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 24px;
+  }
+  .pill-card .label {
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--sahla-600);
+    margin-bottom: 8px;
+  }
+  .dark .pill-card .label { color: var(--sahla-400); }
+  .pill-card .value { font-size: 22px; font-weight: 600; margin: 0 0 6px; }
+  .pill-card .desc { color: var(--muted); font-size: 14px; margin: 0; }
+
+  .three-words {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding: 32px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 32px 0;
+  }
+  .three-words span {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--najm-700);
+    position: relative;
+  }
+  .dark .three-words span { color: var(--sahla-400); }
+  .three-words span:not(:last-child)::after {
+    content: "·";
+    position: absolute;
+    right: -18px;
+    color: var(--qamar-500);
+  }
+
+  blockquote.brand-quote {
+    font-size: 20px;
+    line-height: 1.7;
+    font-style: italic;
+    border-right: 4px solid var(--qamar-500);
+    padding: 16px 20px;
+    background: var(--ink-50);
+    border-radius: var(--r-md);
+    margin: 24px 0 0;
+    color: var(--fg);
+  }
+  .dark blockquote.brand-quote { background: var(--najm-900); }
+  blockquote.brand-quote footer {
+    font-size: 14px;
+    color: var(--muted);
+    font-style: normal;
+    margin-top: 10px;
+  }
+
+  /* ---------- Logo ---------- */
+  .logo-variants {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .logo-tile {
+    border-radius: var(--r-lg);
+    padding: 32px;
+    display: grid;
+    place-items: center;
+    min-height: 180px;
+    border: 1px solid var(--border);
+  }
+  .logo-tile.bg-white { background: #fff; }
+  .logo-tile.bg-paper { background: var(--ink-100); }
+  .logo-tile.bg-dark  { background: var(--najm-950); }
+  .logo-tile.bg-solid { background: var(--najm-700); }
+  .logo-tile svg { width: 90px; height: 90px; }
+  .logo-tile .label {
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 12px;
+    text-align: center;
+  }
+  .logo-tile.bg-dark .label, .logo-tile.bg-solid .label { color: rgba(255,255,255,.6); }
+
+  .clear-space {
+    background: var(--ink-50);
+    border: 1px dashed var(--ink-300);
+    border-radius: var(--r-md);
+    padding: 40px;
+    position: relative;
+    display: grid;
+    place-items: center;
+    margin-top: 16px;
+  }
+  .dark .clear-space { background: var(--najm-900); border-color: rgba(255,255,255,.2); }
+  .clear-space svg { width: 100px; height: 100px; z-index: 2; }
+  .clear-space .x-label {
+    position: absolute;
+    font-family: var(--ff-mono);
+    font-size: 12px;
+    color: var(--sahla-600);
+    background: var(--card);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .dark .clear-space .x-label { color: var(--sahla-300); }
+  .x-label.top { top: 16px; }
+  .x-label.bottom { bottom: 16px; }
+  .x-label.left { left: 16px; }
+  .x-label.right { right: 16px; }
+
+  .min-sizes {
+    display: flex;
+    align-items: flex-end;
+    gap: 32px;
+    flex-wrap: wrap;
+    padding: 24px;
+    background: var(--ink-50);
+    border-radius: var(--r-md);
+    margin-top: 16px;
+  }
+  .dark .min-sizes { background: var(--najm-900); }
+  .min-size-item { text-align: center; }
+  .min-size-item svg { display: block; margin: 0 auto 8px; }
+  .min-size-item .label { font-family: var(--ff-mono); font-size: 11px; color: var(--muted); }
+
+  .do-dont {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .dd-item {
+    border-radius: var(--r-md);
+    padding: 16px;
+    text-align: center;
+    border: 2px solid;
+    background: var(--card);
+  }
+  .dd-item.do { border-color: var(--success); }
+  .dd-item.dont { border-color: var(--error); opacity: .85; }
+  .dd-item .icon { width: 28px; height: 28px; margin: 0 auto 8px; display: block; }
+  .dd-item.do .icon { color: var(--success); }
+  .dd-item.dont .icon { color: var(--error); }
+  .dd-item .visual {
+    width: 70px; height: 70px;
+    margin: 8px auto;
+    display: grid;
+    place-items: center;
+    border-radius: var(--r-sm);
+    background: var(--ink-50);
+  }
+  .dark .dd-item .visual { background: var(--najm-900); }
+  .dd-item .text { font-size: 13px; color: var(--muted); }
+
+  /* ---------- Colors ---------- */
+  .color-hero {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+  .color-chip {
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform 200ms;
+  }
+  .color-chip:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+  .color-chip .swatch {
+    height: 160px;
+    display: grid;
+    place-items: center;
+    position: relative;
+  }
+  .color-chip .swatch .copy-hint {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-family: var(--ff-mono);
+    font-size: 10px;
+    padding: 4px 8px;
+    background: rgba(255,255,255,.18);
+    color: #fff;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 160ms;
+  }
+  .color-chip:hover .copy-hint { opacity: 1; }
+  .color-chip .meta {
+    background: var(--card);
+    padding: 16px 20px;
+  }
+  .color-chip .ar-name { font-size: 20px; font-weight: 700; margin: 0 0 2px; }
+  .color-chip .en-name { font-family: var(--ff-en); font-size: 13px; color: var(--muted); direction: ltr; margin: 0 0 10px; }
+  .color-chip .tech {
+    font-family: var(--ff-mono);
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--ink-700);
+  }
+  .dark .color-chip .tech { color: var(--ink-300); }
+  .contrast-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-inline-start: 6px;
+  }
+  .contrast-badge.aaa { background: var(--success); color: #fff; }
+  .contrast-badge.aa  { background: var(--info); color: #fff; }
+
+  .scale-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .scale-row .name { font-weight: 600; }
+  .scale-strip {
+    display: flex;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    height: 56px;
+    border: 1px solid var(--border);
+  }
+  .scale-strip div {
+    flex: 1;
+    display: grid;
+    place-items: end center;
+    padding-bottom: 4px;
+    font-family: var(--ff-mono);
+    font-size: 10px;
+    cursor: pointer;
+  }
+
+  .system-colors {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .sys-chip {
+    border-radius: var(--r-md);
+    padding: 20px 16px;
+    color: #fff;
+    text-align: center;
+    cursor: pointer;
+  }
+  .sys-chip strong { display: block; font-size: 15px; }
+  .sys-chip span { font-family: var(--ff-mono); font-size: 12px; opacity: .9; }
+
+  /* ---------- Typography ---------- */
+  .font-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .font-card .family-name { font-size: 14px; color: var(--muted); font-family: var(--ff-mono); margin-bottom: 6px; }
+  .font-card .sample-lg { font-size: 32px; margin: 0 0 8px; }
+  .font-card .weights {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 20px;
+    margin-top: 12px;
+  }
+  .font-card .weights span { opacity: .9; }
+
+  .type-scale-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 20px;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .type-scale-row:last-child { border-bottom: none; }
+  .type-scale-row .meta {
+    font-family: var(--ff-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .eq-sample {
+    font-family: var(--ff-mono);
+    font-size: 22px;
+    padding: 20px;
+    background: var(--ink-50);
+    border-right: 4px solid var(--sahla-500);
+    border-radius: var(--r-md);
+    margin-top: 20px;
+    direction: ltr;
+    text-align: left;
+  }
+  .dark .eq-sample { background: var(--najm-900); }
+
+  /* ---------- Icons ---------- */
+  .icon-group { margin-bottom: 32px; }
+  .icon-group-title {
+    font-family: var(--ff-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+  }
+  .icon-cell {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 16px 8px;
+    text-align: center;
+    transition: all 160ms;
+  }
+  .icon-cell:hover { border-color: var(--najm-400); transform: translateY(-1px); }
+  .icon-cell svg { display: block; margin: 0 auto 8px; color: var(--najm-700); }
+  .dark .icon-cell svg { color: var(--sahla-400); }
+  .icon-cell .name {
+    font-family: var(--ff-mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .icon-sizes {
+    display: flex;
+    gap: 24px;
+    align-items: flex-end;
+    padding: 24px;
+    background: var(--ink-50);
+    border-radius: var(--r-md);
+    margin-top: 16px;
+  }
+  .dark .icon-sizes { background: var(--najm-900); }
+  .icon-size-item { text-align: center; color: var(--najm-700); }
+  .dark .icon-size-item { color: var(--sahla-400); }
+  .icon-size-item .lbl { display: block; font-family: var(--ff-mono); font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  .icon-colors { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+  .icon-color-item {
+    padding: 14px 18px;
+    border-radius: var(--r-md);
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .icon-color-item.primary svg { color: var(--najm-700); }
+  .icon-color-item.muted svg { color: var(--ink-500); }
+  .icon-color-item.accent svg { color: var(--sahla-500); }
+  .dark .icon-color-item.primary svg { color: var(--sahla-400); }
+  .icon-color-item .lbl { font-family: var(--ff-mono); font-size: 11px; color: var(--muted); }
+
+  /* ---------- Components ---------- */
+  .comp-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .comp-head {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .comp-head h4 { margin: 0; font-size: 16px; }
+  .comp-preview {
+    padding: 32px 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    background: var(--ink-50);
+  }
+  .dark .comp-preview { background: var(--najm-900); }
+  .comp-code {
+    padding: 0;
+    background: var(--ink-950);
+    color: #e8e7f5;
+    font-family: var(--ff-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    overflow: auto;
+    position: relative;
+  }
+  .comp-code pre { margin: 0; padding: 16px 20px; direction: ltr; text-align: left; }
+  .code-copy-btn {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(255,255,255,.08);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .code-copy-btn:hover { background: rgba(255,255,255,.16); }
+
+  /* Buttons */
+  .btn {
+    font-family: var(--ff-ar);
+    font-weight: 500;
+    border-radius: var(--r-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 160ms;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-sm { padding: 6px 12px; font-size: 13px; }
+  .btn-md { padding: 10px 18px; font-size: 14px; }
+  .btn-lg { padding: 14px 24px; font-size: 16px; }
+  .btn-primary   { background: var(--najm-700); color: #fff; }
+  .btn-primary:hover { background: var(--najm-800); }
+  .btn-secondary { background: var(--ink-100); color: var(--ink-900); border-color: var(--border); }
+  .btn-secondary:hover { background: var(--ink-200); }
+  .dark .btn-secondary { background: var(--najm-800); color: #fff; }
+  .btn-ghost     { background: transparent; color: var(--najm-700); }
+  .btn-ghost:hover { background: var(--najm-50); }
+  .dark .btn-ghost { color: var(--sahla-400); }
+  .dark .btn-ghost:hover { background: rgba(20,184,166,.1); }
+  .btn-destructive { background: var(--error); color: #fff; }
+  .btn-destructive:hover { background: #b91c1c; }
+
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-default { background: var(--ink-100); color: var(--ink-800); }
+  .dark .badge-default { background: var(--najm-800); color: #fff; }
+  .badge-success { background: #d1fae5; color: #065f46; }
+  .badge-warning { background: #fef3c7; color: #92400e; }
+  .badge-error   { background: #fee2e2; color: #991b1b; }
+  .badge-xp { background: var(--qamar-500); color: var(--najm-950); padding: 4px 12px; }
+
+  /* Alerts */
+  .alert {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--r-md);
+    border-inline-start: 4px solid;
+    width: 100%;
+    max-width: 420px;
+  }
+  .alert svg { flex-shrink: 0; margin-top: 2px; }
+  .alert .body { font-size: 14px; }
+  .alert .body strong { display: block; margin-bottom: 2px; }
+  .alert-success { background: #ecfdf5; border-color: var(--success); color: #065f46; }
+  .alert-warning { background: #fffbeb; border-color: var(--warning); color: #92400e; }
+  .alert-error   { background: #fef2f2; border-color: var(--error); color: #991b1b; }
+  .alert-info    { background: #eff6ff; border-color: var(--info); color: #1e40af; }
+
+  /* Forms */
+  .field { display: block; margin-bottom: 12px; max-width: 340px; width: 100%; }
+  .field label { display: block; font-size: 13px; margin-bottom: 4px; color: var(--fg); font-weight: 500; }
+  .input, .textarea, .select {
+    width: 100%;
+    padding: 10px 12px;
+    font-family: var(--ff-ar);
+    font-size: 14px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--fg);
+    transition: border-color 160ms, box-shadow 160ms;
+  }
+  .input:focus, .textarea:focus, .select:focus {
+    outline: none;
+    border-color: var(--najm-500);
+    box-shadow: 0 0 0 3px rgba(90,80,175,.18);
+  }
+  .check-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .check-row input { accent-color: var(--najm-700); width: 16px; height: 16px; }
+
+  /* ---------- Voice ---------- */
+  .voice-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .voice-col {
+    background: var(--card);
+    border-radius: var(--r-lg);
+    padding: 24px;
+    border-top: 4px solid;
+  }
+  .voice-col.say { border-color: var(--success); }
+  .voice-col.dont { border-color: var(--error); }
+  .voice-col h3 { margin: 0 0 16px; font-size: 20px; }
+  .voice-col .quote {
+    background: var(--ink-50);
+    padding: 12px 14px;
+    border-radius: var(--r-md);
+    margin-bottom: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .dark .voice-col .quote { background: var(--najm-900); }
+  .voice-col .quote::before { content: "\201C"; font-size: 20px; color: var(--qamar-500); margin-inline-end: 4px; }
+
+  /* ---------- Accessibility ---------- */
+  .a11y-list { list-style: none; padding: 0; margin: 0; }
+  .a11y-list li {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .a11y-list li:last-child { border: none; }
+  .a11y-list .check { color: var(--success); flex-shrink: 0; }
+  .a11y-list .x { color: var(--error); flex-shrink: 0; }
+
+  .focus-demo {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 20px;
+    background: var(--ink-50);
+    border-radius: var(--r-md);
+    margin-top: 16px;
+  }
+  .dark .focus-demo { background: var(--najm-900); }
+  .focus-demo .btn:focus {
+    outline: 3px solid var(--sahla-500);
+    outline-offset: 2px;
+  }
+
+  .rtl-ltr-sample {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 16px;
+    margin-top: 16px;
+  }
+  .rtl-ltr-sample .eng { font-family: var(--ff-en); direction: ltr; unicode-bidi: isolate; }
+
+  /* ---------- Patterns ---------- */
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .pattern-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+  }
+  .pattern-card h4 { margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .pattern-preview {
+    padding: 20px;
+    min-height: 140px;
+    display: grid;
+    place-items: center;
+    background: var(--ink-50);
+  }
+  .dark .pattern-preview { background: var(--najm-900); }
+
+  .modal-mini {
+    background: var(--card);
+    border-radius: var(--r-md);
+    padding: 14px;
+    box-shadow: var(--shadow-lg);
+    width: 180px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+  }
+  .modal-mini .title { font-weight: 600; margin-bottom: 6px; }
+  .modal-mini .body { color: var(--muted); margin-bottom: 10px; }
+  .modal-mini .foot { display: flex; gap: 6px; justify-content: flex-end; }
+
+  .tabs-mini { display: flex; gap: 4px; border-bottom: 2px solid var(--border); }
+  .tabs-mini span {
+    padding: 6px 14px;
+    font-size: 12px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    color: var(--muted);
+  }
+  .tabs-mini span.active { color: var(--najm-700); border-color: var(--najm-700); }
+  .dark .tabs-mini span.active { color: var(--sahla-400); border-color: var(--sahla-400); }
+
+  .breadcrumb-mini {
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .breadcrumb-mini span { margin: 0 4px; }
+
+  .toast-mini {
+    background: var(--ink-950);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: var(--r-md);
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--shadow-lg);
+  }
+  .dark .toast-mini { background: var(--card); }
+
+  .empty-mini {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .empty-mini svg { margin-bottom: 6px; color: var(--ink-400); }
+
+  .dropdown-mini {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 6px;
+    box-shadow: var(--shadow-md);
+    font-size: 12px;
+    min-width: 140px;
+  }
+  .dropdown-mini div {
+    padding: 6px 10px;
+    border-radius: var(--r-sm);
+  }
+  .dropdown-mini div:hover { background: var(--ink-100); }
+  .dark .dropdown-mini div:hover { background: var(--najm-900); }
+
+  /* ---------- Motion ---------- */
+  .motion-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .motion-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 18px;
+    text-align: center;
+  }
+  .motion-card .dur { font-family: var(--ff-mono); font-size: 24px; font-weight: 600; color: var(--najm-700); }
+  .dark .motion-card .dur { color: var(--sahla-400); }
+  .motion-card .name { font-size: 14px; margin: 4px 0; }
+  .motion-card .desc { font-size: 12px; color: var(--muted); }
+
+  .integration-list {
+    counter-reset: step;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .integration-list li {
+    counter-increment: step;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 16px 16px 16px 60px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .integration-list li::before {
+    content: counter(step);
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    background: var(--najm-700);
+    color: #fff;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-family: var(--ff-mono);
+    font-weight: 600;
+  }
+  .integration-list li strong { display: block; margin-bottom: 2px; }
+  .integration-list li code {
+    font-family: var(--ff-mono);
+    font-size: 12px;
+    background: var(--ink-100);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .dark .integration-list li code { background: var(--najm-900); }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translate(-50%, 20px);
+    background: var(--ink-950);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--r-md);
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 240ms;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toast.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+  }
+  .toast svg { color: var(--sahla-400); }
+
+  /* ---------- Footer ---------- */
+  footer.page-foot {
+    text-align: center;
+    padding: 48px 24px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    font-family: var(--ff-mono);
+    direction: ltr;
+  }
+
+  /* ---------- v2.1: Medal + Team swatches ---------- */
+  .medal-grid, .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .medal-chip, .team-chip {
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+  }
+  .medal-chip .swatch, .team-chip .swatch {
+    height: 96px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-family: var(--ff-mono);
+    font-size: 12px;
+  }
+  .medal-chip .meta, .team-chip .meta {
+    padding: 12px 14px;
+  }
+  .medal-chip .name, .team-chip .name {
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0 0 4px;
+  }
+  .medal-chip .tech, .team-chip .tech {
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ---------- v2.1: Loading / Skeleton ---------- */
+  @keyframes skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .55; }
+  }
+  @keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .skeleton {
+    display: block;
+    background: var(--ink-200);
+    border-radius: var(--r-sm);
+    animation: skeleton-pulse 1.4s ease-in-out infinite;
+  }
+  .dark .skeleton { background: var(--ink-800); }
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, var(--ink-200) 25%, var(--ink-100) 50%, var(--ink-200) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s linear infinite;
+  }
+  .dark .skeleton-shimmer {
+    background: linear-gradient(90deg, var(--ink-800) 25%, var(--ink-700) 50%, var(--ink-800) 75%);
+    background-size: 200% 100%;
+  }
+  .skeleton-line { height: 12px; border-radius: var(--r-sm); margin-bottom: 8px; }
+  .skeleton-title { height: 20px; width: 60%; }
+  .skeleton-block { height: 80px; border-radius: var(--r-md); }
+  .skeleton-circle { width: 48px; height: 48px; border-radius: 999px; }
+  .spinner {
+    width: 28px; height: 28px;
+    border: 3px solid var(--ink-200);
+    border-top-color: var(--najm-700);
+    border-radius: 999px;
+    animation: spinner-rotate 800ms linear infinite;
+  }
+  .dark .spinner { border-color: var(--ink-800); border-top-color: var(--sahla-400); }
+  @keyframes spinner-rotate { to { transform: rotate(360deg); } }
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--ink-200);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .dark .progress-bar { background: var(--ink-800); }
+  .progress-bar .fill {
+    height: 100%;
+    width: 62%;
+    background: var(--najm-700);
+    border-radius: 999px;
+  }
+  .dark .progress-bar .fill { background: var(--sahla-500); }
+
+  /* ---------- v2.1: Error templates ---------- */
+  .error-fatal {
+    text-align: center;
+    padding: 48px 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+  }
+  .error-fatal .ico {
+    width: 64px; height: 64px;
+    color: var(--error);
+    margin: 0 auto 16px;
+    display: block;
+  }
+  .error-fatal h3 { margin: 0 0 6px; font-size: 22px; }
+  .error-fatal p { color: var(--muted); margin: 0 0 20px; max-width: 420px; margin-inline: auto; }
+  .error-fatal .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .error-banner {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 16px 20px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-right: 4px solid var(--error);
+    border-radius: var(--r-md);
+    color: #991b1b;
+  }
+  .dark .error-banner { background: rgba(220,38,38,.12); border-color: rgba(220,38,38,.35); color: #fca5a5; }
+  .error-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--error);
+    margin-top: 4px;
+  }
+
+  /* ---------- v2.1: Empty states ---------- */
+  .empty-state {
+    text-align: center;
+    padding: 40px 24px;
+    background: var(--card);
+    border: 1px dashed var(--border);
+    border-radius: var(--r-lg);
+  }
+  .empty-state .ico {
+    width: 64px; height: 64px;
+    color: var(--ink-400);
+    margin: 0 auto 14px;
+    display: block;
+  }
+  .empty-state h4 { margin: 0 0 6px; font-size: 18px; }
+  .empty-state p { color: var(--muted); margin: 0 0 16px; font-size: 14px; max-width: 360px; margin-inline: auto; }
+
+  /* ---------- v2.1: Form validation states ---------- */
+  .input-error {
+    border-color: var(--error) !important;
+    box-shadow: 0 0 0 3px rgba(220,38,38,.15);
+  }
+  .input-success {
+    border-color: var(--success) !important;
+    box-shadow: 0 0 0 3px rgba(16,185,129,.15);
+  }
+  .input:disabled, .textarea:disabled, .select:disabled,
+  .input-disabled {
+    background: var(--ink-100);
+    color: var(--ink-500);
+    cursor: not-allowed;
+    opacity: .7;
+  }
+  .dark .input:disabled, .dark .textarea:disabled, .dark .select:disabled, .dark .input-disabled {
+    background: var(--najm-900);
+    color: var(--ink-400);
+  }
+  .field-msg {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  .field-msg.error   { color: var(--error); }
+  .field-msg.success { color: var(--success); }
+  .field-msg.help    { color: var(--muted); }
+  .field-msg.pending { color: var(--info); }
+
+  /* ---------- v2.1: Breakpoint + Spacing tables ---------- */
+  .bp-table, .sp-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    margin-top: 16px;
+  }
+  .bp-table th, .sp-table th,
+  .bp-table td, .sp-table td {
+    padding: 12px 16px;
+    text-align: start;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .bp-table th, .sp-table th {
+    background: var(--ink-50);
+    font-family: var(--ff-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+  }
+  .dark .bp-table th, .dark .sp-table th { background: var(--najm-900); }
+  .bp-table tr:last-child td, .sp-table tr:last-child td { border-bottom: none; }
+  .bp-table code, .sp-table code {
+    font-family: var(--ff-mono);
+    font-size: 12px;
+    background: var(--ink-100);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .dark .bp-table code, .dark .sp-table code { background: var(--najm-900); }
+  .sp-swatch {
+    display: inline-block;
+    background: var(--najm-700);
+    height: 12px;
+    border-radius: 2px;
+    vertical-align: middle;
+  }
+  .dark .sp-swatch { background: var(--sahla-500); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0ms !important;
+      transition-duration: 0ms !important;
+    }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== 1. Nav ========== -->
+<nav class="nav" aria-label="Main">
+  <div class="nav-inner">
+    <a href="#hero" class="nav-brand">
+      <span class="nav-brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 120 120" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="32" y="26" width="48" height="48" rx="6"/>
+          <path d="M42 74 L42 96"/>
+        </svg>
+      </span>
+      <span>SMA</span>
+      <span class="nav-version">v2.1</span>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="#philosophy">الفلسفة</a>
+      <a class="nav-link" href="#logo">الشعار</a>
+      <a class="nav-link" href="#color">الألوان</a>
+      <a class="nav-link" href="#typography">الطباعة</a>
+      <a class="nav-link" href="#icons">الأيقونات</a>
+      <a class="nav-link" href="#components">المكوّنات</a>
+      <a class="nav-link" href="#states">الحالات</a>
+      <a class="nav-link" href="#voice">الصوت</a>
+      <a class="nav-link" href="#a11y">الوصول</a>
+      <a class="nav-link" href="#patterns">الأنماط</a>
+      <a class="nav-link" href="#breakpoints">النقاط</a>
+      <a class="nav-link" href="#spacing">المسافات</a>
+      <a class="nav-link" href="#motion">الحركة</a>
+      <a class="nav-link" href="#integration">التطبيق</a>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="تبديل الوضع الداكن" title="تبديل السمة">
+      <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ========== 2. Hero ========== -->
+<header class="hero" id="hero">
+  <div class="hero-inner">
+    <div class="hero-mark" aria-hidden="true">
+      <svg viewBox="0 0 120 120" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="32" y="26" width="48" height="48" rx="6"/>
+        <path d="M42 74 L42 96"/>
+      </svg>
+    </div>
+    <h1>SMA — محلل الرياضيات الذكي</h1>
+    <p class="hero-en">Smart Math Analyzer</p>
+    <span class="hero-badge">BRAND GUIDELINES · v2.1 · 2026</span>
+    <p class="hero-tagline">نظام هوية بصرية كامل — من التوكنز إلى المكوّنات، من الصوت إلى الحركة. كل قرار مُبرَّر، لا ذوقاً.</p>
+  </div>
+</header>
+
+<!-- ========== 3. Philosophy ========== -->
+<section id="philosophy">
+  <h2 class="section-title"><span class="num">03</span>فلسفة العلامة</h2>
+  <p class="section-subtitle">الـ"لماذا" قبل الـ"كيف". كل عنصر في هذا النظام يخدم شخصية محدّدة ووعداً واضحاً.</p>
+
+  <div class="philosophy-grid">
+    <div class="pill-card">
+      <div class="label">ARCHETYPE · النمط</div>
+      <p class="value">الحكيم + الساحر</p>
+      <p class="desc">Sage الذي يفسّر، و Magician الذي يُحوِّل التلقين إلى استبصار.</p>
+    </div>
+    <div class="pill-card">
+      <div class="label">PURPOSE · الغاية</div>
+      <p class="value">نحوّل تدريس الرياضيات من تلقين إلى فهم حقيقي.</p>
+      <p class="desc">ليست تطبيقاً للحلول — بل شريكاً يُعلّم طريقة التفكير.</p>
+    </div>
+    <div class="pill-card">
+      <div class="label">PROMISE · الوعد</div>
+      <p class="value">نفهم الطالب قبل أن نُعلّمه.</p>
+      <p class="desc">التحليل يسبق التوجيه. الذكاء يسبق الجواب.</p>
+    </div>
+  </div>
+
+  <div class="three-words" aria-label="القيم الثلاث">
+    <span>دقيق</span>
+    <span>ذكي</span>
+    <span>عربي الأصل</span>
+  </div>
+
+  <blockquote class="brand-quote">
+    التصميم يحلّ مشكلة تجارية، والفنّ يعبّر عن رأي. كل قرار في SMA له مبرّر ليس ذوقاً — من الأنديغو العميق إلى حرف الميم المربّع، كلٌّ يُجيب سؤالاً محدّداً.
+    <footer>— مطبّق على SMA بروح Paul Rand</footer>
+  </blockquote>
+</section>
+
+<!-- ========== 4. Logo ========== -->
+<section id="logo">
+  <h2 class="section-title"><span class="num">04</span>نظام الشعار</h2>
+  <p class="section-subtitle">"المربّع الميم" — حرف مِيم عربي بحلقة مرسومة كمربّع هندسي. دلالة مزدوجة: حرف للعين العربية، ومربّع للعقل الرياضي.</p>
+
+  <h3 style="margin:32px 0 12px">الأشكال الأربعة</h3>
+  <div class="logo-variants">
+    <div class="logo-tile bg-white">
+      <svg viewBox="0 0 120 120" fill="none" stroke="#2D2B7E" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg>
+    </div>
+    <div class="logo-tile bg-white"><div style="text-align:center"><svg viewBox="0 0 120 120" fill="none" stroke="#0f0e1f" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg><div class="label">MONO · BLACK</div></div></div>
+    <div class="logo-tile bg-dark"><div style="text-align:center"><svg viewBox="0 0 120 120" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg><div class="label">MONO · WHITE (على خلفية داكنة)</div></div></div>
+    <div class="logo-tile bg-solid"><div style="text-align:center"><svg viewBox="0 0 120 120" fill="none" stroke="#E9B949" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg><div class="label">SOLID · APP ICON</div></div></div>
+  </div>
+
+  <h3 style="margin:40px 0 12px">المساحة الآمنة (Clear Space)</h3>
+  <p class="section-subtitle">اترك مسافة = طول تذييل الم حول الشعار من كل جهة، لا نص ولا رسم داخل هذا الحدّ.</p>
+  <div class="clear-space">
+    <span class="x-label top">x</span>
+    <span class="x-label bottom">x</span>
+    <span class="x-label left">x</span>
+    <span class="x-label right">x</span>
+    <svg viewBox="0 0 120 120" fill="none" stroke="#2D2B7E" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg>
+  </div>
+
+  <h3 style="margin:40px 0 12px">الأحجام الدنيا</h3>
+  <div class="min-sizes">
+    <div class="min-size-item">
+      <svg width="24" height="24" viewBox="0 0 120 120" fill="none" stroke="#2D2B7E" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg>
+      <span class="label">24px · الحد الأدنى الرقمي</span>
+    </div>
+    <div class="min-size-item">
+      <svg width="48" height="48" viewBox="0 0 120 120" fill="none" stroke="#2D2B7E" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg>
+      <span class="label">48px · موصى به</span>
+    </div>
+    <div class="min-size-item">
+      <svg width="96" height="96" viewBox="0 0 120 120" fill="none" stroke="#2D2B7E" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg>
+      <span class="label">15mm · الحد الأدنى للطباعة</span>
+    </div>
+  </div>
+
+  <h3 style="margin:40px 0 12px">افعل / لا تفعل</h3>
+  <div class="do-dont">
+    <div class="dd-item do">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="visual"><svg viewBox="0 0 120 120" width="40" height="40" fill="none" stroke="#2D2B7E" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg></div>
+      <div class="text">النسب الأصلية كما هي</div>
+    </div>
+    <div class="dd-item dont">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <div class="visual"><svg viewBox="0 0 120 120" width="50" height="30" preserveAspectRatio="none" fill="none" stroke="#2D2B7E" stroke-width="11" stroke-linecap="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg></div>
+      <div class="text">لا تمدّ أو تضغط</div>
+    </div>
+    <div class="dd-item dont">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <div class="visual"><svg viewBox="0 0 120 120" width="40" height="40" style="transform:rotate(25deg)" fill="none" stroke="#2D2B7E" stroke-width="11" stroke-linecap="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg></div>
+      <div class="text">لا تُدوِّر</div>
+    </div>
+    <div class="dd-item dont">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <div class="visual"><svg viewBox="0 0 120 120" width="40" height="40" style="filter:drop-shadow(2px 4px 4px rgba(0,0,0,.5))" fill="none" stroke="#2D2B7E" stroke-width="11" stroke-linecap="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg></div>
+      <div class="text">لا ظلال أو تأثيرات</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 5. Colors ========== -->
+<section id="color">
+  <h2 class="section-title"><span class="num">05</span>نظام الألوان</h2>
+  <p class="section-subtitle">ثلاثة ألوان جوهرية تحمل معنى ودوراً. اضغط على أي شريحة لنسخ HEX.</p>
+
+  <div class="color-hero">
+    <div class="color-chip" data-hex="#2D2B7E">
+      <div class="swatch" style="background:#2D2B7E;color:#fff">
+        <span class="copy-hint">نسخ</span>
+        <svg viewBox="0 0 120 120" width="60" height="60" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><rect x="32" y="26" width="48" height="48" rx="6"/><path d="M42 74 L42 96"/></svg>
+      </div>
+      <div class="meta">
+        <p class="ar-name">نجم — Najm Indigo</p>
+        <p class="en-name">Primary / Trust / Scholarly</p>
+        <div class="tech">
+          HEX: #2D2B7E<br>
+          OKLCH: oklch(0.30 0.140 280)<br>
+          Contrast vs #fff: 9.4:1 <span class="contrast-badge aaa">AAA</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="color-chip" data-hex="#E9B949">
+      <div class="swatch" style="background:#E9B949;color:#0f0e2a">
+        <span class="copy-hint" style="background:rgba(0,0,0,.18);color:#0f0e2a">نسخ</span>
+        <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="#0f0e2a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div class="meta">
+        <p class="ar-name">قمر — Qamar Gold</p>
+        <p class="en-name">Achievement / XP / Reward</p>
+        <div class="tech">
+          HEX: #E9B949<br>
+          OKLCH: oklch(0.80 0.145 85)<br>
+          Contrast vs #000: 8.2:1 <span class="contrast-badge aaa">AAA</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="color-chip" data-hex="#14B8A6">
+      <div class="swatch" style="background:#14B8A6;color:#fff">
+        <span class="copy-hint">نسخ</span>
+        <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>
+      </div>
+      <div class="meta">
+        <p class="ar-name">سهلة — Sahla Teal</p>
+        <p class="en-name">AI / Guidance / Clarity</p>
+        <div class="tech">
+          HEX: #14B8A6<br>
+          OKLCH: oklch(0.70 0.120 180)<br>
+          Contrast vs #000: 4.6:1 <span class="contrast-badge aa">AA</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin:40px 0 16px">التدرّجات الكاملة</h3>
+
+  <div class="scale-row">
+    <div class="name">Najm</div>
+    <div class="scale-strip">
+      <div style="background:#f0efff;color:#2D2B7E" data-hex="#f0efff">50</div>
+      <div style="background:#dcdaff;color:#2D2B7E" data-hex="#dcdaff">100</div>
+      <div style="background:#b9b5fb;color:#2D2B7E" data-hex="#b9b5fb">200</div>
+      <div style="background:#9087ed;color:#fff" data-hex="#9087ed">300</div>
+      <div style="background:#5a50af;color:#fff" data-hex="#5a50af">500</div>
+      <div style="background:#2D2B7E;color:#fff" data-hex="#2D2B7E">700</div>
+      <div style="background:#141341;color:#fff" data-hex="#141341">900</div>
+      <div style="background:#0f0e2a;color:#fff" data-hex="#0f0e2a">950</div>
+    </div>
+  </div>
+
+  <div class="scale-row">
+    <div class="name">Qamar</div>
+    <div class="scale-strip">
+      <div style="background:#fffaec;color:#6d4e18" data-hex="#fffaec">50</div>
+      <div style="background:#fff0c6;color:#6d4e18" data-hex="#fff0c6">100</div>
+      <div style="background:#ffe18a;color:#6d4e18" data-hex="#ffe18a">200</div>
+      <div style="background:#f2cf7d;color:#6d4e18" data-hex="#f2cf7d">300</div>
+      <div style="background:#E9B949;color:#6d4e18" data-hex="#E9B949">500</div>
+      <div style="background:#9e7222;color:#fff" data-hex="#9e7222">700</div>
+      <div style="background:#44300f;color:#fff" data-hex="#44300f">900</div>
+      <div style="background:#2a1c06;color:#fff" data-hex="#2a1c06">950</div>
+    </div>
+  </div>
+
+  <div class="scale-row">
+    <div class="name">Sahla</div>
+    <div class="scale-strip">
+      <div style="background:#e9fbf7;color:#0a6b61" data-hex="#e9fbf7">50</div>
+      <div style="background:#c7f5ea;color:#0a6b61" data-hex="#c7f5ea">100</div>
+      <div style="background:#8fead6;color:#0a6b61" data-hex="#8fead6">200</div>
+      <div style="background:#6fddcf;color:#0a6b61" data-hex="#6fddcf">300</div>
+      <div style="background:#14B8A6;color:#fff" data-hex="#14B8A6">500</div>
+      <div style="background:#0a6b61;color:#fff" data-hex="#0a6b61">700</div>
+      <div style="background:#062c28;color:#fff" data-hex="#062c28">900</div>
+      <div style="background:#041a18;color:#fff" data-hex="#041a18">950</div>
+    </div>
+  </div>
+
+  <div class="scale-row">
+    <div class="name">Ink</div>
+    <div class="scale-strip">
+      <div style="background:#fafafb;color:#0f0e1f" data-hex="#fafafb">50</div>
+      <div style="background:#f2f1f6;color:#0f0e1f" data-hex="#f2f1f6">100</div>
+      <div style="background:#e4e3eb;color:#0f0e1f" data-hex="#e4e3eb">200</div>
+      <div style="background:#c4c3cf;color:#0f0e1f" data-hex="#c4c3cf">300</div>
+      <div style="background:#77748a;color:#fff" data-hex="#77748a">500</div>
+      <div style="background:#3f3e52;color:#fff" data-hex="#3f3e52">700</div>
+      <div style="background:#19182a;color:#fff" data-hex="#19182a">900</div>
+      <div style="background:#0f0e1f;color:#fff" data-hex="#0f0e1f">950</div>
+    </div>
+  </div>
+
+  <h3 style="margin:40px 0 16px">ألوان الحالة (System)</h3>
+  <div class="system-colors">
+    <div class="sys-chip" style="background:#10b981" data-hex="#10b981"><strong>Success</strong><span>#10b981</span></div>
+    <div class="sys-chip" style="background:#f59e0b" data-hex="#f59e0b"><strong>Warning</strong><span>#f59e0b</span></div>
+    <div class="sys-chip" style="background:#dc2626" data-hex="#dc2626"><strong>Error</strong><span>#dc2626</span></div>
+    <div class="sys-chip" style="background:#3b82f6" data-hex="#3b82f6"><strong>Info</strong><span>#3b82f6</span></div>
+  </div>
+
+  <h3 id="medal-tokens" style="margin:40px 0 8px">ألوان الميداليات (Medal Tokens)</h3>
+  <p class="section-subtitle" style="margin-bottom:0">للوحات الصدارة (Leaderboards)، عروض الإنجازات، ومنصّات التتويج (Podium). مشتقّة من اللوحة الأساسية — لا ألوان جديدة.</p>
+  <div class="medal-grid">
+    <div class="medal-chip" data-hex="#E9B949">
+      <div class="swatch" style="background:#E9B949;color:#0f0e2a">#E9B949</div>
+      <div class="meta">
+        <p class="name">ذهب — Gold</p>
+        <div class="tech">--medal-gold<br>= qamar-500</div>
+      </div>
+    </div>
+    <div class="medal-chip" data-hex="#c4c3cf">
+      <div class="swatch" style="background:#c4c3cf;color:#19182a">#c4c3cf</div>
+      <div class="meta">
+        <p class="name">فضّة — Silver</p>
+        <div class="tech">--medal-silver<br>= ink-300</div>
+      </div>
+    </div>
+    <div class="medal-chip" data-hex="#9e7222">
+      <div class="swatch" style="background:#9e7222">#9e7222</div>
+      <div class="meta">
+        <p class="name">برونز — Bronze</p>
+        <div class="tech">--medal-bronze<br>= qamar-700</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 id="team-tokens" style="margin:40px 0 8px">ألوان الفرق (Team Tokens)</h3>
+  <p class="section-subtitle" style="margin-bottom:0">أربعة ألوان تمييز لتحدّيات المجموعات. <strong>ليست ألواناً دلالية</strong> — مهمّتها فقط التفريق بين الفرق. متباينة + تحقّق شروط الوصول.</p>
+  <div class="team-grid">
+    <div class="team-chip">
+      <div class="swatch" style="background:oklch(0.63 0.20 258)">Team 1 · Blue</div>
+      <div class="meta">
+        <p class="name">الفريق الأول — أزرق</p>
+        <div class="tech">--team-1<br>oklch(0.63 0.20 258)</div>
+      </div>
+    </div>
+    <div class="team-chip">
+      <div class="swatch" style="background:oklch(0.60 0.23 25)">Team 2 · Red</div>
+      <div class="meta">
+        <p class="name">الفريق الثاني — أحمر</p>
+        <div class="tech">--team-2<br>oklch(0.60 0.23 25)</div>
+      </div>
+    </div>
+    <div class="team-chip">
+      <div class="swatch" style="background:oklch(0.70 0.17 162);color:#0f0e1f">Team 3 · Green</div>
+      <div class="meta">
+        <p class="name">الفريق الثالث — أخضر</p>
+        <div class="tech">--team-3<br>oklch(0.70 0.17 162)</div>
+      </div>
+    </div>
+    <div class="team-chip">
+      <div class="swatch" style="background:oklch(0.77 0.15 85);color:#0f0e1f">Team 4 · Amber</div>
+      <div class="meta">
+        <p class="name">الفريق الرابع — أمبر</p>
+        <div class="tech">--team-4<br>oklch(0.77 0.15 85)</div>
+      </div>
+    </div>
+  </div>
+  <div class="alert alert-info" style="max-width:none;margin-top:16px">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <div class="body"><strong>تذكير</strong>لا تستخدم ألوان الفرق للدلالة على الحالة (نجاح/خطأ/تحذير). للحالات، استخدم ألوان النظام فقط.</div>
+  </div>
+</section>
+
+<!-- ========== 6. Typography ========== -->
+<section id="typography">
+  <h2 class="section-title"><span class="num">06</span>نظام الطباعة</h2>
+  <p class="section-subtitle">IBM Plex — دقّة هندسية مناسبة للرياضيات مع دفء كافٍ للعربية.</p>
+
+  <div class="font-card">
+    <div class="family-name">IBM Plex Sans Arabic — 300 / 400 / 500 / 600 / 700</div>
+    <p class="sample-lg">النصّ العربي يتنفّس بدفء</p>
+    <div class="weights" style="font-family:var(--ff-ar)">
+      <span style="font-weight:300">خفيف 300</span>
+      <span style="font-weight:400">عادي 400</span>
+      <span style="font-weight:500">متوسط 500</span>
+      <span style="font-weight:600">شبه غامق 600</span>
+      <span style="font-weight:700">غامق 700</span>
+    </div>
+  </div>
+
+  <div class="font-card">
+    <div class="family-name">IBM Plex Sans — 400 / 500 / 600 / 700</div>
+    <p class="sample-lg" style="font-family:var(--ff-en);direction:ltr">Precision meets humanity</p>
+    <div class="weights" style="font-family:var(--ff-en);direction:ltr">
+      <span style="font-weight:400">Regular 400</span>
+      <span style="font-weight:500">Medium 500</span>
+      <span style="font-weight:600">Semibold 600</span>
+      <span style="font-weight:700">Bold 700</span>
+    </div>
+  </div>
+
+  <div class="font-card">
+    <div class="family-name">IBM Plex Mono — 400 / 500 / 600</div>
+    <p class="sample-lg" style="font-family:var(--ff-mono);direction:ltr">0 1 2 3 = π √ Σ ∫ Δ</p>
+    <div class="weights" style="font-family:var(--ff-mono);direction:ltr">
+      <span style="font-weight:400">Regular</span>
+      <span style="font-weight:500">Medium</span>
+      <span style="font-weight:600">Semibold</span>
+    </div>
+  </div>
+
+  <h3 style="margin:40px 0 12px">السلم الطباعي (Type Scale)</h3>
+  <div class="card">
+    <div class="type-scale-row"><span class="meta">XL · 40px / 700</span><span style="font-size:40px;font-weight:700;line-height:1.2">العنوان الرئيسي</span></div>
+    <div class="type-scale-row"><span class="meta">L · 32px / 700</span><span style="font-size:32px;font-weight:700;line-height:1.25">عنوان قسم</span></div>
+    <div class="type-scale-row"><span class="meta">M · 24px / 600</span><span style="font-size:24px;font-weight:600;line-height:1.3">عنوان فرعي</span></div>
+    <div class="type-scale-row"><span class="meta">S · 20px / 600</span><span style="font-size:20px;font-weight:600;line-height:1.4">عنوان بطاقة</span></div>
+    <div class="type-scale-row"><span class="meta">Body · 16px / 400</span><span style="font-size:16px">نصّ المقال الأساسي — هذا هو المقاس الافتراضي لمعظم المحتوى، ويجب أن يبقى مريحاً للقراءة الطويلة.</span></div>
+    <div class="type-scale-row"><span class="meta">Caption · 14px / 400</span><span style="font-size:14px;color:var(--muted)">نصّ مساعد أو وصف ثانوي</span></div>
+  </div>
+
+  <div class="eq-sample">f(x) = ax² + bx + c → Δ = b² − 4ac</div>
+</section>
+
+<!-- ========== 7. Icons ========== -->
+<section id="icons">
+  <h2 class="section-title"><span class="num">07</span>نظام الأيقونات</h2>
+  <p class="section-subtitle">Lucide Icons — خط 2px موحّد، زوايا دائرية، SVG inline (لا CDN، لا خطوط أيقونات).</p>
+
+  <div class="icon-group">
+    <div class="icon-group-title">Navigation</div>
+    <div class="icon-grid">
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><div class="name">Menu</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><div class="name">X</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg><div class="name">ChevronLeft</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg><div class="name">ChevronRight</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><div class="name">Search</div></div>
+    </div>
+  </div>
+
+  <div class="icon-group">
+    <div class="icon-group-title">Education</div>
+    <div class="icon-grid">
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg><div class="name">BookOpen</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg><div class="name">Brain</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg><div class="name">Calculator</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><div class="name">Target</div></div>
+    </div>
+  </div>
+
+  <div class="icon-group">
+    <div class="icon-group-title">Actions</div>
+    <div class="icon-grid">
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.88 5.76L20 10l-5 3.88L16.24 20 12 16.77 7.76 20 9 13.88 4 10l6.12-1.24z"/></svg><div class="name">Sparkles</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg><div class="name">Zap</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><div class="name">TrendingUp</div></div>
+    </div>
+  </div>
+
+  <div class="icon-group">
+    <div class="icon-group-title">Status</div>
+    <div class="icon-grid">
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><div class="name">CheckCircle</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div class="name">AlertTriangle</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><div class="name">Info</div></div>
+    </div>
+  </div>
+
+  <div class="icon-group">
+    <div class="icon-group-title">User</div>
+    <div class="icon-grid">
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><div class="name">User</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><div class="name">Users</div></div>
+    </div>
+  </div>
+
+  <div class="icon-group">
+    <div class="icon-group-title">Reward</div>
+    <div class="icon-grid">
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><div class="name">Star</div></div>
+      <div class="icon-cell"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg><div class="name">Trophy</div></div>
+    </div>
+  </div>
+
+  <h3 style="margin:32px 0 12px">الأحجام</h3>
+  <div class="icon-sizes">
+    <div class="icon-size-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.88 5.76L20 10l-5 3.88L16.24 20 12 16.77 7.76 20 9 13.88 4 10l6.12-1.24z"/></svg>
+      <span class="lbl">16px · inline</span>
+    </div>
+    <div class="icon-size-item">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.88 5.76L20 10l-5 3.88L16.24 20 12 16.77 7.76 20 9 13.88 4 10l6.12-1.24z"/></svg>
+      <span class="lbl">24px · افتراضي</span>
+    </div>
+    <div class="icon-size-item">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.88 5.76L20 10l-5 3.88L16.24 20 12 16.77 7.76 20 9 13.88 4 10l6.12-1.24z"/></svg>
+      <span class="lbl">32px · hero</span>
+    </div>
+  </div>
+
+  <h3 style="margin:32px 0 12px">الألوان</h3>
+  <div class="icon-colors">
+    <div class="icon-color-item primary">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.88 5.76L20 10l-5 3.88L16.24 20 12 16.77 7.76 20 9 13.88 4 10l6.12-1.24z"/></svg>
+      <span class="lbl">primary</span>
+    </div>
+    <div class="icon-color-item muted">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.88 5.76L20 10l-5 3.88L16.24 20 12 16.77 7.76 20 9 13.88 4 10l6.12-1.24z"/></svg>
+      <span class="lbl">muted</span>
+    </div>
+    <div class="icon-color-item accent">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.88 5.76L20 10l-5 3.88L16.24 20 12 16.77 7.76 20 9 13.88 4 10l6.12-1.24z"/></svg>
+      <span class="lbl">accent</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 8. Components ========== -->
+<section id="components">
+  <h2 class="section-title"><span class="num">08</span>المكوّنات</h2>
+  <p class="section-subtitle">كل مكوّن + معاينة حيّة + كود قابل للنسخ.</p>
+
+  <div class="comp-block">
+    <div class="comp-head"><h4>الأزرار (Buttons)</h4></div>
+    <div class="comp-preview">
+      <button class="btn btn-primary btn-md">زر أساسي</button>
+      <button class="btn btn-secondary btn-md">زر ثانوي</button>
+      <button class="btn btn-ghost btn-md">شبح</button>
+      <button class="btn btn-destructive btn-md">حذف</button>
+      <button class="btn btn-primary btn-sm">صغير</button>
+      <button class="btn btn-primary btn-lg">كبير</button>
+    </div>
+    <div class="comp-code">
+      <button class="code-copy-btn">نسخ</button>
+<pre>&lt;button class="btn btn-primary btn-md"&gt;زر أساسي&lt;/button&gt;
+&lt;button class="btn btn-secondary btn-md"&gt;زر ثانوي&lt;/button&gt;
+&lt;button class="btn btn-ghost btn-md"&gt;شبح&lt;/button&gt;
+&lt;button class="btn btn-destructive btn-md"&gt;حذف&lt;/button&gt;</pre>
+    </div>
+  </div>
+
+  <div class="comp-block">
+    <div class="comp-head"><h4>الشارات (Badges)</h4></div>
+    <div class="comp-preview">
+      <span class="badge badge-default">افتراضي</span>
+      <span class="badge badge-success">نجاح</span>
+      <span class="badge badge-warning">تحذير</span>
+      <span class="badge badge-error">خطأ</span>
+      <span class="badge badge-xp">+120 XP</span>
+    </div>
+    <div class="comp-code">
+      <button class="code-copy-btn">نسخ</button>
+<pre>&lt;span class="badge badge-success"&gt;نجاح&lt;/span&gt;
+&lt;span class="badge badge-xp"&gt;+120 XP&lt;/span&gt;</pre>
+    </div>
+  </div>
+
+  <div class="comp-block">
+    <div class="comp-head"><h4>البطاقات (Cards)</h4></div>
+    <div class="comp-preview" style="align-items:stretch;justify-content:flex-start">
+      <div class="card" style="min-width:200px"><h3>افتراضية</h3><p>محتوى البطاقة هنا.</p></div>
+      <div class="card card-elevated" style="min-width:200px"><h3>مرتفعة</h3><p>ظل أعمق بدلاً من حدود.</p></div>
+      <div class="card card-bordered" style="min-width:200px"><h3>بحدود</h3><p>إطار أنديغو بارز.</p></div>
+      <div class="card card-interactive" style="min-width:200px"><h3>تفاعلية</h3><p>مرّ فوقها لترى الأثر.</p></div>
+    </div>
+    <div class="comp-code">
+      <button class="code-copy-btn">نسخ</button>
+<pre>&lt;div class="card card-interactive"&gt;
+  &lt;h3&gt;العنوان&lt;/h3&gt;
+  &lt;p&gt;الوصف.&lt;/p&gt;
+&lt;/div&gt;</pre>
+    </div>
+  </div>
+
+  <div class="comp-block">
+    <div class="comp-head"><h4>التنبيهات (Alerts)</h4></div>
+    <div class="comp-preview" style="flex-direction:column;align-items:stretch">
+      <div class="alert alert-success"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><div class="body"><strong>تمّ الحفظ</strong>جميع التغييرات مُسجّلة بأمان.</div></div>
+      <div class="alert alert-warning"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div class="body"><strong>انتبه</strong>قد يسبّب هذا الإجراء فقد البيانات غير المحفوظة.</div></div>
+      <div class="alert alert-error"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><div class="body"><strong>تعذّر الاتصال</strong>تحقّق من الشبكة وحاول مجدّداً.</div></div>
+      <div class="alert alert-info"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><div class="body"><strong>معلومة</strong>ميزة جديدة متاحة في لوحة الإعدادات.</div></div>
+    </div>
+  </div>
+
+  <div class="comp-block">
+    <div class="comp-head"><h4>النماذج (Forms)</h4></div>
+    <div class="comp-preview" style="flex-direction:column;align-items:flex-start;gap:14px">
+      <div class="field"><label>الاسم</label><input class="input" placeholder="أدخل اسمك الكامل" /></div>
+      <div class="field"><label>الوصف</label><textarea class="textarea" rows="3" placeholder="اشرح باختصار..."></textarea></div>
+      <div class="field"><label>المرحلة</label><select class="select"><option>الثانوية</option><option>الإعدادية</option><option>الابتدائية</option></select></div>
+      <div class="check-row"><input type="checkbox" id="c1" checked /><label for="c1">تذكّرني</label></div>
+      <div class="check-row"><input type="radio" name="r" id="r1" checked /><label for="r1">خيار ١</label></div>
+      <div class="check-row"><input type="radio" name="r" id="r2" /><label for="r2">خيار ٢</label></div>
+    </div>
+    <div class="comp-code">
+      <button class="code-copy-btn">نسخ</button>
+<pre>&lt;div class="field"&gt;
+  &lt;label&gt;الاسم&lt;/label&gt;
+  &lt;input class="input" placeholder="..."&gt;
+&lt;/div&gt;</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 8.5 States (v2.1) ========== -->
+<section id="states">
+  <h2 class="section-title"><span class="num">08·5</span>الحالات (States)</h2>
+  <p class="section-subtitle">حالات التحميل، الخطأ، الفراغ، والتحقّق — كلّ حالة لها مكوّن موحّد ومتى نستخدمه.</p>
+
+  <!-- Loading / Skeleton -->
+  <div class="comp-block">
+    <div class="comp-head"><h4>التحميل / الهياكل الشبحية (Loading / Skeleton)</h4></div>
+    <div class="comp-preview" style="flex-direction:column;align-items:stretch;gap:24px">
+      <div style="display:flex;gap:20px;flex-wrap:wrap;width:100%;justify-content:center">
+        <div style="width:240px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-md)">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-line"></div>
+          <div class="skeleton skeleton-line" style="width:80%"></div>
+          <div class="skeleton skeleton-line" style="width:60%"></div>
+        </div>
+        <div style="width:240px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);display:flex;gap:12px;align-items:center">
+          <div class="skeleton skeleton-circle"></div>
+          <div style="flex:1">
+            <div class="skeleton skeleton-line" style="width:70%"></div>
+            <div class="skeleton skeleton-line" style="width:40%;margin-bottom:0"></div>
+          </div>
+        </div>
+        <div style="width:240px">
+          <div class="skeleton skeleton-block skeleton-shimmer"></div>
+          <div style="font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-top:6px;text-align:center">Shimmer variant</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:32px;justify-content:center;align-items:center;flex-wrap:wrap">
+        <div style="text-align:center">
+          <div class="spinner" style="margin:0 auto 6px"></div>
+          <div style="font-family:var(--ff-mono);font-size:11px;color:var(--muted)">Spinner · 800ms</div>
+        </div>
+        <div style="width:220px">
+          <div class="progress-bar"><div class="fill"></div></div>
+          <div style="font-family:var(--ff-mono);font-size:11px;color:var(--muted);margin-top:6px;text-align:center">Progress · 62%</div>
+        </div>
+      </div>
+    </div>
+    <div class="comp-code">
+      <button class="code-copy-btn">نسخ</button>
+<pre>&lt;!-- Skeleton --&gt;
+&lt;div class="skeleton skeleton-title"&gt;&lt;/div&gt;
+&lt;div class="skeleton skeleton-line"&gt;&lt;/div&gt;
+&lt;div class="skeleton skeleton-block skeleton-shimmer"&gt;&lt;/div&gt;
+
+/* CSS */
+.skeleton {
+  background: var(--ink-200); /* dark: var(--ink-800) */
+  border-radius: var(--r-sm);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .55; }
+}</pre>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px">
+    <h3 style="margin:0 0 12px;font-size:16px">متى نستخدم أيّاً منها؟</h3>
+    <ul style="margin:0;padding-inline-start:20px;color:var(--muted);font-size:14px;line-height:1.9">
+      <li><strong style="color:var(--fg)">Skeleton</strong> — عند تحميل محتوى معروف البنية (قائمة، بطاقة، ملف). يحافظ على الإحساس بالاستقرار.</li>
+      <li><strong style="color:var(--fg)">Spinner</strong> — لعمليات قصيرة غير محدّدة المدة (&lt; 3s) أو داخل زرّ قيد التنفيذ.</li>
+      <li><strong style="color:var(--fg)">Progress Bar</strong> — عند معرفة النسبة المئوية فعلياً: رفع ملف، تصدير، حساب دفعة.</li>
+    </ul>
+  </div>
+
+  <!-- Error states -->
+  <div class="comp-block">
+    <div class="comp-head"><h4>حالات الخطأ (Error / 500 / Fatal)</h4></div>
+    <div class="comp-preview" style="flex-direction:column;align-items:stretch;gap:20px">
+      <div class="error-fatal">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h3>حدث خطأ غير متوقّع</h3>
+        <p>نعتذر — تعذّر إكمال طلبك. فريقنا أُبلِغ تلقائياً. يمكنك المحاولة مجدّداً أو العودة للصفحة الرئيسية.</p>
+        <div class="actions">
+          <button class="btn btn-primary btn-md">إعادة المحاولة</button>
+          <button class="btn btn-secondary btn-md">العودة للرئيسية</button>
+          <button class="btn btn-ghost btn-md">تواصل معنا</button>
+        </div>
+      </div>
+      <div class="error-banner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div style="flex:1"><strong>تعذّر تحميل بعض الدروس.</strong> البيانات المعروضة قد لا تكون محدّثة. <a href="#" style="color:inherit;text-decoration:underline">تحديث</a></div>
+      </div>
+      <div>
+        <div class="field">
+          <label>البريد الإلكتروني</label>
+          <input class="input input-error" value="not-an-email" />
+          <span class="field-msg error">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            صيغة البريد غير صحيحة.
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="comp-code">
+      <button class="code-copy-btn">نسخ</button>
+<pre>&lt;!-- Fatal (full-page) --&gt;
+&lt;div class="error-fatal"&gt;
+  &lt;svg class="ico"&gt;&lt;!-- AlertOctagon --&gt;&lt;/svg&gt;
+  &lt;h3&gt;حدث خطأ غير متوقّع&lt;/h3&gt;
+  &lt;p&gt;...&lt;/p&gt;
+  &lt;div class="actions"&gt;
+    &lt;button class="btn btn-primary"&gt;إعادة المحاولة&lt;/button&gt;
+    &lt;button class="btn btn-secondary"&gt;العودة&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Banner (صفحة جزئية) --&gt;
+&lt;div class="error-banner"&gt;...&lt;/div&gt;
+
+&lt;!-- Inline (حقل نموذج) --&gt;
+&lt;input class="input input-error"&gt;
+&lt;span class="field-msg error"&gt;...&lt;/span&gt;</pre>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px">
+    <h3 style="margin:0 0 12px;font-size:16px">إرشادات الأخطاء</h3>
+    <ul style="margin:0;padding-inline-start:20px;color:var(--muted);font-size:14px;line-height:1.9">
+      <li><strong style="color:var(--fg)">الرموز</strong>: <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">AlertOctagon</code> للأخطاء الجسيمة، <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">AlertTriangle</code> للتحذيرات، <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">AlertCircle</code> للأخطاء الحقلية (14px).</li>
+      <li><strong style="color:var(--fg)">الألوان</strong>: <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">--error / destructive</code> فقط — لا أحمر مخصّص.</li>
+      <li><strong style="color:var(--fg)">CTA</strong>: دائماً مخرج واضح — إعادة محاولة (أساسي) + عودة/رجوع (ثانوي) + تواصل (شبح).</li>
+      <li><strong style="color:var(--fg)">الصياغة</strong>: اعتذار قصير، سبب واضح، خطوة تالية. لا تستخدم "Error 500" للطلاب.</li>
+    </ul>
+  </div>
+
+  <!-- Empty states -->
+  <div class="comp-block">
+    <div class="comp-head"><h4>حالات الفراغ (Empty States)</h4></div>
+    <div class="comp-preview" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;background:var(--card)">
+      <div class="empty-state">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h4>ابدأ رحلتك</h4>
+        <p>لم تُنشئ أيّ فصل دراسي بعد. ابدأ بإضافة أوّل فصل لطلّابك.</p>
+        <button class="btn btn-primary btn-sm">إنشاء فصل</button>
+        <div style="font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-top:10px">first-time</div>
+      </div>
+      <div class="empty-state">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <h4>لا توجد نتائج</h4>
+        <p>لم نعثر على شيء يطابق "<strong>كسور تربيعية</strong>". جرّب كلمات أخرى.</p>
+        <button class="btn btn-ghost btn-sm">مسح البحث</button>
+        <div style="font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-top:10px">no-results</div>
+      </div>
+      <div class="empty-state">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <h4>لا بيانات بعد</h4>
+        <p>سيظهر تقدّم الطلّاب هنا بعد إكمالهم أوّل تمرين.</p>
+        <div style="font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-top:10px">no-data</div>
+      </div>
+      <div class="empty-state">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <h4>أنجزت كل المهام!</h4>
+        <p>لا مهام مُعلّقة لهذا الأسبوع. استمتع بوقتك.</p>
+        <button class="btn btn-secondary btn-sm">عرض الأرشيف</button>
+        <div style="font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-top:10px">post-action</div>
+      </div>
+    </div>
+    <div class="comp-code">
+      <button class="code-copy-btn">نسخ</button>
+<pre>&lt;div class="empty-state"&gt;
+  &lt;svg class="ico" stroke-width="1.5"&gt;&lt;!-- 64px, ink-400 --&gt;&lt;/svg&gt;
+  &lt;h4&gt;العنوان&lt;/h4&gt;
+  &lt;p&gt;الوصف القصير.&lt;/p&gt;
+  &lt;button class="btn btn-primary btn-sm"&gt;الإجراء&lt;/button&gt;
+&lt;/div&gt;</pre>
+    </div>
+  </div>
+
+  <!-- Form validation -->
+  <div class="comp-block">
+    <div class="comp-head"><h4>تحقّق النماذج (Form Validation)</h4></div>
+    <div class="comp-preview" style="flex-direction:column;align-items:flex-start;gap:14px;max-width:440px;margin:0 auto">
+      <div class="field">
+        <label>الاسم (default)</label>
+        <input class="input" placeholder="اسم الطالب" />
+        <span class="field-msg help">سيظهر هذا الاسم في الشهادات.</span>
+      </div>
+      <div class="field">
+        <label>البريد (focused)</label>
+        <input class="input" value="focus هنا ↓" autofocus />
+      </div>
+      <div class="field">
+        <label>كلمة المرور (error)</label>
+        <input class="input input-error" type="password" value="123" />
+        <span class="field-msg error">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          ٨ أحرف على الأقل، بينها رقم.
+        </span>
+      </div>
+      <div class="field">
+        <label>اسم المستخدم (success)</label>
+        <input class="input input-success" value="ahmed_qa" />
+        <span class="field-msg success">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          متاح.
+        </span>
+      </div>
+      <div class="field">
+        <label>اسم النطاق (pending · async)</label>
+        <input class="input" value="azkia-school" />
+        <span class="field-msg pending">
+          <span class="spinner" style="width:12px;height:12px;border-width:2px"></span>
+          جارٍ التحقّق...
+        </span>
+      </div>
+      <div class="field">
+        <label>الرقم الجامعي (disabled)</label>
+        <input class="input input-disabled" value="QA-2026-0142" disabled />
+        <span class="field-msg help">يُعيَّن تلقائياً — غير قابل للتعديل.</span>
+      </div>
+    </div>
+    <div class="comp-code">
+      <button class="code-copy-btn">نسخ</button>
+<pre>&lt;!-- Default + help --&gt;
+&lt;input class="input"&gt;
+&lt;span class="field-msg help"&gt;نصّ مساعد&lt;/span&gt;
+
+&lt;!-- Error --&gt;
+&lt;input class="input input-error"&gt;
+&lt;span class="field-msg error"&gt;
+  &lt;svg&gt;&lt;!-- AlertCircle 14px --&gt;&lt;/svg&gt;
+  رسالة الخطأ.
+&lt;/span&gt;
+
+&lt;!-- Success --&gt;
+&lt;input class="input input-success"&gt;
+
+&lt;!-- Async (pending) --&gt;
+&lt;span class="field-msg pending"&gt;
+  &lt;span class="spinner"&gt;&lt;/span&gt; جارٍ التحقّق...
+&lt;/span&gt;
+
+&lt;!-- Disabled --&gt;
+&lt;input class="input" disabled&gt;</pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 12px;font-size:16px">Inline vs Submit validation</h3>
+    <ul style="margin:0;padding-inline-start:20px;color:var(--muted);font-size:14px;line-height:1.9">
+      <li><strong style="color:var(--fg)">Inline (on blur)</strong> — للحقول ذات القواعد الموضوعية: بريد، طول كلمة مرور، تنسيق هاتف. تعليق فوري يمنع تجميع الأخطاء.</li>
+      <li><strong style="color:var(--fg)">On submit</strong> — للتحقّق المترابط بين حقول متعددة (تطابق كلمتي مرور، مجموع درجات). لا تعرض أخطاء قبل أن يُكمل المستخدم.</li>
+      <li><strong style="color:var(--fg)">Async (pending)</strong> — لأيّ تحقّق يحتاج شبكة (توفّر اسم مستخدم، صحّة كود قسيمة). أظهر <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">spinner</code> + رسالة "جارٍ التحقّق..." مع debounce 300ms.</li>
+      <li><strong style="color:var(--fg)">رسائل الخطأ</strong>: 12px، <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">--error</code>، مع رمز AlertCircle 14px. النصّ يشرح <em>ماذا</em> و<em>كيف يُصلَح</em> — لا مجرّد "غير صحيح".</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ========== 9. Voice ========== -->
+<section id="voice">
+  <h2 class="section-title"><span class="num">09</span>صوت العلامة</h2>
+  <p class="section-subtitle">SMA يخاطب طالب العلم ومعلّمه باحترام — لا آلي، لا طفولي، لا متعالٍ.</p>
+
+  <div class="voice-grid">
+    <div class="voice-col say">
+      <h3>نقول</h3>
+      <div class="quote">يبدو أن هناك خلطاً بين قانون التوزيع والتجميع. دعنا نراجعه.</div>
+      <div class="quote">ممتاز، خطوة خطوة. الآن: ما القيمة التي تُصفّر المقام؟</div>
+      <div class="quote">هذه محاولة ذكية، لكن الجواب ليس دقيقاً بعد.</div>
+    </div>
+    <div class="voice-col dont">
+      <h3>لا نقول</h3>
+      <div class="quote">أووبس! خطأ حاول يا بطل!</div>
+      <div class="quote">إجابة خاطئة. (جافّ وآلي)</div>
+      <div class="quote">لم يستوعب المفهوم الجوهري... (متعالٍ)</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 10. Accessibility ========== -->
+<section id="a11y">
+  <h2 class="section-title"><span class="num">10</span>إمكانية الوصول (WCAG AA)</h2>
+  <p class="section-subtitle">الوصول ليس ميزة — هو الحدّ الأدنى. كل شاشة في SMA تمرّ بهذا الفحص.</p>
+
+  <ul class="a11y-list">
+    <li><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>تباين اللون لا يقلّ عن 4.5:1 للنصوص العادية، و 3:1 للنصوص الكبيرة.</li>
+    <li><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>حالة التركيز (focus) واضحة ومرئية — outline 3px Sahla مع offset 2px.</li>
+    <li><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>كل التفاعلات متاحة عبر لوحة المفاتيح — لا فخاخ.</li>
+    <li><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>ARIA labels لكل أيقونة ووظيفة بلا نصّ.</li>
+    <li><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>دعم prefers-reduced-motion: إيقاف الحركات للمستخدمين الحسّاسين.</li>
+    <li><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>حدّ أدنى لهدف اللمس 44×44 بكسل.</li>
+    <li><svg class="check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>alt text وصفي لكل صورة — لا "image" ولا فارغ.</li>
+    <li><svg class="x" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>لا نعتمد على اللون وحده لنقل المعلومة (أيقونة + نصّ مع اللون).</li>
+    <li><svg class="x" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>لا ومضات أكثر من 3 مرّات في الثانية (خطر نوبات).</li>
+  </ul>
+
+  <h3 style="margin:32px 0 8px">مثال حالة التركيز</h3>
+  <p class="section-subtitle">اضغط Tab في لوحة المفاتيح لرؤية outline واضحة.</p>
+  <div class="focus-demo">
+    <button class="btn btn-primary btn-md">زر أوّل</button>
+    <button class="btn btn-secondary btn-md">زر ثانٍ</button>
+    <button class="btn btn-ghost btn-md">زر ثالث</button>
+  </div>
+
+  <h3 style="margin:32px 0 8px">خلط RTL و LTR</h3>
+  <p class="section-subtitle">استخدم <code>dir="auto"</code> للمحتوى المختلط، و <code>unicode-bidi: isolate</code> للشارات الإنجليزية داخل جملة عربية.</p>
+  <div class="rtl-ltr-sample">
+    الطالب حلّ المعادلة <span class="eng">f(x) = x² − 4</span> بطريقة سليمة، وحصل على <strong>85%</strong> في الاختبار.
+  </div>
+</section>
+
+<!-- ========== 11. Patterns ========== -->
+<section id="patterns">
+  <h2 class="section-title"><span class="num">11</span>أنماط التصميم</h2>
+  <p class="section-subtitle">قطع جاهزة لحلّ مشاكل تصميمية متكرّرة — نموذج حواري، قائمة، تبويبات، فتات، إشعار سريع، حالة فارغة.</p>
+
+  <div class="pattern-grid">
+    <div class="pattern-card"><h4>Modal</h4><div class="pattern-preview">
+      <div class="modal-mini">
+        <div class="title">تأكيد الحذف</div>
+        <div class="body">سيتم حذف العنصر نهائياً.</div>
+        <div class="foot"><button class="btn btn-secondary btn-sm">إلغاء</button><button class="btn btn-destructive btn-sm">حذف</button></div>
+      </div>
+    </div></div>
+
+    <div class="pattern-card"><h4>Dropdown</h4><div class="pattern-preview">
+      <div class="dropdown-mini">
+        <div>الملف الشخصي</div>
+        <div>الإعدادات</div>
+        <div>تسجيل الخروج</div>
+      </div>
+    </div></div>
+
+    <div class="pattern-card"><h4>Tabs</h4><div class="pattern-preview">
+      <div class="tabs-mini">
+        <span class="active">التمارين</span>
+        <span>التقدّم</span>
+        <span>الإعدادات</span>
+      </div>
+    </div></div>
+
+    <div class="pattern-card"><h4>Breadcrumb</h4><div class="pattern-preview">
+      <div class="breadcrumb-mini">الرئيسية <span>›</span> الرياضيات <span>›</span> الجبر</div>
+    </div></div>
+
+    <div class="pattern-card"><h4>Toast</h4><div class="pattern-preview">
+      <div class="toast-mini">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        تمّ حفظ التقدّم
+      </div>
+    </div></div>
+
+    <div class="pattern-card"><h4>Empty State</h4><div class="pattern-preview">
+      <div class="empty-mini">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <div>لا توجد دروس بعد<br>ابدأ بإضافة أول درس</div>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ========== 12. Breakpoints (v2.1) ========== -->
+<section id="breakpoints">
+  <h2 class="section-title"><span class="num">12</span>نقاط التجاوب (Breakpoints)</h2>
+  <p class="section-subtitle">خمسة نقاط قياسية مبنيّة على نظام Tailwind — mobile-first افتراضياً.</p>
+
+  <table class="bp-table">
+    <thead>
+      <tr>
+        <th>المفتاح</th>
+        <th>العرض الأدنى</th>
+        <th>الجهاز الافتراضي</th>
+        <th>Utility مثال</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>sm</code></td><td><code>640px</code></td><td>Mobile landscape</td><td><code>sm:grid-cols-2</code></td></tr>
+      <tr><td><code>md</code></td><td><code>768px</code></td><td>Tablet</td><td><code>md:flex-row</code></td></tr>
+      <tr><td><code>lg</code></td><td><code>1024px</code></td><td>Desktop</td><td><code>lg:text-lg</code></td></tr>
+      <tr><td><code>xl</code></td><td><code>1280px</code></td><td>Wide desktop</td><td><code>xl:max-w-6xl</code></td></tr>
+      <tr><td><code>2xl</code></td><td><code>1536px</code></td><td>Extra-wide / 2K+</td><td><code>2xl:px-12</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="margin-top:20px">
+    <h3 style="margin:0 0 12px;font-size:16px">قواعد الاستخدام</h3>
+    <ul style="margin:0;padding-inline-start:20px;color:var(--muted);font-size:14px;line-height:1.9">
+      <li><strong style="color:var(--fg)">Mobile-first</strong>: ابدأ بالتنسيق الافتراضي للجوال، ثم أضف <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">md:</code> و <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">lg:</code> للتوسعة — لا العكس.</li>
+      <li><strong style="color:var(--fg)">Container</strong>: الحدّ الأقصى لعرض الأقسام <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">1280px</code> (يطابق <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">xl</code>) مع هامش جانبي <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">24px</code>.</li>
+      <li><strong style="color:var(--fg)">لا Magic numbers</strong>: لا تضف media queries مخصّصة دون مبرّر — استخدم Tailwind responsive utilities.</li>
+      <li><strong style="color:var(--fg)">اختبر RTL</strong> على كل نقطة — لا تفترض أن <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">md:</code> تكفي.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ========== 13. Spacing Scale (v2.1) ========== -->
+<section id="spacing">
+  <h2 class="section-title"><span class="num">13</span>سلّم المسافات (Spacing)</h2>
+  <p class="section-subtitle">قيم محدّدة فقط — لا مسافات اعتباطية. الوحدة الأساسية <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">4px</code>.</p>
+
+  <table class="sp-table">
+    <thead>
+      <tr>
+        <th>Token</th>
+        <th>px</th>
+        <th>Tailwind</th>
+        <th>مرئي</th>
+        <th>الاستخدام</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>0</code></td><td><code>0</code></td><td><code>p-0</code></td><td>—</td><td>إلغاء</td></tr>
+      <tr><td><code>1</code></td><td><code>4px</code></td><td><code>p-1</code></td><td><span class="sp-swatch" style="width:4px"></span></td><td>tight — فجوة أيقونة/نص</td></tr>
+      <tr><td><code>2</code></td><td><code>8px</code></td><td><code>p-2</code></td><td><span class="sp-swatch" style="width:8px"></span></td><td>compact — داخل الشارات</td></tr>
+      <tr><td><code>3</code></td><td><code>12px</code></td><td><code>p-3</code></td><td><span class="sp-swatch" style="width:12px"></span></td><td>بين عناصر قائمة</td></tr>
+      <tr><td><code>4</code></td><td><code>16px</code></td><td><code>p-4</code></td><td><span class="sp-swatch" style="width:16px"></span></td><td><strong>default</strong> — نصّ/بطاقة</td></tr>
+      <tr><td><code>5</code></td><td><code>20px</code></td><td><code>p-5</code></td><td><span class="sp-swatch" style="width:20px"></span></td><td>padding بطاقة متوسّطة</td></tr>
+      <tr><td><code>6</code></td><td><code>24px</code></td><td><code>p-6</code></td><td><span class="sp-swatch" style="width:24px"></span></td><td>comfortable — بطاقة كبيرة</td></tr>
+      <tr><td><code>8</code></td><td><code>32px</code></td><td><code>p-8</code></td><td><span class="sp-swatch" style="width:32px"></span></td><td>section inner</td></tr>
+      <tr><td><code>10</code></td><td><code>40px</code></td><td><code>p-10</code></td><td><span class="sp-swatch" style="width:40px"></span></td><td>فواصل محتوى</td></tr>
+      <tr><td><code>12</code></td><td><code>48px</code></td><td><code>p-12</code></td><td><span class="sp-swatch" style="width:48px"></span></td><td>hero padding رأسي</td></tr>
+      <tr><td><code>16</code></td><td><code>64px</code></td><td><code>p-16</code></td><td><span class="sp-swatch" style="width:64px"></span></td><td>section outer</td></tr>
+      <tr><td><code>20</code></td><td><code>80px</code></td><td><code>p-20</code></td><td><span class="sp-swatch" style="width:80px"></span></td><td>فراغ كبير بين أقسام</td></tr>
+      <tr><td><code>24</code></td><td><code>96px</code></td><td><code>p-24</code></td><td><span class="sp-swatch" style="width:96px"></span></td><td>hero / landing</td></tr>
+      <tr><td><code>32</code></td><td><code>128px</code></td><td><code>p-32</code></td><td><span class="sp-swatch" style="width:128px"></span></td><td>خاصّ — صفحات هبوط فقط</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="margin-top:20px">
+    <h3 style="margin:0 0 12px;font-size:16px">قواعد التوظيف</h3>
+    <ul style="margin:0;padding-inline-start:20px;color:var(--muted);font-size:14px;line-height:1.9">
+      <li><strong style="color:var(--fg)">4</strong> = tight — الفجوة بين أيقونة ونصّها.</li>
+      <li><strong style="color:var(--fg)">8</strong> = compact — عناصر قائمة مكتظّة.</li>
+      <li><strong style="color:var(--fg)">16</strong> = default — المسافة الافتراضية لأيّ شكّ.</li>
+      <li><strong style="color:var(--fg)">24</strong> = comfortable — padding البطاقات الكبيرة.</li>
+      <li><strong style="color:var(--fg)">32</strong> = section inner — مسافة عمودية داخل قسم.</li>
+      <li><strong style="color:var(--fg)">64+</strong> = section outer — فصل بين الأقسام الرئيسية.</li>
+      <li><strong style="color:var(--fg)">لا قيم أخرى</strong>: لا <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">13px</code> ولا <code style="font-family:var(--ff-mono);background:var(--ink-100);padding:1px 6px;border-radius:4px">22px</code>. إن احتجت قيمة ليست في السلّم، فأنت غالباً تحلّ المشكلة الخطأ.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ========== 14. Motion ========== -->
+<section id="motion">
+  <h2 class="section-title"><span class="num">14</span>الحركة والتطبيق</h2>
+  <p class="section-subtitle">حركات هادفة، مدد قصيرة، easing طبيعي — لا استعراض.</p>
+
+  <h3 style="margin:24px 0 12px">المدد (Durations)</h3>
+  <div class="motion-grid">
+    <div class="motion-card">
+      <div class="dur">150ms</div>
+      <div class="name">Fast</div>
+      <div class="desc">hover, focus, tap feedback</div>
+    </div>
+    <div class="motion-card">
+      <div class="dur">300ms</div>
+      <div class="name">Normal</div>
+      <div class="desc">modal open, page transitions</div>
+    </div>
+    <div class="motion-card">
+      <div class="dur">500ms</div>
+      <div class="name">Slow</div>
+      <div class="desc">celebration, achievement unlock</div>
+    </div>
+  </div>
+  <p style="margin-top:16px;color:var(--muted);font-size:14px">Easing افتراضي: <code style="font-family:var(--ff-mono)">cubic-bezier(0.4, 0, 0.2, 1)</code> (ease-in-out).</p>
+
+  <h3 style="margin:40px 0 12px">افعل / لا تفعل — ملخّص شامل</h3>
+  <div class="do-dont" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    <div class="dd-item do">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="text"><strong>الألوان:</strong> استخدم الثلاثة الأساسية فقط + نظام الحالة.</div>
+    </div>
+    <div class="dd-item dont">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <div class="text"><strong>الألوان:</strong> لا تُدخل ألواناً من خارج اللوحة.</div>
+    </div>
+    <div class="dd-item do">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="text"><strong>الطباعة:</strong> Arabic للعربي، Mono للأرقام.</div>
+    </div>
+    <div class="dd-item dont">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <div class="text"><strong>الطباعة:</strong> لا تخلط أكثر من عائلتين في شاشة.</div>
+    </div>
+    <div class="dd-item do">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="text"><strong>الشعار:</strong> SVG فقط، inline أو كأصل مستورد.</div>
+    </div>
+    <div class="dd-item dont">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <div class="text"><strong>الشعار:</strong> لا PNG شفاف — دقّة ضعيفة عند التكبير.</div>
+    </div>
+    <div class="dd-item do">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="text"><strong>الأيقونات:</strong> Lucide فقط، stroke 2px.</div>
+    </div>
+    <div class="dd-item dont">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <div class="text"><strong>الأيقونات:</strong> لا خلط بين عائلات أيقونات مختلفة.</div>
+    </div>
+  </div>
+</section>
+
+<section id="integration">
+  <h2 class="section-title"><span class="num">15</span>دليل التطبيق (Integration)</h2>
+  <p class="section-subtitle">خمس خطوات لتطبيق الهوية كاملةً على الكود.</p>
+
+  <ol class="integration-list">
+    <li>
+      <strong>انسخ tokens.css</strong>
+      استبدل كتلتي <code>:root</code> و <code>.dark</code> في <code>app/src/app/globals.css</code>.
+    </li>
+    <li>
+      <strong>انقل favicon.svg</strong>
+      إلى <code>app/public/</code> وحدّث metadata.icons في <code>app/src/app/layout.tsx</code>.
+    </li>
+    <li>
+      <strong>استبدل placeholder الشعار</strong>
+      في <code>dashboard-sidebar.tsx</code> و <code>login/page.tsx</code> بمكوّن <code>&lt;Logo /&gt;</code> يستورد SVG.
+    </li>
+    <li>
+      <strong>أضف خطوط IBM Plex</strong>
+      عبر <code>next/font/google</code> — Arabic + Sans + Mono مع weight complete.
+    </li>
+    <li>
+      <strong>حدّث Tailwind config</strong>
+      ربط الألوان الجوهرية بـ <code>tailwind.config.ts</code> → <code>theme.extend.colors.najm / qamar / sahla</code>.
+    </li>
+  </ol>
+</section>
+
+<!-- Toast element -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastText">نُسخ!</span>
+</div>
+
+<footer class="page-foot">
+  SMA Brand Guidelines v2.1 · Designed by SMA_Design Agency · 2026-04-18 · WCAG AA Compliant
+</footer>
+
+<script>
+(function() {
+  // ---- Theme toggle ----
+  var THEME_KEY = 'sma-theme';
+  var root = document.documentElement;
+  var saved = localStorage.getItem(THEME_KEY);
+  if (saved === 'dark') root.classList.add('dark');
+
+  var toggle = document.getElementById('themeToggle');
+  var icon = document.getElementById('themeIcon');
+
+  function updateIcon() {
+    var isDark = root.classList.contains('dark');
+    icon.innerHTML = isDark
+      ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
+      : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
+  }
+  updateIcon();
+
+  toggle.addEventListener('click', function() {
+    root.classList.toggle('dark');
+    localStorage.setItem(THEME_KEY, root.classList.contains('dark') ? 'dark' : 'light');
+    updateIcon();
+  });
+
+  // ---- Toast ----
+  var toastEl = document.getElementById('toast');
+  var toastText = document.getElementById('toastText');
+  var toastTimer;
+  function showToast(msg) {
+    toastText.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { toastEl.classList.remove('show'); }, 1800);
+  }
+
+  // ---- Copy HEX on chip click ----
+  document.querySelectorAll('[data-hex]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var hex = el.getAttribute('data-hex');
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(hex).then(function() {
+          showToast('نُسخ ' + hex);
+        }).catch(function() {
+          showToast('تعذّر النسخ');
+        });
+      }
+    });
+  });
+
+  // ---- Copy code block ----
+  document.querySelectorAll('.code-copy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var pre = btn.parentElement.querySelector('pre');
+      if (!pre) return;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(pre.innerText).then(function() {
+          showToast('تمّ نسخ الكود');
+        });
+      }
+    });
+  });
+
+  // ---- Smooth scroll for nav links ----
+  document.querySelectorAll('a.nav-link, a.nav-brand').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      var href = a.getAttribute('href');
+      if (href && href.charAt(0) === '#') {
+        var target = document.querySelector(href);
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

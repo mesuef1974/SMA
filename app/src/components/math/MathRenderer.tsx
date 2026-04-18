@@ -9,5 +9,6 @@ interface MathRendererProps {
 }
 
 export function MathRenderer({ math, display = false }: MathRendererProps) {
-  return <TeX math={math} block={display} errorColor="#cc0000" />;
+  // BRAND-APPROVED: react-katex errorColor prop requires a literal CSS color string — brand-book §Typography
+  return <TeX math={math} block={display} errorColor="var(--destructive)" />;
 }

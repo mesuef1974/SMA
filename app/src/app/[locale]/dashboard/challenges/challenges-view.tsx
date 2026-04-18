@@ -427,7 +427,7 @@ export function ChallengesView({ challenges, classrooms }: ChallengesViewProps) 
                     </div>
                     <div
                       className="size-4 rounded-full shrink-0"
-                      style={{ backgroundColor: team.color ?? '#666' }}
+                      style={{ backgroundColor: team.color ?? 'var(--muted-foreground)' }}
                     />
                     <div className="flex-1">
                       <div className="font-semibold">{team.nameAr}</div>

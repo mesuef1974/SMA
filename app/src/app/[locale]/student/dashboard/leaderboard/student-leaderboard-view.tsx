@@ -157,12 +157,12 @@ export function StudentLeaderboardView({
       </div>
 
       {/* ---- Hero: Student rank + XP + Level ---- */}
-      <Card className="border-[#1e3a5f] bg-gradient-to-l from-[#1e3a5f]/5 to-transparent dark:from-[#1e3a5f]/20">
+      <Card className="border-[var(--sma-najm-700)] bg-gradient-to-l from-[var(--sma-najm-700)]/5 to-transparent dark:from-[var(--sma-najm-700)]/20">
         <CardContent className="py-5">
           <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-start">
             {/* Rank circle */}
-            <div className="flex size-20 items-center justify-center rounded-full border-4 border-[#f59e0b] bg-amber-50 dark:bg-amber-950/30">
-              <span className="text-2xl font-black text-[#f59e0b] tabular-nums">
+            <div className="flex size-20 items-center justify-center rounded-full border-4 border-[var(--medal-gold)] bg-amber-50 dark:bg-amber-950/30">
+              <span className="text-2xl font-black text-[var(--medal-gold)] tabular-nums">
                 {num(myRank)}
               </span>
             </div>
@@ -170,7 +170,7 @@ export function StudentLeaderboardView({
             <div className="flex-1 space-y-2 min-w-0">
               <h3 className="text-lg font-bold truncate">{studentName}</h3>
               <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
-                <Badge className="bg-[#1e3a5f] text-white">
+                <Badge className="bg-[var(--sma-najm-700)] text-white">
                   {levelNameAr} ({num(level)})
                 </Badge>
                 <span className="text-sm text-muted-foreground">
@@ -197,7 +197,7 @@ export function StudentLeaderboardView({
                   aria-label={t('progressToNext')}
                 >
                   <div
-                    className="h-full rounded-full bg-[#22c55e] transition-all"
+                    className="h-full rounded-full bg-success transition-all"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -206,8 +206,8 @@ export function StudentLeaderboardView({
 
             {/* XP display */}
             <div className="flex flex-col items-center gap-1 shrink-0">
-              <Star className="size-6 text-[#f59e0b]" aria-hidden="true" />
-              <span className="text-3xl font-black text-[#f59e0b] tabular-nums">{num(xpTotal)}</span>
+              <Star className="size-6 text-[var(--medal-gold)]" aria-hidden="true" />
+              <span className="text-3xl font-black text-[var(--medal-gold)] tabular-nums">{num(xpTotal)}</span>
               <span className="text-xs text-muted-foreground">{t('xpUnit')}</span>
             </div>
           </div>
@@ -218,21 +218,21 @@ export function StudentLeaderboardView({
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card>
           <CardContent className="flex flex-col items-center gap-1 py-4">
-            <Trophy className="size-5 text-[#f59e0b]" aria-hidden="true" />
+            <Trophy className="size-5 text-[var(--medal-gold)]" aria-hidden="true" />
             <span className="text-2xl font-bold tabular-nums">{num(myRank)}</span>
             <span className="text-xs text-muted-foreground">{t('myRank')}</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex flex-col items-center gap-1 py-4">
-            <Star className="size-5 text-[#22c55e]" aria-hidden="true" />
+            <Star className="size-5 text-success" aria-hidden="true" />
             <span className="text-2xl font-bold tabular-nums">{num(xpTotal)}</span>
             <span className="text-xs text-muted-foreground">{t('myXp')}</span>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex flex-col items-center gap-1 py-4">
-            <Medal className="size-5 text-[#1e3a5f]" aria-hidden="true" />
+            <Medal className="size-5 text-[var(--sma-najm-700)]" aria-hidden="true" />
             <span className="text-2xl font-bold tabular-nums">{num(level)}</span>
             <span className="text-xs text-muted-foreground">{t('myLevel')}</span>
           </CardContent>
@@ -282,7 +282,7 @@ export function StudentLeaderboardView({
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Users className="size-5 text-[#1e3a5f]" aria-hidden="true" />
+            <Users className="size-5 text-[var(--sma-najm-700)]" aria-hidden="true" />
             <CardTitle>{t('nearbyStudents')}</CardTitle>
           </div>
         </CardHeader>
@@ -298,7 +298,7 @@ export function StudentLeaderboardView({
                   className={cn(
                     'flex items-center gap-3 rounded-lg border p-3 transition-colors',
                     entry.isCurrentStudent
-                      ? 'border-[#1e3a5f] bg-[#1e3a5f]/5 dark:bg-[#1e3a5f]/20'
+                      ? 'border-[var(--sma-najm-700)] bg-[var(--sma-najm-700)]/5 dark:bg-[var(--sma-najm-700)]/20'
                       : 'border-transparent bg-muted/30',
                   )}
                 >
@@ -314,13 +314,13 @@ export function StudentLeaderboardView({
                       </span>
                     </div>
                     <div className="mt-1 flex items-center gap-2">
-                      <Badge className="bg-[#1e3a5f] text-white text-[10px]">
+                      <Badge className="bg-[var(--sma-najm-700)] text-white text-[10px]">
                         {entry.levelNameAr}
                       </Badge>
                       {/* Mini progress bar */}
                       <div className="h-1 flex-1 max-w-20 rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-[#22c55e]"
+                          className="h-full rounded-full bg-success"
                           style={{ width: `${entry.progressPercent}%` }}
                         />
                       </div>
@@ -328,7 +328,7 @@ export function StudentLeaderboardView({
                   </div>
 
                   <div className="text-end shrink-0">
-                    <div className="text-sm font-bold text-[#f59e0b] tabular-nums">{num(entry.xpTotal)}</div>
+                    <div className="text-sm font-bold text-[var(--medal-gold)] tabular-nums">{num(entry.xpTotal)}</div>
                     <div className="text-[10px] text-muted-foreground">{t('xpUnit')}</div>
                   </div>
                 </div>
