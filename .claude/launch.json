@@ -6,6 +6,12 @@
       "runtimeExecutable": "py",
       "runtimeArgs": ["-3.12", "-m", "http.server", "8765", "--directory", "D:\\SMA\\assets\\brand"],
       "port": 8765
+    },
+    {
+      "name": "sma-app",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["-C", "app", "dev"],
+      "port": 3000
     }
   ]
 }
