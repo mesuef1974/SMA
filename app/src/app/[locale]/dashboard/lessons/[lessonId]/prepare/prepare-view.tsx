@@ -434,6 +434,16 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
                           <Sparkles className="size-3.5" />
                           إعادة التوليد
                         </Button>
+                        {hasTemplate && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => useTemplate(p)}
+                          >
+                            <FileText className="size-3.5" />
+                            استبدال بالقالب
+                          </Button>
+                        )}
                       </div>
                     </div>
                     <LessonPlanViewer plan={state.plan} />
