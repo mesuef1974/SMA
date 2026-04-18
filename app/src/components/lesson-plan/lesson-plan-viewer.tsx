@@ -199,7 +199,7 @@ function LearningOutcomesSection({ outcomes }: { outcomes: LearningOutcomeItem[]
               {i + 1}
             </span>
             <div className="flex-1 space-y-1">
-              <p className="text-sm">{outcome.outcome_ar}</p>
+              <p className="text-sm"><MathText text={outcome.outcome_ar} /></p>
               <div className="flex flex-wrap gap-1.5">
                 <BloomBadge level={outcome.bloom_level} />
                 {outcome.action_verb_ar && (
@@ -228,7 +228,7 @@ function WarmUpSection({ data }: { data: LessonPlanData['warm_up'] }) {
       duration={data.duration_minutes}
     >
       <div className="space-y-3">
-        <p className="text-sm leading-relaxed">{data.activity_ar}</p>
+        <p className="text-sm leading-relaxed"><MathText text={data.activity_ar} /></p>
       </div>
     </SectionCard>
   );
@@ -252,7 +252,7 @@ function ExploreSection({ data }: { data: LessonPlanData['explore'] }) {
       duration={data.duration_minutes}
     >
       <div className="space-y-4">
-        <p className="text-sm leading-relaxed">{data.activity_ar}</p>
+        <p className="text-sm leading-relaxed"><MathText text={data.activity_ar} /></p>
 
         {data.guiding_questions && data.guiding_questions.length > 0 && (
           <div>
@@ -325,7 +325,7 @@ function ExplainSection({ data }: { data: LessonPlanData['explain'] }) {
       duration={data.duration_minutes}
     >
       <div className="space-y-4">
-        <p className="text-sm leading-relaxed">{data.concept_ar}</p>
+        <p className="text-sm leading-relaxed"><MathText text={data.concept_ar} /></p>
 
         {/* Key Vocabulary */}
         {data.key_vocabulary && data.key_vocabulary.length > 0 && (
