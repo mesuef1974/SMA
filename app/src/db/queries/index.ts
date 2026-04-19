@@ -17,6 +17,7 @@ export {
   getLessonPlanById,
   createLessonPlan,
   updateLessonPlan,
+  getLessonPlansForAdvisor,
 } from './lesson-plans';
 
 export {

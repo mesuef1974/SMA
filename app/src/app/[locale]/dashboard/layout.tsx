@@ -6,6 +6,7 @@ import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { DashboardFooter } from '@/components/dashboard/dashboard-footer';
 import { auth } from '@/lib/auth';
+import { isAdvisor } from '@/lib/advisor';
 
 type Props = {
   children: React.ReactNode;
@@ -23,11 +24,12 @@ export default async function DashboardLayout({ children, params }: Props) {
   setRequestLocale(locale);
 
   const session = await auth();
+  const advisor = isAdvisor(session);
 
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <DashboardSidebar />
+        <DashboardSidebar isAdvisor={advisor} />
         <SidebarInset>
           <DashboardHeader userName={session?.user?.name} />
           <main id="main-content" className="flex-1 overflow-y-auto">

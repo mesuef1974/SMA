@@ -7,7 +7,12 @@
  * Wave 1/2 additions (decisions D-27..D-34):
  *   - D-27: 85/15 split — teacher_minutes + student_minutes per section
  *   - D-28: enforced via numeral-filter.ts (post-generation)
- *   - D-29: qatar_context enum on warm_up/explore (and tier=meeting practice)
+ *   - D-29: qatar_context enum — REMOVED (DEC-SMA-044, 2026-04-19).
+ *           Content Policy v2 (DEC-SMA-041) mandates 100% fidelity to the
+ *           Teacher's Guide and Student Book; a fixed enum of Qatari
+ *           landmarks contradicts that policy. Only a free-text optional
+ *           `qatar_context` remains on practice items for cases where the
+ *           textbook itself references a local context verbatim.
  *   - D-32: qncf_code on outcomes/items + per-section
  *   - D-33: teacher_guide_page on every section + per-item
  *   - D-34: gate_results root-level field (post-generation only)
@@ -48,24 +53,6 @@ export const questionTypeSchema = z.enum([
 ]);
 
 export type QuestionType = z.infer<typeof questionTypeSchema>;
-
-/** Qatar local context tags (D-29) */
-export const qatarContextSchema = z.enum([
-  'souq_waqif',
-  'corniche_doha',
-  'metro_doha',
-  'katara',
-  'lusail_stadium',
-  'aspire_tower',
-  'pearl_qatar',
-  'education_city',
-  'msheireb',
-  'sealine',
-  'al_shahaniya_school',
-  'other_documented',
-]);
-
-export type QatarContext = z.infer<typeof qatarContextSchema>;
 
 // ---------------------------------------------------------------------------
 // Reusable validators (DEC-SMA-020 compliant)
@@ -137,7 +124,6 @@ export const warmUpSchema = z.object({
   activity_ar: z.string().min(1),
   qncf_code: qncfCodeSchema, // D-32 (section level)
   teacher_guide_page: teacherGuidePageSchema, // D-33
-  qatar_context: qatarContextSchema.optional(), // D-29 (optional — founder directive 2026-04-18)
 });
 
 export type WarmUp = z.infer<typeof warmUpSchema>;
@@ -160,7 +146,6 @@ export const exploreSchema = z.object({
   differentiation: differentiationSchema,
   qncf_code: qncfCodeSchema, // D-32
   teacher_guide_page: teacherGuidePageSchema, // D-33
-  qatar_context: qatarContextSchema.optional(), // D-29 (optional — founder directive 2026-04-18)
 });
 
 export type Explore = z.infer<typeof exploreSchema>;
@@ -207,7 +192,9 @@ export const practiceItemSchema = z.object({
   source_page: z.string().optional(),
   qncf_code: qncfCodeSchema, // D-32 (per item)
   teacher_guide_page: teacherGuidePageSchema, // D-33 (per item)
-  qatar_context: qatarContextSchema.optional(), // D-29 (optional, intended for tier='meeting')
+  // Free-text optional context — only populate if the textbook itself cites
+  // a specific local context verbatim. No enum, no fabrication (DEC-SMA-044).
+  qatar_context: z.string().optional(),
 });
 
 export const practiceSchema = z.object({
@@ -271,6 +258,11 @@ export const gateResultsSchema = z.object({
   qncf_gate: z.enum(['pass', 'fail']),
   advisor_gate: z.enum(['pending', 'approved', 'needs_revision']),
   failure_reasons: z.array(z.string()).default([]),
+  // DEC-SMA-037 — advisor review metadata (MVP, persisted in jsonb;
+  // no DB migration needed since sectionData is jsonb).
+  advisor_reviewed_at: z.string().datetime().optional(),
+  advisor_reviewer_id: z.string().optional(),
+  advisor_notes: z.string().optional(),
 });
 
 export type GateResults = z.infer<typeof gateResultsSchema>;

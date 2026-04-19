@@ -85,7 +85,9 @@
     "help": "مساعدة",
     "groupTeaching": "التدريس",
     "groupStudents": "الطلاب",
-    "groupAnalytics": "التحليلات"
+    "groupAnalytics": "التحليلات",
+    "groupAdvisor": "المستشار",
+    "advisorReview": "مراجعة المستشار"
   },
   "student": {
     "title": "واجهة الطالب",

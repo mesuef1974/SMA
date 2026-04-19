@@ -85,7 +85,9 @@
     "help": "Help",
     "groupTeaching": "Teaching",
     "groupStudents": "Students",
-    "groupAnalytics": "Analytics"
+    "groupAnalytics": "Analytics",
+    "groupAdvisor": "Advisor",
+    "advisorReview": "Advisor Review"
   },
   "student": {
     "title": "Student Portal",
