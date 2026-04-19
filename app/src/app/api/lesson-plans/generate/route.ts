@@ -26,6 +26,12 @@ import {
 } from '@/lib/lesson-plans/triple-gate';
 import { buildSystemPrompt } from '@/lib/lesson-plans/prompt';
 import type { LessonContext } from '@/lib/lesson-plans/prompt';
+import {
+  getGuidePhilosophy,
+  getUnitIntro,
+  getLessonContent,
+  type CurriculumSourceWithPages,
+} from '@/db/queries/curriculum-sources';
 import { getLessonById, getMisconceptionStats, createLessonPlan } from '@/db/queries';
 
 // ---------------------------------------------------------------------------
@@ -103,6 +109,30 @@ export async function POST(req: Request): Promise<Response> {
     // --- Fetch misconception stats for this lesson ---
     const misconceptionData = await getMisconceptionStats(lessonId);
 
+    // --- Fetch 3-layer curriculum sources (DEC-SMA-044) ---
+    // Parse lesson number suffix (e.g. "5-1" → 1). Fails gracefully if missing.
+    const lessonNumSuffix = Number.parseInt(
+      String(lesson.number).split('-').pop() ?? '',
+      10,
+    );
+    const unitNumber = lesson.chapter?.number ?? 0;
+    const [guideSource, unitSource, teLessonSource, seLessonSource] = await Promise.all([
+      getGuidePhilosophy(),
+      unitNumber > 0 ? getUnitIntro(unitNumber, 'TE') : Promise.resolve(null),
+      unitNumber > 0 && Number.isFinite(lessonNumSuffix)
+        ? getLessonContent(unitNumber, lessonNumSuffix, 'TE')
+        : Promise.resolve(null),
+      unitNumber > 0 && Number.isFinite(lessonNumSuffix)
+        ? getLessonContent(unitNumber, lessonNumSuffix, 'SE')
+        : Promise.resolve(null),
+    ]);
+    const sourceToText = (s: CurriculumSourceWithPages | null): string | undefined =>
+      s?.pages.length
+        ? s.pages
+            .map((p) => `--- صفحة ${p.pageNumber} ---\n${p.contentAr ?? ''}`)
+            .join('\n\n')
+        : undefined;
+
     // --- Build context for the system prompt ---
     const teacherGuidePages =
       lesson.pageStartTe && lesson.pageEndTe
@@ -132,6 +162,10 @@ export async function POST(req: Request): Promise<Response> {
         remediationHintAr: null,
       })),
       teacherNotes,
+      guidePhilosophy: sourceToText(guideSource),
+      unitOverview: sourceToText(unitSource),
+      lessonSourceTe: sourceToText(teLessonSource),
+      lessonSourceSe: sourceToText(seLessonSource),
     };
 
     // --- Call Claude AI ---

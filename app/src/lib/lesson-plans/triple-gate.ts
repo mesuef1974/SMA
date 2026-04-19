@@ -26,11 +26,11 @@ export interface TripleGateOutcome {
 
 const QNCF_CODE_RE = /^QNCF-G11-M-[A-Z]{3}-\d{3}$/;
 
-// TODO: Replace this stub with a real lookup once
-// `src/lib/lesson-plans/qncf-catalog.ts` (or DB-backed equivalent) exists.
-function isKnownQncfCode(): boolean {
-  return true;
-}
+// Gate 2 is intentionally frozen at *format* validation (regex above) until a
+// canonical QNCF catalog is available. A stub that returns `true` would have
+// masked failures as passes — worse than no check. The catalog-membership
+// check is tracked as the `advisor_gate` human sign-off for now.
+// See DEC-SMA-047.
 
 /**
  * Validates a lesson plan against all three gates.
@@ -80,10 +80,7 @@ export function validateTripleGate(plan: LessonPlanData): TripleGateOutcome {
       failure_reasons.push(`${where}: صيغة qncf_code غير صالحة (${code})`);
       return;
     }
-    if (!isKnownQncfCode()) {
-      qncfPass = false;
-      failure_reasons.push(`${where}: qncf_code غير موجود في القاعدة (${code})`);
-    }
+    // Catalog-membership check deferred to advisor_gate (human review).
   };
 
   outcomes.forEach((o, i) => checkQncf(o.qncf_code, `learning_outcomes[${i}]`));
@@ -132,8 +129,21 @@ export function validateSourceTraceability(
   lesson: { pageStartTe: number | null; pageEndTe: number | null },
 ): { passed: boolean; reasons: string[] } {
   const reasons: string[] = [];
-  const minPage = lesson.pageStartTe ?? 1;
-  const maxPage = lesson.pageEndTe ?? 229;
+
+  // Fail-closed: reject lessons with missing page-range metadata.
+  // Without both bounds we cannot meaningfully validate source traceability,
+  // so Gate 2.5 must fail loudly instead of silently passing (DEC-SMA QA F1).
+  if (lesson.pageStartTe === null || lesson.pageEndTe === null) {
+    return {
+      passed: false,
+      reasons: [
+        'بيانات الدرس ناقصة: pageStartTe أو pageEndTe غير مُسجَّل. لا يمكن التحقق من نطاق المصدر.',
+      ],
+    };
+  }
+
+  const minPage = lesson.pageStartTe;
+  const maxPage = lesson.pageEndTe;
 
   const sections: { name: string; page: number | undefined }[] = [
     { name: 'warm_up', page: plan.warm_up?.teacher_guide_page },

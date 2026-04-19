@@ -56,6 +56,17 @@ export interface LessonContext {
   }[];
   /** Optional teacher notes to add context to the generation */
   teacherNotes?: string;
+  /**
+   * 3-layer source injection (DEC-SMA-044 / advisor.education_pedagogy.v1).
+   * Each layer is the verbatim OCR'd Arabic text of the corresponding PDF
+   * pages from curriculum_sources/curriculum_pages. Generator loads via
+   * getGuidePhilosophy() / getUnitIntro() / getLessonContent() and passes
+   * plain-text blocks here.
+   */
+  guidePhilosophy?: string;
+  unitOverview?: string;
+  lessonSourceTe?: string;
+  lessonSourceSe?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -74,6 +85,44 @@ const MISCONCEPTION_CODES = [
   'MC-STA-001', 'MC-STA-002',
   'MC-GEO-001',
 ] as const;
+
+// ---------------------------------------------------------------------------
+// 3-layer source section builder
+// ---------------------------------------------------------------------------
+
+/**
+ * Builds the verbatim source XML block that grounds generation in the
+ * official PDFs. Each layer is optional — a missing layer renders an
+ * explicit notice so the model never guesses.
+ *
+ * Sanitizes stray `<` / `>` to prevent XML-tag breakout inside OCR'd text.
+ */
+function buildSourceSection(ctx: LessonContext): string {
+  const esc = (s?: string) =>
+    s ? s.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+
+  const layer = (tag: string, titleAr: string, body?: string): string => {
+    if (!body || body.trim().length === 0) {
+      return `<${tag}>\n(لم يُحمَّل هذا المصدر من قاعدة البيانات — لا تخترع محتوى)\n</${tag}>`;
+    }
+    return `<${tag}>\n# ${titleAr}\n${esc(body)}\n</${tag}>`;
+  };
+
+  return `
+<source_materials>
+⚠️ القسم التالي هو المصدر الوحيد المسموح به للمحتوى. ما ليس هنا = لا يُذكر.
+الطبقات الثلاث مرتبة من العام إلى الخاص:
+
+${layer('guide_philosophy', 'فلسفة دليل المعلم (الصفحات المبكرة)', ctx.guidePhilosophy)}
+
+${layer('unit_overview', `مقدمة الوحدة ${ctx.chapterNumber} — ${ctx.chapterTitleAr}`, ctx.unitOverview)}
+
+${layer('lesson_source_te', `محتوى الدرس من دليل المعلم — ${ctx.lessonTitleAr}`, ctx.lessonSourceTe)}
+
+${layer('lesson_source_se', `محتوى الدرس من كتاب الطالب — ${ctx.lessonTitleAr}`, ctx.lessonSourceSe)}
+</source_materials>
+`.trim();
+}
 
 // ---------------------------------------------------------------------------
 // System Prompt Builder
@@ -111,6 +160,9 @@ export function buildSystemPrompt(ctx: LessonContext): string {
   const teacherNotesBlock = sanitizedNotes
     ? `\n<teacher_notes>\nملاحظات المعلم:\n${sanitizedNotes}\n</teacher_notes>\n`
     : '';
+
+  // 3-layer verbatim source injection — the only authorized content surface.
+  const sourceSection = buildSourceSection(ctx);
 
   const misconceptionCodesBlock = MISCONCEPTION_CODES.map(
     (code) => `  - ${code}`,
@@ -180,6 +232,8 @@ ${misconceptionCodesBlock}
 ${buildCatalogPromptReference()}
 </misconception_catalog>
 
+${sourceSection}
+
 <constraints>
 1. المصادر المسموحة حصراً: دليل المعلم + كتاب الطالب (DEC-SMA-032). لا تخترع أمثلة من خارج المنهج. التزم بالحرفية 100% كما في <content_policy> أعلاه.
 2. اتبع نموذج 5E (Engage → Explore → Explain → Elaborate → Evaluate).
@@ -199,13 +253,16 @@ ${buildCatalogPromptReference()}
 </constraints>
 
 <timing>
+مدة الحصة الواحدة 45 دقيقة. هذا التحضير **للحصة رقم ${ctx.periodNumber} من حصتين** في هذا الدرس (DEC-SMA-012).
+لا توزّع المحتوى على الحصتين في تحضير واحد — التحضير الحالي يغطي الحصة ${ctx.periodNumber} فقط.
+التوزيع المقترح داخل الحصة (45 دقيقة):
 - warm_up: 5 دقائق
 - explore: 15 دقيقة
 - explain: 5 دقائق
 - practice: 12 دقيقة
 - assess: 5 دقائق
 - extend: 3 دقائق (اختياري)
-- المجموع: 45 دقيقة
+- المجموع: 45 دقيقة (للحصة ${ctx.periodNumber})
 </timing>
 
 <output_format>
