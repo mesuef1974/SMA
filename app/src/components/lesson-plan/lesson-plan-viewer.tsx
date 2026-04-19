@@ -45,25 +45,6 @@ import {
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
-// Qatar context labels (D-29)
-// ---------------------------------------------------------------------------
-
-const qatarContextLabels: Record<string, string> = {
-  souq_waqif: 'سوق واقف',
-  corniche_doha: 'كورنيش الدوحة',
-  metro_doha: 'مترو الدوحة',
-  katara: 'كتارا',
-  lusail_stadium: 'استاد لوسيل',
-  aspire_tower: 'برج أسباير',
-  pearl_qatar: 'اللؤلؤة-قطر',
-  education_city: 'المدينة التعليمية',
-  msheireb: 'مشيرب',
-  sealine: 'سيلين',
-  al_shahaniya_school: 'مدرسة الشحانية',
-  other_documented: 'سياق قطري موثّق',
-};
-
-// ---------------------------------------------------------------------------
 // Helper: compute total duration for a section (D-27)
 // ---------------------------------------------------------------------------
 
@@ -165,16 +146,6 @@ function TeacherGuidePageBadge({ page }: { page: number }) {
   );
 }
 
-function QatarContextBadge({ context }: { context: string }) {
-  const label = qatarContextLabels[context] ?? context;
-  return (
-    <Badge variant="secondary" className="gap-1 text-xs shrink-0">
-      <span aria-hidden>🇶🇦</span>
-      {label}
-    </Badge>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Bloom color mapping
 // ---------------------------------------------------------------------------
@@ -246,7 +217,6 @@ function SectionCard({
   children,
   className,
   teacherGuidePage,
-  qatarContext,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
@@ -255,7 +225,6 @@ function SectionCard({
   children: React.ReactNode;
   className?: string;
   teacherGuidePage?: number;
-  qatarContext?: string;
 }) {
   return (
     <Card className={cn(accent, className)}>
@@ -263,7 +232,6 @@ function SectionCard({
         <CardTitle className="flex flex-wrap items-center gap-2">
           <Icon className="size-5 shrink-0" />
           <span className="flex-1">{title}</span>
-          {qatarContext && <QatarContextBadge context={qatarContext} />}
           {teacherGuidePage != null && <TeacherGuidePageBadge page={teacherGuidePage} />}
           {duration != null && <DurationBadge minutes={duration} />}
         </CardTitle>
@@ -367,7 +335,6 @@ function WarmUpSection({ data }: { data: LessonPlanData['warm_up'] }) {
       title="التهيئة"
       duration={sectionTotal(data)}
       teacherGuidePage={data.teacher_guide_page}
-      qatarContext={data.qatar_context}
     >
       <div className="space-y-3">
         <p className="text-sm leading-relaxed"><MathText text={data.activity_ar} /></p>
@@ -393,7 +360,6 @@ function ExploreSection({ data }: { data: LessonPlanData['explore'] }) {
       title="الاستكشاف"
       duration={sectionTotal(data)}
       teacherGuidePage={data.teacher_guide_page}
-      qatarContext={data.qatar_context}
     >
       <div className="space-y-4">
         <p className="text-sm leading-relaxed"><MathText text={data.activity_ar} /></p>

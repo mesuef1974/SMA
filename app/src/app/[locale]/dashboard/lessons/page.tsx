@@ -39,8 +39,13 @@ export default async function LessonsPage({ params }: Props) {
   const statusPriority = { approved: 3, in_review: 2, draft: 1 } as const;
   for (const plan of lessonPlans) {
     if (plan.lessonId) {
+      // DEC-SMA-045: rejected_gate and archived plans don't represent a
+      // "ready" lesson, so skip them when picking the best status.
+      if (plan.status !== 'draft' && plan.status !== 'in_review' && plan.status !== 'approved') {
+        continue;
+      }
       const current = lessonPlanStatusMap[plan.lessonId];
-      const planStatus = plan.status as 'draft' | 'in_review' | 'approved';
+      const planStatus = plan.status;
       if (!current || (statusPriority[planStatus] ?? 0) > (statusPriority[current] ?? 0)) {
         lessonPlanStatusMap[plan.lessonId] = planStatus;
       }

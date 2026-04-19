@@ -3,8 +3,8 @@
  *
  * A complete lesson plan for Grade 11 Literary Track (Qatar curriculum).
  * Conforms exactly to the LessonPlanData type from ../schema.ts (Wave 1/2:
- * teacher_minutes/student_minutes split, qncf_code, teacher_guide_page,
- * qatar_context).
+ * teacher_minutes/student_minutes split, qncf_code, teacher_guide_page).
+ * Note: qatar_context enum was removed in DEC-SMA-044 (2026-04-19).
  *
  * Used as a few-shot example in the system prompt so that Claude sees
  * a concrete, high-quality output before generating a new plan.
@@ -55,7 +55,6 @@ export const EXAMPLE_3_1: LessonPlanData = {
     student_minutes: 3,
     teacher_guide_page: 5,
     qncf_code: 'QNCF-G11-M-FUN-001',
-    qatar_context: 'corniche_doha',
     activity_ar:
       'راجع مفهوم القيمة المطلقة كمسافة على خط الأعداد. اسأل الطلاب: ما المسافة بين العدد \\(-3\\) والصفر على خط الأعداد؟ وبين \\(3\\) والصفر؟ ماذا تلاحظ؟ ثم اعرض: \\(|{-3}| = 3\\) و \\(|3| = 3\\). ذكّر بتعريف: \\(|x| = x\\) إذا \\(x \\geq 0\\)، و \\(|x| = -x\\) إذا \\(x < 0\\). مثال حياتي: المسافة من تمثال اللؤلؤة على الكورنيش إلى نقطة ما (شرقاً أو غرباً) هي دوماً عدد موجب.',
   },
@@ -65,7 +64,6 @@ export const EXAMPLE_3_1: LessonPlanData = {
     student_minutes: 14,
     teacher_guide_page: 6,
     qncf_code: 'QNCF-G11-M-FUN-001',
-    qatar_context: 'corniche_doha',
     activity_ar:
       'وزّع على الطلاب جدولاً فارغاً لقيم الدالة \\(f(x) = |x|\\). اطلب منهم حساب \\(f(x)\\) للقيم \\(x = -3, -2, -1, 0, 1, 2, 3\\) ثم تمثيل النقاط على المستوى الإحداثي وربطها. ناقش: ما شكل الرسم البياني؟ أين يقع الرأس؟ ما محور التناظر؟ ثم كرّر مع الدالة \\(g(x) = |x - 2| + 1\\) وقارن بين التمثيلين.',
     guiding_questions: [
@@ -141,7 +139,6 @@ export const EXAMPLE_3_1: LessonPlanData = {
         source_page: 'ص 135',
         qncf_code: 'QNCF-G11-M-FUN-001',
         teacher_guide_page: 8,
-        qatar_context: 'corniche_doha',
       },
       {
         question_ar:

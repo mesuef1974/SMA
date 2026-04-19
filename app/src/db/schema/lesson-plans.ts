@@ -22,6 +22,10 @@ export const lessonPlanStatusEnum = pgEnum('lesson_plan_status', [
   'in_review',
   'approved',
   'archived',
+  // DEC-SMA-045 (2026-04-19): explicit terminal state for plans that
+  // fail Triple-Gate or source traceability validation at generation time.
+  // Prior behaviour silently persisted these as 'draft'.
+  'rejected_gate',
 ]);
 
 export const lessonPlanSectionEnum = pgEnum('lesson_plan_section', [

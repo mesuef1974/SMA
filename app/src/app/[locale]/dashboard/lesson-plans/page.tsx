@@ -18,15 +18,28 @@ export async function generateMetadata({ params }: Props) {
 // Status helpers
 // ---------------------------------------------------------------------------
 
-type PlanStatus = 'draft' | 'in_review' | 'approved' | 'archived';
+type PlanStatus =
+  | 'draft'
+  | 'in_review'
+  | 'approved'
+  | 'archived'
+  // DEC-SMA-045: plan failed Triple-Gate / source-traceability validation.
+  | 'rejected_gate';
 
-const STATUS_ORDER: PlanStatus[] = ['approved', 'in_review', 'draft', 'archived'];
+const STATUS_ORDER: PlanStatus[] = [
+  'approved',
+  'in_review',
+  'draft',
+  'rejected_gate',
+  'archived',
+];
 
 const STATUS_LABEL: Record<PlanStatus, string> = {
   approved: 'معتمدة',
   in_review: 'قيد المراجعة',
   draft: 'مسودة',
   archived: 'مؤرشفة',
+  rejected_gate: 'مرفوضة (فشل التحقق)',
 };
 
 interface BadgeStyle {
@@ -55,6 +68,11 @@ const STATUS_STYLE: Record<PlanStatus, BadgeStyle> = {
     background: 'color-mix(in srgb, var(--muted-foreground) 6%, transparent)',
     color: 'color-mix(in srgb, var(--muted-foreground) 70%, transparent)',
     border: 'color-mix(in srgb, var(--muted-foreground) 12%, transparent)',
+  },
+  rejected_gate: {
+    background: 'color-mix(in srgb, oklch(0.7 0.19 25) 12%, transparent)',
+    color: 'oklch(0.45 0.18 25)',
+    border: 'color-mix(in srgb, oklch(0.7 0.19 25) 30%, transparent)',
   },
 };
 
@@ -135,7 +153,7 @@ export default async function LessonPlansPage({ params }: Props) {
       acc[s] = plans.filter((p) => p.status === s);
       return acc;
     },
-    { approved: [], in_review: [], draft: [], archived: [] },
+    { approved: [], in_review: [], draft: [], archived: [], rejected_gate: [] },
   );
 
   const totalCount = plans.length;

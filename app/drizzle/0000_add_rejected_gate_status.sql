@@ -1,0 +1,18 @@
+-- DEC-SMA-045 (2026-04-19) — add 'rejected_gate' value to lesson_plan_status
+--
+-- Context: prior to this migration, lesson plans that failed the Triple-Gate
+-- (Bloom/QNCF/Advisor) or source-traceability validation in
+-- /api/lesson-plans/generate were persisted with status='draft', producing a
+-- silent failure indistinguishable from a legitimate user draft. This
+-- migration adds an explicit 'rejected_gate' terminal state so that the
+-- teacher/advisor UI can surface the failure.
+--
+-- This migration is **additive only** — no rows are rewritten and no existing
+-- value is removed. PostgreSQL's ALTER TYPE ... ADD VALUE is idempotent-safe
+-- via IF NOT EXISTS.
+--
+-- Apply to production manually (Railway) via:
+--   psql "$DATABASE_URL" -f drizzle/0000_add_rejected_gate_status.sql
+-- or with drizzle-kit:
+--   pnpm db:push
+ALTER TYPE "public"."lesson_plan_status" ADD VALUE IF NOT EXISTS 'rejected_gate';

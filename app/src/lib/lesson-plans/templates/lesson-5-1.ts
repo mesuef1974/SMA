@@ -16,10 +16,10 @@
  *   - Period 1 → TE 166-170 / SE 99-101 (dot plot + box-and-whisker plot via Examples 1 & 3)
  *   - Period 2 → TE 171-175 / SE 102-105 (histogram + choosing the right display via Examples 2 & 4)
  *
- * D-29/D-30 (qatar_context) — PARTIALLY RESCINDED:
- *   qatar_context field kept for schema compatibility, defaulted to 'other_documented'.
- *   No Qatar context is injected beyond what the textbook itself references
- *   (e.g. QR — Qatari Riyal — appears in the book's Example 3 donation context).
+ * D-29/D-30 (qatar_context) — FULLY RESCINDED (DEC-SMA-044, 2026-04-19):
+ *   The qatar_context enum was removed from the schema. No Qatar context is
+ *   injected; the only local references remaining are those that appear
+ *   verbatim in the Student Book (e.g. QR — Qatari Riyal — in Example 3).
  */
 
 import type { LessonPlanData, GateResults } from '../schema';
@@ -76,7 +76,6 @@ export const lesson51Period1: LessonPlanData = {
     teacher_minutes: 2,
     student_minutes: 3,
     teacher_guide_page: 166,
-    qatar_context: 'other_documented',
     qncf_code: 'QNCF-G11-M-DAT-001',
     activity_ar:
       'نشاط المصطلحات (دليل المعلم ص 166):\n'
@@ -95,7 +94,6 @@ export const lesson51Period1: LessonPlanData = {
     teacher_minutes: 0,
     student_minutes: 15,
     teacher_guide_page: 167,
-    qatar_context: 'other_documented',
     qncf_code: 'QNCF-G11-M-DAT-001',
     activity_ar:
       'نمذج وناقش — تطبيق "مطلوب خبراء في دراسات السوق" (كتاب الطالب ص 99):\n\n'
@@ -241,8 +239,7 @@ export const lesson51Period1: LessonPlanData = {
         bloom_level: 'understand',
         qncf_code: 'QNCF-G11-M-DAT-001',
         teacher_guide_page: 169,
-        qatar_context: 'other_documented',
-        interaction_type: 'data_reveal',
+            interaction_type: 'data_reveal',
         hint_ar:
           'رتّب البيانات أولاً من الأصغر إلى الأكبر، ثم أوجد العنصر الأوسط (n=15 فردي → '
           + 'عنصر واحد في المنتصف).',
@@ -389,7 +386,6 @@ export const lesson51Period2: LessonPlanData = {
     teacher_minutes: 2,
     student_minutes: 3,
     teacher_guide_page: 171,
-    qatar_context: 'other_documented',
     qncf_code: 'QNCF-G11-M-DAT-003',
     activity_ar:
       'مراجعة سريعة للحصة السابقة (التمثيل بالنقاط + مخطط الصندوق وطرفيه) والربط بالسؤال '
@@ -407,7 +403,6 @@ export const lesson51Period2: LessonPlanData = {
     teacher_minutes: 0,
     student_minutes: 15,
     teacher_guide_page: 172,
-    qatar_context: 'other_documented',
     qncf_code: 'QNCF-G11-M-DAT-003',
     activity_ar:
       'ورقة عمل — مثال 2 بالكامل (كتاب الطالب ص 100):\n\n'
@@ -528,8 +523,7 @@ export const lesson51Period2: LessonPlanData = {
         bloom_level: 'analyze',
         qncf_code: 'QNCF-G11-M-DAT-003',
         teacher_guide_page: 174,
-        qatar_context: 'other_documented',
-        interaction_type: 'try_reveal',
+            interaction_type: 'try_reveal',
         hint_ar:
           'حدّد أوّلاً: هل "بين 7 و9" تشمل الطرفين؟ ثم رتّب البيانات وعُدّ فقط ما يقع ضمن '
           + 'المجال المختار.',
@@ -679,9 +673,9 @@ export const lesson51Period2: LessonPlanData = {
 //   extend       → SE p.105 q.26 (الكاراتيه — اختيار التمثيل)
 //
 // Notes:
-//   • No Qatar-context fabrication. `qatar_context` set to 'other_documented'
-//     for schema compatibility; the only "Qatar" reference in original content
-//     is QR (Qatari Riyal) in Example 3 donation amounts, which is kept verbatim.
+//   • No Qatar-context fabrication. `qatar_context` enum was removed entirely
+//     (DEC-SMA-044); the only "Qatar" reference in original content is QR
+//     (Qatari Riyal) in Example 3 donation amounts, which is kept verbatim.
 //   • All exercises above were unsolved in the Student Book and marked SMA-SOLVED.
 //   • qncf_code uses placeholder DAT-001..004 pending D-31 code finalization.
 //   • advisor_gate = 'pending' on both periods — re-review required.

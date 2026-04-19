@@ -188,15 +188,15 @@ export async function POST(req: Request): Promise<Response> {
     }
 
     if (!gateResult.passed || !traceResult.passed) {
-      // Persist with gate + traceability failures recorded so the
-      // teacher / advisor UI can show what to fix. Status stays 'draft'
-      // until the DB enum gains 'rejected_gate' (see TODO in lesson-plans
-      // schema; deferred migration).
+      // DEC-SMA-045: persist with explicit 'rejected_gate' status so that
+      // list/viewer UIs can surface the failure distinctly from a legitimate
+      // draft. Gate + traceability failures are recorded in section_data so
+      // teachers / advisors see exactly what to fix.
       const rejectedPlan = await createLessonPlan({
         lessonId,
         teacherId: session.user.id,
         periodNumber,
-        status: 'draft',
+        status: 'rejected_gate',
         sectionData: { ...sectionData, gate_results: gateResult.results },
         aiSuggestions: {
           model: 'claude-sonnet-4-6',
