@@ -141,6 +141,41 @@ export function sanitizeLatexExpression(input: string): string {
 }
 
 /**
+ * Detect whether a `formulas[]`-style entry is mixed content (LaTeX + natural
+ * language) rather than a pure LaTeX expression.
+ *
+ * By contract, `formulas[]` entries SHOULD be pure LaTeX — but in practice
+ * the AI often emits any of these mixed shapes:
+ *   `$LaTeX$ وصف عربي`       (math then text)
+ *   `وصف عربي $LaTeX$`       (text then math)
+ *   `$LaTeX$ عربي $LaTeX$`   (both)
+ *   `\(LaTeX\) عربي`          (ChatGPT-style delimiters around part)
+ *
+ * When mixed, the caller MUST route through `<MathText>` (segment parser),
+ * not `<MathDisplay>` — otherwise KaTeX throws `ParseError: Can't use function
+ * '$' in math mode` because the outer `$…$` gets wrapped again as display math
+ * and the inner `$` becomes illegal.
+ *
+ * "Pure LaTeX" means: no `$` at all, OR exactly one `$…$` wrapping the entire
+ * trimmed string. Everything else is considered mixed.
+ *
+ * Shared by `<PresentFormula>` (presentation-view) and the Viewer's formulas
+ * renderer (lesson-plan-viewer) — DRY.
+ */
+export function isMixedLatex(formula: string): boolean {
+  if (!formula) return false;
+  const trimmed = formula.trim();
+  const dollarCount = (trimmed.match(/\$/g) || []).length;
+  const wrappedOnce =
+    dollarCount === 2 && trimmed.startsWith('$') && trimmed.endsWith('$');
+  return (
+    (dollarCount >= 2 && !wrappedOnce) ||
+    dollarCount >= 3 ||
+    /\\\(.*\\\)/.test(formula)
+  );
+}
+
+/**
  * Walk an arbitrary JSON-like value and sanitize every string leaf
  * in-place-style (returns new object). Used after `autoRepair` in the
  * lesson-plan pipeline, before Zod validation — the schema sees clean

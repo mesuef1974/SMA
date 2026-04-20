@@ -30,6 +30,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { MathDisplay, MathText } from '@/components/math/math-display';
+import { isMixedLatex } from '@/lib/latex/sanitize';
 import { cn } from '@/lib/utils';
 import type { LessonPlanData } from '@/lib/lesson-plans/schema';
 import { Check, X as XIcon, Clock as ClockIcon } from 'lucide-react';
@@ -260,22 +261,12 @@ function PresentMathText({ text, className }: { text: string; className?: string
 
 function PresentFormula({ formula }: { formula: string }) {
   // `formulas[]` entries SHOULD be LaTeX by contract, but in practice the
-  // AI often emits mixed content in any of these shapes:
-  //   `$LaTeX$ وصف عربي`   (math then text)
-  //   `وصف عربي $LaTeX$`   (text then math)
-  //   `$LaTeX$ عربي $LaTeX$` (both)
-  // Detect mixed content and route through `PresentMathText` which handles
-  // inline `$…$` segments correctly. Pure-LaTeX entries (no `$` at all, or
-  // a single `$…$` wrapping the ENTIRE trimmed string) go to MathDisplay.
-  const trimmed = formula.trim();
-  const dollarCount = (trimmed.match(/\$/g) || []).length;
-  const wrappedOnce =
-    dollarCount === 2 && trimmed.startsWith('$') && trimmed.endsWith('$');
-  const isMixed =
-    (dollarCount >= 2 && !wrappedOnce) ||
-    dollarCount >= 3 ||
-    /\\\(.*\\\)/.test(formula);
-  if (isMixed) {
+  // AI often emits mixed content (LaTeX + Arabic prose). `isMixedLatex`
+  // (shared with the Viewer) detects these shapes and routes through
+  // `PresentMathText` so inline `$…$` segments parse correctly. Pure-LaTeX
+  // entries (no `$` at all, or a single `$…$` wrapping the entire trimmed
+  // string) go to MathDisplay.
+  if (isMixedLatex(formula)) {
     return (
       <div className="my-4 rounded-xl bg-white/10 p-6 text-center text-xl leading-loose">
         <PresentMathText text={formula} />

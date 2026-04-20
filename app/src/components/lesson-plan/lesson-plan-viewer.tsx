@@ -24,6 +24,7 @@ import type {
 } from '@/lib/lesson-plans/schema';
 // Note: Metadata section removed in schema v2 (optional parameter count reduction)
 import { MathDisplay, MathText } from '@/components/math/math-display';
+import { isMixedLatex } from '@/lib/latex/sanitize';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -458,11 +459,23 @@ function ExplainSection({ data }: { data: LessonPlanData['explain'] }) {
             <p className="text-xs font-medium text-muted-foreground mb-2">القوانين:</p>
             <div className="space-y-2">
               {data.formulas.map((formula, i) => {
-                // `formulas[]` entries are LaTeX by contract (schema.ts).
-                // `MathDisplay` runs `sanitizeLatexExpression` internally,
-                // which normalizes `\(..\)` / `\[..\]`, strips accidental
-                // `$`/`$$` wrappers, and repairs JSON round-trip drift
-                // (egin → \begin, ext → \text, rac → \frac, um_ → \sum_).
+                // `formulas[]` entries are LaTeX by contract (schema.ts), but
+                // in practice the AI often emits mixed content (LaTeX + prose
+                // in the same string). Route those through `<MathText>` — the
+                // segment parser handles inline `$…$` correctly. Feeding mixed
+                // content to `<MathDisplay>` would double-wrap it as display
+                // math and cause `ParseError: Can't use function '$' in math
+                // mode`. See `isMixedLatex` in lib/latex/sanitize.ts.
+                if (isMixedLatex(formula)) {
+                  return (
+                    <div
+                      key={i}
+                      className="rounded-lg bg-muted/50 p-3 text-center"
+                    >
+                      <MathText text={formula} />
+                    </div>
+                  );
+                }
                 const hasAnyMath =
                   /[\\^_{}]/.test(formula) || /\$/.test(formula) || /=/.test(formula);
                 if (hasAnyMath) {
