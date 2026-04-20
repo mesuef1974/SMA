@@ -324,6 +324,8 @@ ${sourceSection}
         "bloom_level": "apply",
         "tier": "meeting",
         "expected_answer": "الإجابة المتوقعة",
+        "hint_ar": "تلميح مستوى L1 للطالب (اختياري)",
+        "interaction_type": "try_reveal|data_reveal|guided_drawing|think_pair_share|static",
         "source_page": "ص X"
       }
     ]
@@ -335,7 +337,9 @@ ${sourceSection}
         "question_ar": "نص سؤال التقويم",
         "type": "mcq|short_answer|problem_solving",
         "model_answer_ar": "الإجابة النموذجية",
-        "bloom_level": "understand"
+        "bloom_level": "understand",
+        "hint_ar": "تلميح مستوى L1 للطالب (اختياري)",
+        "interaction_type": "try_reveal|data_reveal|guided_drawing|think_pair_share|static"
       }
     ]
   },
@@ -347,6 +351,18 @@ ${sourceSection}
   },
 }
 </output_format>
+
+<interaction_type_guidance>
+اختر قيمة "interaction_type" لكل بند في practice و assess بناءً على طبيعته — لا تضع "try_reveal" كإجابة افتراضية تلقائية:
+
+- "data_reveal": السؤال يعرض سلسلة بيانات رقمية (3 أعداد أو أكثر مفصولة بفواصل) ويطلب ترتيبها أو حساب الوسيط/المتوسط/المدى. مثال: "أوجد الوسيط: 12، 15، 18، 14، 20".
+- "guided_drawing": السؤال يطلب رسم تمثيل بياني (تمثيل بالنقاط، مخطط الصندوق، مدرج تكراري) من بيانات معطاة.
+- "think_pair_share": سؤال تأملي/نقاشي مفتوح — يطلب شرحاً أو تبريراً أو مقارنة. مثال: "فسّر لماذا..."، "ناقش الفرق بين..."، "متى نستخدم... بدلاً من...؟".
+- "try_reveal": سؤال حسابي/تطبيقي له إجابة عددية أو جبرية محددة يمكن للطالب محاولته ثم كشف الحل خطوة بخطوة.
+- "static": سؤال مرجعي/تعريفي بسيط لا يحتاج تفاعلاً (استخدمه فقط عند عدم الملاءمة للأنماط أعلاه).
+
+التزم بالتنوع: إذا كان القسم يحوي 4 بنود أو أكثر فوزّع بين نمطين على الأقل. لا تكرر "try_reveal" لكل البنود.
+</interaction_type_guidance>
 
 ${buildSemesterPlanBlock()}
 

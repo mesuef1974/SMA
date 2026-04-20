@@ -320,6 +320,40 @@ function pickNumericAnswer(expected: string): string | number {
   return expected;
 }
 
+/**
+ * Infer an interaction_type from question shape when the generator didn't
+ * emit one. Replaces the old blind `?? 'try_reveal'` fallback (which forced
+ * ~88–100% of items into try_reveal — P1.5 bug).
+ *
+ * Cheap, deterministic heuristics:
+ *   - draw verb (ارسم / مثّل) + numeric data → `guided_drawing`
+ *   - 3+ comma-separated numbers           → `data_reveal`
+ *   - open-ended verb (فسّر / ناقش / قارن / اشرح / لماذا) → `think_pair_share`
+ *   - otherwise → `try_reveal`
+ */
+function inferInteractionType(
+  questionAr: string,
+  hasNumericData: boolean,
+): InteractionType {
+  const q = questionAr;
+  const hasDrawVerb = /(ارسم|مثّل|مثل|اصنع|ارسمي)/.test(q);
+  if (hasDrawVerb && hasNumericData) return 'guided_drawing';
+  if (hasNumericData) return 'data_reveal';
+  if (/(فسّر|فسر|ناقش|قارن|اشرح|وضّح|وضح|برهن|علّل|علل|لماذا|متى نستخدم)/.test(q)) {
+    return 'think_pair_share';
+  }
+  return 'try_reveal';
+}
+
+function resolveInteractionType(
+  item: { interaction_type?: InteractionType; question_ar: string },
+  hasNumericData: boolean,
+): InteractionType {
+  // Honor generator-supplied value first (P1.5).
+  if (item.interaction_type) return item.interaction_type;
+  return inferInteractionType(item.question_ar, hasNumericData);
+}
+
 function PracticeSlide({
   item,
   index,
@@ -330,9 +364,9 @@ function PracticeSlide({
   total: number;
 }) {
   const { isTeacher, revealLevel } = useTeacherMode();
-  const kind: InteractionType = item.interaction_type ?? 'try_reveal';
   const showExpected = isTeacher && revealLevel >= 2;
   const data = parseDataFromQuestion(item.question_ar);
+  const kind: InteractionType = resolveInteractionType(item, data !== null);
 
   const body = () => {
     if (kind === 'data_reveal' && data) {
@@ -365,7 +399,16 @@ function PracticeSlide({
         />
       );
     }
-    // try_reveal (default) + static fallback
+    if (kind === 'static') {
+      // Reference/definition item — show the question plainly, no try/reveal UI.
+      return (
+        <div className="rounded-xl bg-white/5 border border-white/10 p-6 text-2xl leading-relaxed">
+          <MathText text={item.question_ar} />
+        </div>
+      );
+    }
+    // try_reveal (explicit) — or fell back to data_reveal/guided_drawing
+    // but no parsable numeric data → degrade to try_reveal rather than crash.
     return (
       <TryThenReveal
         question={item.question_ar}
@@ -386,8 +429,10 @@ function PracticeSlide({
       </div>
       <div className="max-w-4xl mx-auto w-full space-y-5">
         {body()}
-        {/* Non-TryThenReveal interactions still need the raw question visible */}
-        {kind !== 'try_reveal' && kind !== 'think_pair_share' && (
+        {/* Non-TryThenReveal interactions still need the raw question visible.
+            Skip for try_reveal (it shows the question internally),
+            think_pair_share (shows it), and static (renders the question itself). */}
+        {kind !== 'try_reveal' && kind !== 'think_pair_share' && kind !== 'static' && (
           <div className="rounded-xl bg-white/5 border border-white/10 p-5 text-xl leading-relaxed">
             <MathText text={item.question_ar} />
           </div>
@@ -401,13 +446,18 @@ function PracticeSlide({
             </span>
           )}
         </div>
-        {/* CRITICAL: expected_answer only in teacher mode + L2 */}
-        {showExpected && item.expected_answer && kind !== 'try_reveal' && kind !== 'think_pair_share' && (
-          <div className="rounded-xl bg-emerald-900/20 border border-emerald-700/50 p-6 text-xl">
-            <span className="font-bold text-emerald-400 me-2">الإجابة المتوقعة:</span>
-            <MathText text={item.expected_answer} />
-          </div>
-        )}
+        {/* CRITICAL: expected_answer only in teacher mode + L2.
+            try_reveal and think_pair_share show the answer through their own
+            reveal UI, so we skip the duplicate card for those. */}
+        {showExpected &&
+          item.expected_answer &&
+          kind !== 'try_reveal' &&
+          kind !== 'think_pair_share' && (
+            <div className="rounded-xl bg-emerald-900/20 border border-emerald-700/50 p-6 text-xl">
+              <span className="font-bold text-emerald-400 me-2">الإجابة المتوقعة:</span>
+              <MathText text={item.expected_answer} />
+            </div>
+          )}
       </div>
     </div>
   );
@@ -423,16 +473,46 @@ function AssessSlide({
   total: number;
 }) {
   const { isTeacher, revealLevel } = useTeacherMode();
-  const kind: InteractionType = item.interaction_type ?? 'try_reveal';
   const showModel = isTeacher && revealLevel >= 2;
+  const data = parseDataFromQuestion(item.question_ar);
+  const kind: InteractionType = resolveInteractionType(item, data !== null);
 
   const body = () => {
+    if (kind === 'data_reveal' && data) {
+      return (
+        <InteractiveDataReveal
+          data={data}
+          operations={['sort', 'median']}
+          label="تفاعل: رتّب البيانات ثم أوجد الوسيط"
+        />
+      );
+    }
+    if (kind === 'guided_drawing' && data) {
+      const min = Math.floor(Math.min(...data));
+      const max = Math.ceil(Math.max(...data));
+      return (
+        <GuidedDrawing
+          data={data}
+          chartType="dotplot"
+          min={min}
+          max={max}
+          label="ارسم التمثيل بالنقاط على خط الأعداد"
+        />
+      );
+    }
     if (kind === 'think_pair_share') {
       return (
         <ThinkPairShare
           question={item.question_ar}
           modelAnswer={item.model_answer_ar}
         />
+      );
+    }
+    if (kind === 'static') {
+      return (
+        <div className="rounded-xl bg-white/5 border border-white/10 p-6 text-2xl leading-relaxed">
+          <MathText text={item.question_ar} />
+        </div>
       );
     }
     return (
@@ -455,6 +535,13 @@ function AssessSlide({
       </div>
       <div className="max-w-4xl mx-auto w-full space-y-5">
         {body()}
+        {/* data_reveal / guided_drawing render the interactive widget only —
+            show the raw question so the teacher/student can read it. */}
+        {(kind === 'data_reveal' || kind === 'guided_drawing') && (
+          <div className="rounded-xl bg-white/5 border border-white/10 p-5 text-xl leading-relaxed">
+            <MathText text={item.question_ar} />
+          </div>
+        )}
         <div className="flex flex-wrap gap-3">
           {item.type && (
             <span className="inline-flex items-center rounded-lg border border-zinc-600 px-4 py-1.5 text-lg text-zinc-300">
