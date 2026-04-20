@@ -93,8 +93,13 @@ export async function generateLessonPlan<T>(opts: {
   const t0 = Date.now();
   const model = getAIModel();
 
-  if (PROVIDER !== 'ollama') {
-    // native structured output for gemini/anthropic
+  // Anthropic's structured-output API rejects Zod constraints like min/max on
+  // numbers (`output_config.format.schema: For 'number' type, properties
+  // maximum, minimum are not supported`). Fall through to the manual
+  // generateText+parse+Zod path (same as Ollama) for Anthropic too.
+  // Gemini's structured output accepts our schema — keep native path there.
+  if (PROVIDER === 'gemini') {
+    // native structured output for gemini
     const res = await generateObject({
       model,
       schema: opts.schema,

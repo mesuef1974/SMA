@@ -259,10 +259,29 @@ function PresentMathText({ text, className }: { text: string; className?: string
 }
 
 function PresentFormula({ formula }: { formula: string }) {
-  // `formulas[]` entries are LaTeX by contract (schema.ts). Treat the whole
-  // string as a LaTeX expression — `sanitizeLatexExpression` inside
-  // `MathDisplay` strips any accidental `$`/`$$`/`\(`/`\[` wrappers and
-  // repairs JSON-drift artefacts (egin → \begin, etc.).
+  // `formulas[]` entries SHOULD be LaTeX by contract, but in practice the
+  // AI often emits mixed content in any of these shapes:
+  //   `$LaTeX$ وصف عربي`   (math then text)
+  //   `وصف عربي $LaTeX$`   (text then math)
+  //   `$LaTeX$ عربي $LaTeX$` (both)
+  // Detect mixed content and route through `PresentMathText` which handles
+  // inline `$…$` segments correctly. Pure-LaTeX entries (no `$` at all, or
+  // a single `$…$` wrapping the ENTIRE trimmed string) go to MathDisplay.
+  const trimmed = formula.trim();
+  const dollarCount = (trimmed.match(/\$/g) || []).length;
+  const wrappedOnce =
+    dollarCount === 2 && trimmed.startsWith('$') && trimmed.endsWith('$');
+  const isMixed =
+    (dollarCount >= 2 && !wrappedOnce) ||
+    dollarCount >= 3 ||
+    /\\\(.*\\\)/.test(formula);
+  if (isMixed) {
+    return (
+      <div className="my-4 rounded-xl bg-white/10 p-6 text-center text-xl leading-loose">
+        <PresentMathText text={formula} />
+      </div>
+    );
+  }
   const hasAnyMath =
     /[\\^_{}]/.test(formula) || /\$/.test(formula) || /=/.test(formula);
   if (hasAnyMath) {
