@@ -43,3 +43,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Ollama debug outputs
+ollama-raw-last.json
+ollama-parsed-last.json
+generate-unit-5.log

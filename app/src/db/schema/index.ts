@@ -173,3 +173,20 @@ export {
   type ChallengeResponse,
   type NewChallengeResponse,
 } from './gamification';
+
+export {
+  // Enums
+  curriculumSourceKindEnum,
+  curriculumSourceBookEnum,
+  // Tables
+  curriculumSources,
+  curriculumPages,
+  // Relations
+  curriculumSourcesRelations,
+  curriculumPagesRelations,
+  // Types
+  type CurriculumSource,
+  type NewCurriculumSource,
+  type CurriculumPage,
+  type NewCurriculumPage,
+} from './curriculum-sources';

@@ -17,7 +17,7 @@ const PROVIDER = (process.env.AI_PROVIDER ?? 'gemini') as 'gemini' | 'anthropic'
 
 const GEMINI_MODEL    = 'gemini-2.0-flash';
 const ANTHROPIC_MODEL = 'claude-sonnet-4-6';
-const OLLAMA_MODEL    = 'qwen3.5:9b';
+const OLLAMA_MODEL    = 'qwen2.5:7b-16k';
 
 export function isAIConfigured(): boolean {
   if (PROVIDER === 'ollama') return true; // local server, no key needed
