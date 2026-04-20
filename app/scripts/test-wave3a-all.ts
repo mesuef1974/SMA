@@ -19,6 +19,7 @@ async function main() {
     getUnitIntro,
     getLessonContent,
   } = await import('../src/db/queries/curriculum-sources');
+  const { getSemesterPlan } = await import('../src/db/queries/semester-plan');
   const { buildSystemPrompt } = await import('../src/lib/lesson-plans/prompt');
   const { validateSourceTraceability } = await import(
     '../src/lib/lesson-plans/triple-gate'
@@ -34,7 +35,7 @@ async function main() {
 
   const lessons = (await db.execute(
     sql`SELECT id, number FROM lessons ORDER BY number`,
-  )) as Array<{ id: string; number: string }>;
+  )) as unknown as Array<{ id: string; number: string }>;
 
   console.log(`Testing ${lessons.length} lessons...\n`);
   const results: Array<{
@@ -47,6 +48,7 @@ async function main() {
   }> = [];
 
   const guideSource = await getGuidePhilosophy();
+  const semesterPlan = await getSemesterPlan();
 
   for (const row of lessons) {
     const lesson = await getLessonById(row.id);
@@ -93,6 +95,7 @@ async function main() {
       unitOverview: sourceToText(unitSource),
       lessonSourceTe: sourceToText(teLessonSource),
       lessonSourceSe: sourceToText(seLessonSource),
+      semesterPlan,
     };
     const prompt = buildSystemPrompt(ctx);
 

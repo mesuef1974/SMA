@@ -32,6 +32,7 @@ import {
   getLessonContent,
   type CurriculumSourceWithPages,
 } from '@/db/queries/curriculum-sources';
+import { getSemesterPlan } from '@/db/queries/semester-plan';
 import { getLessonById, getMisconceptionStats, createLessonPlan } from '@/db/queries';
 
 // ---------------------------------------------------------------------------
@@ -116,16 +117,18 @@ export async function POST(req: Request): Promise<Response> {
       10,
     );
     const unitNumber = lesson.chapter?.number ?? 0;
-    const [guideSource, unitSource, teLessonSource, seLessonSource] = await Promise.all([
-      getGuidePhilosophy(),
-      unitNumber > 0 ? getUnitIntro(unitNumber, 'TE') : Promise.resolve(null),
-      unitNumber > 0 && Number.isFinite(lessonNumSuffix)
-        ? getLessonContent(unitNumber, lessonNumSuffix, 'TE')
-        : Promise.resolve(null),
-      unitNumber > 0 && Number.isFinite(lessonNumSuffix)
-        ? getLessonContent(unitNumber, lessonNumSuffix, 'SE')
-        : Promise.resolve(null),
-    ]);
+    const [guideSource, unitSource, teLessonSource, seLessonSource, semesterPlan] =
+      await Promise.all([
+        getGuidePhilosophy(),
+        unitNumber > 0 ? getUnitIntro(unitNumber, 'TE') : Promise.resolve(null),
+        unitNumber > 0 && Number.isFinite(lessonNumSuffix)
+          ? getLessonContent(unitNumber, lessonNumSuffix, 'TE')
+          : Promise.resolve(null),
+        unitNumber > 0 && Number.isFinite(lessonNumSuffix)
+          ? getLessonContent(unitNumber, lessonNumSuffix, 'SE')
+          : Promise.resolve(null),
+        getSemesterPlan(),
+      ]);
     const sourceToText = (s: CurriculumSourceWithPages | null): string | undefined =>
       s?.pages.length
         ? s.pages
@@ -166,6 +169,7 @@ export async function POST(req: Request): Promise<Response> {
       unitOverview: sourceToText(unitSource),
       lessonSourceTe: sourceToText(teLessonSource),
       lessonSourceSe: sourceToText(seLessonSource),
+      semesterPlan,
     };
 
     // --- Call Claude AI ---

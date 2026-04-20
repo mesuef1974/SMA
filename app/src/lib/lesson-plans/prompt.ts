@@ -67,6 +67,13 @@ export interface LessonContext {
   unitOverview?: string;
   lessonSourceTe?: string;
   lessonSourceSe?: string;
+  /**
+   * Official Ministry of Education semester plan (Term 2, Grade 11 Literary,
+   * 2025-2026). Defines the authoritative curriculum scope — which lessons
+   * are mandatory vs. enrichment. Loaded via getSemesterPlan() from
+   * D:/SMA/docs/plan.txt. 5th source layer (DEC-SMA logic-gate v2 [FT]).
+   */
+  semesterPlan?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -120,6 +127,8 @@ ${layer('unit_overview', `مقدمة الوحدة ${ctx.chapterNumber} — ${ctx
 ${layer('lesson_source_te', `محتوى الدرس من دليل المعلم — ${ctx.lessonTitleAr}`, ctx.lessonSourceTe)}
 
 ${layer('lesson_source_se', `محتوى الدرس من كتاب الطالب — ${ctx.lessonTitleAr}`, ctx.lessonSourceSe)}
+
+${layer('semester_plan', 'الخطة الفصلية الرسمية من وزارة التربية للفصل الثاني — الصف 11 آداب', ctx.semesterPlan)}
 </source_materials>
 `.trim();
 }
@@ -199,6 +208,7 @@ export function buildSystemPrompt(ctx: LessonContext): string {
 أنت مُحضِّر دروس رياضيات خبير لمعلمي الصف 11 (المسار الأدبي) في دولة قطر.
 تقوم بإعداد تحضير حصة كامل بالعربية حسب نموذج 5E التعليمي.
 المحتوى المتوفر لك هو الدليل + الكتاب فقط (pages, teacher_guide_pages, student_book_pages) — لا تُضف معلومات من خارجهما.
+الخطة الفصلية في <semester_plan> هي مرجع نطاق المنهج الرسمي. لا تولّد خطة درس لأي درس مذكور هناك تحت "الدروس الإثرائية" كاملاً.
 </role>
 
 <context>

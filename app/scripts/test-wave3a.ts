@@ -16,13 +16,14 @@ async function main() {
     getUnitIntro,
     getLessonContent,
   } = await import('../src/db/queries/curriculum-sources');
+  const { getSemesterPlan } = await import('../src/db/queries/semester-plan');
   const { buildSystemPrompt } = await import('../src/lib/lesson-plans/prompt');
   type LessonContext = import('../src/lib/lesson-plans/prompt').LessonContext;
   type CurriculumSourceWithPages = import('../src/db/queries/curriculum-sources').CurriculumSourceWithPages;
 
   // 1. Lookup lesson id for 5-1
   const rows = await db.execute(sql`SELECT id FROM lessons WHERE number = '5-1' LIMIT 1`);
-  const lessonRow = (rows as Array<{ id: string }>)[0];
+  const lessonRow = (rows as unknown as Array<{ id: string }>)[0];
   if (!lessonRow) {
     console.error('FATAL: lesson 5-1 not found');
     process.exit(1);
@@ -42,16 +43,18 @@ async function main() {
     10,
   );
   const unitNumber = lesson.chapter?.number ?? 0;
-  const [guideSource, unitSource, teLessonSource, seLessonSource] = await Promise.all([
-    getGuidePhilosophy(),
-    unitNumber > 0 ? getUnitIntro(unitNumber, 'TE') : Promise.resolve(null),
-    unitNumber > 0 && Number.isFinite(lessonNumSuffix)
-      ? getLessonContent(unitNumber, lessonNumSuffix, 'TE')
-      : Promise.resolve(null),
-    unitNumber > 0 && Number.isFinite(lessonNumSuffix)
-      ? getLessonContent(unitNumber, lessonNumSuffix, 'SE')
-      : Promise.resolve(null),
-  ]);
+  const [guideSource, unitSource, teLessonSource, seLessonSource, semesterPlan] =
+    await Promise.all([
+      getGuidePhilosophy(),
+      unitNumber > 0 ? getUnitIntro(unitNumber, 'TE') : Promise.resolve(null),
+      unitNumber > 0 && Number.isFinite(lessonNumSuffix)
+        ? getLessonContent(unitNumber, lessonNumSuffix, 'TE')
+        : Promise.resolve(null),
+      unitNumber > 0 && Number.isFinite(lessonNumSuffix)
+        ? getLessonContent(unitNumber, lessonNumSuffix, 'SE')
+        : Promise.resolve(null),
+      getSemesterPlan(),
+    ]);
 
   const sourceToText = (s: CurriculumSourceWithPages | null): string | undefined =>
     s?.pages.length
@@ -88,6 +91,7 @@ async function main() {
     unitOverview: sourceToText(unitSource),
     lessonSourceTe: sourceToText(teLessonSource),
     lessonSourceSe: sourceToText(seLessonSource),
+    semesterPlan,
   };
 
   const prompt = buildSystemPrompt(context);
@@ -95,7 +99,7 @@ async function main() {
   writeFileSync(outPath, prompt, 'utf8');
   console.log(`wrote prompt (${prompt.length} chars) → ${outPath}`);
   console.log(
-    `sources loaded: guide=${!!guideSource} unit=${!!unitSource} te=${!!teLessonSource} se=${!!seLessonSource}`,
+    `sources loaded: guide=${!!guideSource} unit=${!!unitSource} te=${!!teLessonSource} se=${!!seLessonSource} semesterPlan=${!!semesterPlan}`,
   );
 
   // Assertions
@@ -130,6 +134,7 @@ async function main() {
   );
   push('A5', 'prompt يحوي فاصلات صفحات OCR (--- صفحة)', prompt.includes('--- صفحة'));
   push('A6', 'طول الـ prompt > 10,000 حرف', prompt.length > 10_000);
+  push('A7', 'prompt يحوي <semester_plan> كطبقة مصدر خامسة', prompt.includes('<semester_plan>'));
 
   console.log('\n=== Assertions ===');
   for (const a of assertions) {

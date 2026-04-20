@@ -220,9 +220,9 @@ export function buildSemesterPlanBlock(): string {
 
   const notesBlock = importantNotes.map((n) => `  - ${n}`).join('\n');
 
-  return `<semester_plan>
-الخطة الفصلية المعتمدة — الفصل الدراسي الثاني 2025-2026
-المادة: رياضيات 1-1 | الصف الحادي عشر | المسار الأدبي | قطر
+  return `<weekly_pacing>
+ملخّص محلي للوتيرة الأسبوعية — مُستخرج من الخطة الفصلية الرسمية (انظر <semester_plan> للمصدر الكامل).
+المادة: رياضيات 1-1 | الصف الحادي عشر | المسار الأدبي | قطر | الفصل الثاني 2025-2026
 
 الدروس المقررة حسب الأسابيع:
 ${unitsBlock}
@@ -231,5 +231,5 @@ ${unitsBlock}
 
 ملاحظات مهمة:
 ${notesBlock}
-</semester_plan>`;
+</weekly_pacing>`;
 }
