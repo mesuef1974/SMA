@@ -9,9 +9,12 @@ import { sql } from 'drizzle-orm';
 // Prompt-trim switches for Ollama (8GB VRAM, 16K ctx). Set to true to drop
 // layer and keep only lesson-specific sources. Guide philosophy (40 pages,
 // ~72KB) dominates prompt; lesson content stays intact. See measure-*.ts.
-const DROP_GUIDE_PHILOSOPHY = true;
-const DROP_UNIT_OVERVIEW = true;
-const DROP_SEMESTER_PLAN = true;
+// Default false — 5-layer injection. Set to true only for Ollama 8GB VRAM runs
+// where the 16K ctx window can't fit guide + unit overview + semester plan.
+// See LL-SMA-005 for the root-cause of shallow pedagogical depth.
+const DROP_GUIDE_PHILOSOPHY = false;
+const DROP_UNIT_OVERVIEW = false;
+const DROP_SEMESTER_PLAN = false;
 
 async function main() {
   const t0 = Date.now();

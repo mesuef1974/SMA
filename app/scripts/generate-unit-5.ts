@@ -1,12 +1,27 @@
 /**
  * Generate all 8 lesson plans for unit 5 (lessons 5-1..5-4, periods 1 & 2).
- * Uses Ollama locally — no external API cost.
+ * Provider-agnostic — respects AI_PROVIDER env var (anthropic/gemini/ollama).
  * Persists to DB with status='draft', advisor_gate='pending'.
  *
  * Skips lesson plans that already exist (lessonId + periodNumber unique).
+ *
+ * 5-layer source injection (full pedagogical depth):
+ *   1. guidePhilosophy — teacher guide philosophy (early pages)
+ *   2. unitOverview    — unit 5 intro / overview
+ *   3. lessonSourceTe  — teacher guide pages for this lesson
+ *   4. lessonSourceSe  — student book pages for this lesson
+ *   5. semesterPlan    — official Ministry of Education semester plan
+ *
+ * Previously (Ollama local, 8GB VRAM) we dropped layers 1/2/5 to fit ctx
+ * window. With Anthropic (200K ctx) all 5 layers are injected.
  */
 import { config } from 'dotenv';
-config({ path: '.env.local' });
+// Claude Code harness injects ANTHROPIC_BASE_URL without /v1 and ANTHROPIC_AUTH_TOKEN
+// into subprocess env, which hijacks @ai-sdk/anthropic. Purge before loading .env.local.
+delete process.env.ANTHROPIC_BASE_URL;
+delete process.env.ANTHROPIC_AUTH_TOKEN;
+delete process.env.ANTHROPIC_API_KEY;
+config({ path: '.env.local', override: true });
 import { sql } from 'drizzle-orm';
 
 const TEACHER_ID = '10089cca-dab0-4416-898c-ff99ae68d397';
@@ -14,7 +29,10 @@ const TEACHER_ID = '10089cca-dab0-4416-898c-ff99ae68d397';
 async function main() {
   const { db } = await import('../src/db');
   const { getLessonById, getMisconceptionStats, createLessonPlan } = await import('../src/db/queries');
-  const { getLessonContent } = await import('../src/db/queries/curriculum-sources');
+  const {
+    getGuidePhilosophy, getUnitIntro, getLessonContent,
+  } = await import('../src/db/queries/curriculum-sources');
+  const { getSemesterPlan } = await import('../src/db/queries/semester-plan');
   const { buildSystemPrompt } = await import('../src/lib/lesson-plans/prompt');
   const { lessonPlanSchema } = await import('../src/lib/lesson-plans/schema');
   const { filterToLatinNumerals } = await import('../src/lib/lesson-plans/numeral-filter');
@@ -22,12 +40,17 @@ async function main() {
     '../src/lib/lesson-plans/triple-gate'
   );
   const { generateLessonPlan } = await import('../src/lib/ai/generate-lesson-plan');
-  const { OLLAMA_MODEL } = await import('../src/lib/ai/provider');
+  const { PROVIDER, ANTHROPIC_MODEL, GEMINI_MODEL, OLLAMA_MODEL } = await import('../src/lib/ai/provider');
   type CurriculumSourceWithPages =
     import('../src/db/queries/curriculum-sources').CurriculumSourceWithPages;
   type LessonContext = import('../src/lib/lesson-plans/prompt').LessonContext;
 
-  console.log(`model=${OLLAMA_MODEL} teacher=${TEACHER_ID}`);
+  const MODEL_NAME =
+    PROVIDER === 'anthropic' ? ANTHROPIC_MODEL
+    : PROVIDER === 'gemini' ? GEMINI_MODEL
+    : OLLAMA_MODEL;
+
+  console.log(`provider=${PROVIDER} model=${MODEL_NAME} teacher=${TEACHER_ID}`);
 
   const lessons = (await db.execute(
     sql`SELECT l.id, l.number FROM lessons l JOIN chapters c ON l.chapter_id = c.id
@@ -38,10 +61,29 @@ async function main() {
   type Result = { lesson: string; period: number; status: string; ms: number; notes?: string };
   const results: Result[] = [];
 
+  // Preload unit-level sources once (guide philosophy + unit 5 overview + semester plan).
+  // These are shared across all 8 plans — no reason to fetch per-iteration.
+  const unitN = 5;
+  const [guide, unit, semesterPlan] = await Promise.all([
+    getGuidePhilosophy(),
+    getUnitIntro(unitN, 'TE'),
+    getSemesterPlan(),
+  ]);
+  const toText = (s: CurriculumSourceWithPages | null) =>
+    s?.pages.length
+      ? s.pages.map((p) => `--- صفحة ${p.pageNumber} ---\n${p.contentAr ?? ''}`).join('\n\n')
+      : undefined;
+  const guidePhilosophyText = toText(guide);
+  const unitOverviewText = toText(unit);
+  console.log(
+    `sources loaded: guide=${guidePhilosophyText?.length ?? 0} chars, ` +
+    `unit_overview=${unitOverviewText?.length ?? 0} chars, ` +
+    `semester_plan=${semesterPlan?.length ?? 0} chars`,
+  );
+
   for (const lrow of lessons) {
     const lesson = await getLessonById(lrow.id);
     if (!lesson) { console.log(`skip ${lrow.number}: not found`); continue; }
-    const unitN = lesson.chapter?.number ?? 0;
     const lessonNumSuffix = Number.parseInt(String(lesson.number).split('-').pop() ?? '', 10);
     const misc = await getMisconceptionStats(lrow.id);
 
@@ -49,10 +91,6 @@ async function main() {
       getLessonContent(unitN, lessonNumSuffix, 'TE'),
       getLessonContent(unitN, lessonNumSuffix, 'SE'),
     ]);
-    const toText = (s: CurriculumSourceWithPages | null) =>
-      s?.pages.length
-        ? s.pages.map((p) => `--- صفحة ${p.pageNumber} ---\n${p.contentAr ?? ''}`).join('\n\n')
-        : undefined;
 
     for (const periodNumber of [1, 2] as const) {
       const exists = (await db.execute(
@@ -76,11 +114,12 @@ async function main() {
           descriptionAr: lo.descriptionAr, bloomLevel: lo.bloomLevel,
         })),
         misconceptions: misc.map((m) => ({ nameAr: m.nameAr, descriptionAr: null, remediationHintAr: null })),
-        guidePhilosophy: undefined,
-        unitOverview: undefined,
+        // 5-layer injection — full depth, ordered generic → specific.
+        guidePhilosophy: guidePhilosophyText,
+        unitOverview: unitOverviewText,
         lessonSourceTe: toText(te),
         lessonSourceSe: toText(se),
-        semesterPlan: null,
+        semesterPlan: semesterPlan ?? undefined,
       };
 
       const prompt = buildSystemPrompt(ctx);
@@ -140,7 +179,8 @@ async function main() {
             ? { ...sectionData, gate_results: tg.results }
             : sectionData,
           aiSuggestions: {
-            model: OLLAMA_MODEL,
+            model: MODEL_NAME,
+            provider: PROVIDER,
             generatedAt: new Date().toISOString(),
             gate_status: status,
             gate_failures: !tg.passed || !tr.passed ? tg.failure_reasons : undefined,
@@ -152,12 +192,23 @@ async function main() {
           status, ms,
           notes: status === 'rejected_gate' ? tg.failure_reasons.slice(0, 3).join(' | ') : undefined,
         });
+        // TPM=30K cap on tier-1 Anthropic; each prompt ~50K tokens. Wait for
+        // rolling window to clear before next request. Skip if Ollama/Gemini.
+        if (PROVIDER === 'anthropic') {
+          console.log(`  …TPM cooldown 130s before next request`);
+          await new Promise((res) => setTimeout(res, 130_000));
+        }
       } catch (e) {
         clearInterval(hb); clearTimeout(timeout);
         const ms = Date.now() - t0;
         const msg = (e as Error).message?.slice(0, 200) ?? 'unknown';
         console.log(`❌ ${tag} FAILED in ${(ms / 1000).toFixed(1)}s: ${msg}`);
         results.push({ lesson: lrow.number, period: periodNumber, status: 'error', ms, notes: msg });
+        // If failure is rate-limit related, cool down longer before continuing.
+        if (PROVIDER === 'anthropic' && /rate limit|429|exceed/i.test(msg)) {
+          console.log(`  …rate-limit cooldown 150s before next request`);
+          await new Promise((res) => setTimeout(res, 150_000));
+        }
       }
     }
   }
