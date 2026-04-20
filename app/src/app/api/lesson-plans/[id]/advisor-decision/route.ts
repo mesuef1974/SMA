@@ -10,8 +10,8 @@
  * Output: The updated lesson plan record (200) or error
  *
  * Authorization:
- *   - session.user.role === 'admin', OR
- *   - session.user.email in ADVISOR_EMAILS (comma-separated env var)
+ *   - session.user.role === 'advisor', OR
+ *   - session.user.role === 'admin'
  */
 
 import { z } from 'zod';
