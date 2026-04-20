@@ -8,6 +8,7 @@ import { isAdvisor } from '@/lib/advisor';
 import { getLessonPlanById } from '@/db/queries';
 import { LessonPlanViewer } from '@/components/lesson-plan/lesson-plan-viewer';
 import { AdvisorActionBar } from '@/components/lesson-plan/advisor-action-bar';
+import { ReviewHistoryDrawer } from '@/components/lesson-plan/review-history-drawer';
 import type { LessonPlanData } from '@/lib/lesson-plans/schema';
 
 type Props = {
@@ -66,6 +67,7 @@ export default async function LessonPlanDetailPage({ params }: Props) {
           <ArrowLeft className="size-4" />
           <span>{advisor ? 'العودة إلى قائمة المراجعة' : 'العودة إلى خططي'}</span>
         </Link>
+        <ReviewHistoryDrawer planId={plan.id} />
       </div>
 
       {/* Advisor action bar — visible only to advisors */}
