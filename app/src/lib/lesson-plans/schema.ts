@@ -253,6 +253,17 @@ export type Extend = z.infer<typeof extendSchema>;
 // D-34: Triple-Gate results (post-generation, never sent to LLM)
 // ---------------------------------------------------------------------------
 
+// DEC-SMA-037 P1.2 — 5-criteria rubric scores (1-5 each).
+export const rubricScoresSchema = z.object({
+  scientific_accuracy: z.number().min(1).max(5),
+  qncf_alignment: z.number().min(1).max(5),
+  pedagogical_flow: z.number().min(1).max(5),
+  assessment_quality: z.number().min(1).max(5),
+  language_clarity: z.number().min(1).max(5),
+});
+
+export type RubricScores = z.infer<typeof rubricScoresSchema>;
+
 export const gateResultsSchema = z.object({
   bloom_gate: z.enum(['pass', 'fail']),
   qncf_gate: z.enum(['pass', 'fail']),
@@ -263,6 +274,9 @@ export const gateResultsSchema = z.object({
   advisor_reviewed_at: z.string().datetime().optional(),
   advisor_reviewer_id: z.string().optional(),
   advisor_notes: z.string().optional(),
+  // DEC-SMA-037 P1.2 — 5-criteria rubric + structured comment.
+  advisor_rubric_scores: rubricScoresSchema.optional(),
+  advisor_comment: z.string().optional(),
 });
 
 export type GateResults = z.infer<typeof gateResultsSchema>;

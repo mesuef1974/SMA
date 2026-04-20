@@ -76,6 +76,8 @@ export default async function LessonPlanDetailPage({ params }: Props) {
           reviewerName={reviewerName}
           reviewedAt={gate?.advisor_reviewed_at ?? null}
           notes={gate?.advisor_notes ?? null}
+          initialRubric={gate?.advisor_rubric_scores ?? null}
+          initialComment={gate?.advisor_comment ?? null}
         />
       )}
 

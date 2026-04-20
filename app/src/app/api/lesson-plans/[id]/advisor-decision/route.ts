@@ -6,8 +6,18 @@
  * inside sectionData.gate_results — no DB migration needed since
  * sectionData is jsonb.
  *
- * Input:  { decision: 'approved' | 'rejected', notes?: string }
+ * Input:  {
+ *           decision: 'approved' | 'rejected' | 'request_changes',
+ *           notes?: string,
+ *           comment?: string,
+ *           rubric_scores?: { scientific_accuracy, qncf_alignment,
+ *                             pedagogical_flow, assessment_quality,
+ *                             language_clarity } (each 1–5)
+ *         }
  * Output: The updated lesson plan record (200) or error
+ *
+ * P1.3 (2026-04-21): every decision also appends an append-only row to
+ * `lesson_plan_reviews` for audit/history.
  *
  * Authorization:
  *   - session.user.role === 'advisor', OR
@@ -19,14 +29,31 @@ import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { validateOrigin, csrfForbiddenResponse } from '@/lib/security/csrf';
-import { getLessonPlanById, updateLessonPlan } from '@/db/queries';
+import {
+  getLessonPlanById,
+  updateLessonPlan,
+  createLessonPlanReview,
+} from '@/db/queries';
 import { isAdvisor } from '@/lib/advisor';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// DEC-SMA-037 P1.2 — rubric scores (1-5 per criterion).
+const rubricScoresSchema = z.object({
+  scientific_accuracy: z.number().int().min(1).max(5),
+  qncf_alignment: z.number().int().min(1).max(5),
+  pedagogical_flow: z.number().int().min(1).max(5),
+  assessment_quality: z.number().int().min(1).max(5),
+  language_clarity: z.number().int().min(1).max(5),
+});
+
 const requestSchema = z.object({
-  decision: z.enum(['approved', 'rejected']),
+  // 'request_changes' will be wired end-to-end in P1.3; for now, it is
+  // normalized to 'rejected' below so existing gate semantics hold.
+  decision: z.enum(['approved', 'rejected', 'request_changes']),
   notes: z.string().max(2000).optional(),
+  rubric_scores: rubricScoresSchema.optional(),
+  comment: z.string().max(4000).optional(),
 });
 
 interface ErrorResponse {
@@ -39,6 +66,14 @@ function errorJson(message: string, status: number): Response {
 
 type SectionDataObject = Record<string, unknown>;
 
+interface RubricScoresLoose {
+  scientific_accuracy: number;
+  qncf_alignment: number;
+  pedagogical_flow: number;
+  assessment_quality: number;
+  language_clarity: number;
+}
+
 interface GateResultsLoose {
   bloom_gate?: 'pass' | 'fail';
   qncf_gate?: 'pass' | 'fail';
@@ -47,6 +82,8 @@ interface GateResultsLoose {
   advisor_reviewed_at?: string;
   advisor_reviewer_id?: string;
   advisor_notes?: string;
+  advisor_rubric_scores?: RubricScoresLoose;
+  advisor_comment?: string;
 }
 
 export async function POST(
@@ -85,7 +122,16 @@ export async function POST(
       return errorJson(firstError?.message ?? 'الطلب غير صالح', 400);
     }
 
-    const { decision, notes } = parsed.data;
+    const { decision, notes, rubric_scores, comment } = parsed.data;
+
+    // P1.3 — 'request_changes' (API) maps to enum value 'changes_requested'
+    // in the DB. Approve/reject keep their existing semantics.
+    const historyDecision: 'approved' | 'rejected' | 'changes_requested' =
+      decision === 'approved'
+        ? 'approved'
+        : decision === 'request_changes'
+          ? 'changes_requested'
+          : 'rejected';
 
     const plan = await getLessonPlanById(id);
     if (!plan) {
@@ -105,21 +151,30 @@ export async function POST(
 
     const nextGate: GateResultsLoose = {
       ...existingGate,
-      advisor_gate: decision === 'approved' ? 'approved' : 'needs_revision',
+      advisor_gate:
+        historyDecision === 'approved' ? 'approved' : 'needs_revision',
       advisor_reviewed_at: new Date().toISOString(),
       advisor_reviewer_id: session.user.id,
       advisor_notes: notes,
+      advisor_rubric_scores: rubric_scores ?? existingGate.advisor_rubric_scores,
+      advisor_comment: comment ?? existingGate.advisor_comment,
     };
 
     sd.gate_results = nextGate;
 
-    // Promote the lesson_plans.status column to 'approved' only when the
-    // advisor approves AND the gate as a whole passes. For rejection, fall
-    // back to 'in_review' so it still shows up in the advisor queue.
+    // Promote the lesson_plans.status column. Transitions (P1.3):
+    //   approved          → advisor approved AND auto-gates pass
+    //   changes_requested → advisor asked the teacher to revise
+    //   in_review         → advisor rejected (stays in advisor queue) or
+    //                       approve blocked by auto-gate failure
     const gatesPass =
       nextGate.bloom_gate !== 'fail' && nextGate.qncf_gate !== 'fail';
-    const nextStatus: 'approved' | 'in_review' =
-      decision === 'approved' && gatesPass ? 'approved' : 'in_review';
+    const nextStatus: 'approved' | 'in_review' | 'changes_requested' =
+      historyDecision === 'approved' && gatesPass
+        ? 'approved'
+        : historyDecision === 'changes_requested'
+          ? 'changes_requested'
+          : 'in_review';
 
     const updated = await updateLessonPlan(id, {
       sectionData: sd,
@@ -128,6 +183,24 @@ export async function POST(
       reviewedAt: new Date(),
       humanReviewed: true,
     });
+
+    // P1.3 — append an immutable history row for every decision. Failure
+    // is logged but does not fail the request, since the plan mutation
+    // already succeeded and a retry would duplicate it.
+    try {
+      await createLessonPlanReview({
+        lessonPlanId: id,
+        reviewerId: session.user.id,
+        decision: historyDecision,
+        comment: comment ?? notes ?? null,
+        rubricScores: rubric_scores ?? null,
+      });
+    } catch (historyErr) {
+      console.error(
+        '[/api/lesson-plans/[id]/advisor-decision] failed to append review history:',
+        historyErr,
+      );
+    }
 
     return Response.json(updated, { status: 200 });
   } catch (error) {

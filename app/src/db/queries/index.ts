@@ -21,6 +21,11 @@ export {
 } from './lesson-plans';
 
 export {
+  createLessonPlanReview,
+  getLessonPlanReviewsByPlanId,
+} from './lesson-plan-reviews';
+
+export {
   getAssessmentsByLesson,
   getAssessmentWithQuestions,
   getStudentResponses,

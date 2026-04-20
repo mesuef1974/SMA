@@ -62,6 +62,18 @@ export {
 
 export {
   // Enums
+  reviewDecisionEnum,
+  // Tables
+  lessonPlanReviews,
+  // Relations
+  lessonPlanReviewsRelations,
+  // Types
+  type LessonPlanReview,
+  type NewLessonPlanReview,
+} from './lesson-plan-reviews';
+
+export {
+  // Enums
   severityEnum,
   detectionSourceEnum,
   // Tables
