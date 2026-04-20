@@ -88,3 +88,12 @@ temp/
 *.tmp
 *.bak
 *.backup
+
+# --- Curriculum OCR artifacts (large binaries) ---
+docs/figures/
+app/public/curriculum-figures/
+docs/parsed/
+docs/*.pdf
+docs/*_ocred*.pdf
+docs/*.jpeg
+docs/*.txt
