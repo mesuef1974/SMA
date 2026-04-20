@@ -28,6 +28,7 @@ import {
   ClipboardCheck,
   Rocket,
   BookOpen,
+  AlertTriangle,
 } from 'lucide-react';
 import { MathDisplay, MathText } from '@/components/math/math-display';
 import { isMixedLatex } from '@/lib/latex/sanitize';
@@ -553,6 +554,55 @@ function buildSlides(
               </li>
             ))}
           </ul>
+        </div>
+      ),
+    });
+  }
+
+  // --- Slide 2b: Misconception Alerts (teacher pre-review) ---
+  // Collected from plan.explain.misconception_alerts (array of strings).
+  // Each string may be prefixed with a code tag like "[MC-STA-001]" followed
+  // by "name: description" or a free-form remediation hint. We render the
+  // raw string — parsing variants is brittle and the AI output format
+  // already reads well as-is. The slide is hidden if the array is empty.
+  const misconceptionAlerts = plan.explain?.misconception_alerts ?? [];
+  if (misconceptionAlerts.length > 0) {
+    slides.push({
+      id: 'misconception_alerts',
+      title: 'تنبيهات مفاهيم خاطئة',
+      icon: AlertTriangle,
+      teacherGuidePage: plan.explain.teacher_guide_page,
+      render: () => (
+        <div className="flex h-full flex-col justify-center gap-6 px-4 overflow-y-auto">
+          <div className="text-center space-y-2">
+            <h2 className="text-4xl font-bold md:text-5xl text-amber-300 flex items-center justify-center gap-3">
+              <AlertTriangle className="size-10 md:size-12" aria-hidden />
+              <span>تنبيهات مفاهيم خاطئة شائعة</span>
+            </h2>
+            <p className="text-xl text-zinc-400">
+              راجع هذه المفاهيم قبل بدء الشرح ({misconceptionAlerts.length})
+            </p>
+          </div>
+          <div className="max-w-4xl mx-auto w-full grid gap-4 md:gap-5">
+            {misconceptionAlerts.map((alert, i) => (
+              <div
+                key={i}
+                className="rounded-xl border-2 border-amber-500/60 bg-amber-950/40 p-5 md:p-6 shadow-lg"
+              >
+                <div className="flex items-start gap-4">
+                  <span
+                    className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/50 text-lg font-bold"
+                    aria-hidden
+                  >
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 text-xl md:text-2xl leading-relaxed text-amber-50">
+                    <PresentMathText text={alert} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ),
     });
