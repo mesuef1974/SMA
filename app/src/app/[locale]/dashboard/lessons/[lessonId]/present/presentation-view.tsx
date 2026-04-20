@@ -259,12 +259,16 @@ function PresentMathText({ text, className }: { text: string; className?: string
 }
 
 function PresentFormula({ formula }: { formula: string }) {
-  const hasLatex = /[\\^_{}]/.test(formula) || /\$/.test(formula);
-  if (hasLatex) {
-    const cleaned = formula.replace(/^\$\$?|\$\$?$/g, '').trim();
+  // `formulas[]` entries are LaTeX by contract (schema.ts). Treat the whole
+  // string as a LaTeX expression — `sanitizeLatexExpression` inside
+  // `MathDisplay` strips any accidental `$`/`$$`/`\(`/`\[` wrappers and
+  // repairs JSON-drift artefacts (egin → \begin, etc.).
+  const hasAnyMath =
+    /[\\^_{}]/.test(formula) || /\$/.test(formula) || /=/.test(formula);
+  if (hasAnyMath) {
     return (
       <div className="my-4 rounded-xl bg-white/10 p-6 text-center">
-        <MathDisplay latex={cleaned} display className="[&_.katex]:text-[2em]" />
+        <MathDisplay latex={formula} display className="[&_.katex]:text-[2em]" />
       </div>
     );
   }

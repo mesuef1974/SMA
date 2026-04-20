@@ -458,17 +458,20 @@ function ExplainSection({ data }: { data: LessonPlanData['explain'] }) {
             <p className="text-xs font-medium text-muted-foreground mb-2">القوانين:</p>
             <div className="space-y-2">
               {data.formulas.map((formula, i) => {
-                // Check if the formula contains LaTeX-like content
-                const hasLatex = /[\\^_{}]/.test(formula) || /\$/.test(formula);
-                if (hasLatex) {
-                  // Strip surrounding $ or $$ if present
-                  const cleaned = formula.replace(/^\$\$?|\$\$?$/g, '').trim();
+                // `formulas[]` entries are LaTeX by contract (schema.ts).
+                // `MathDisplay` runs `sanitizeLatexExpression` internally,
+                // which normalizes `\(..\)` / `\[..\]`, strips accidental
+                // `$`/`$$` wrappers, and repairs JSON round-trip drift
+                // (egin → \begin, ext → \text, rac → \frac, um_ → \sum_).
+                const hasAnyMath =
+                  /[\\^_{}]/.test(formula) || /\$/.test(formula) || /=/.test(formula);
+                if (hasAnyMath) {
                   return (
                     <div
                       key={i}
                       className="rounded-lg bg-muted/50 p-3 text-center"
                     >
-                      <MathDisplay latex={cleaned} display />
+                      <MathDisplay latex={formula} display />
                     </div>
                   );
                 }

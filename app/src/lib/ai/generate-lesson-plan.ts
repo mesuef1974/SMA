@@ -10,6 +10,7 @@
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
 import { getAIModel, PROVIDER } from './provider';
+import { sanitizeLatexDeep } from '@/lib/latex/sanitize';
 
 // JSON-aware backslash repair.
 // Ollama often emits LaTeX inside JSON strings as `\frac` / `\cdot` / `\sum`
@@ -104,7 +105,11 @@ export async function generateLessonPlan<T>(opts: {
       temperature: opts.temperature ?? 0.3,
       abortSignal: opts.abortSignal,
     });
-    return { object: res.object, ms: Date.now() - t0 };
+    // Apply the same LaTeX sanitizer — even hosted providers occasionally
+    // emit `\(..\)` delimiters. Zod schema stays strict; this only rewrites
+    // string leaves, never structure.
+    const normalized = sanitizeLatexDeep(res.object);
+    return { object: normalized as T, ms: Date.now() - t0 };
   }
 
   // Ollama path: generateText + manual JSON parsing + Zod validate.
@@ -146,7 +151,12 @@ export async function generateLessonPlan<T>(opts: {
   // Defensive auto-repair: small, deterministic drifts Ollama consistently
   // produces. Not magic — only fills fields whose value can be inferred from
   // sibling fields (not hallucination). Keeps the schema contract strict.
-  const parsed = autoRepair(parsedRaw);
+  const repaired = autoRepair(parsedRaw);
+  // LaTeX sanitizer: normalize ChatGPT-style `\(..\)` / `\[..\]` to `$..$` /
+  // `$$..$$` and repair JSON-round-trip artefacts (egin → \begin, ext →
+  // \text, rac → \frac, um_ → \sum_). Runs recursively over every string
+  // leaf so downstream KaTeX rendering never sees lone `\(` or `egin{`.
+  const parsed = sanitizeLatexDeep(repaired);
   try {
     const validated = opts.schema.parse(parsed);
     return { object: validated, rawText: res.text, ms: Date.now() - t0 };
