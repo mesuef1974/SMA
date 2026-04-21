@@ -1,0 +1,152 @@
+{
+  "_source": "advisor.education_pedagogy.v1",
+  "_generated_at": "2026-04-21",
+  "_confidence": 0.82,
+  "_recommendation": "adopt_with_minor_adjustments",
+  "_requires_human_review": true,
+  "_note": "Period breakdown per lesson per Qatar MOE semester plan + 5E pedagogical model. LOs require human verification against TE pages 166-175.",
+  "period_pedagogy_map": {
+    "5-1": {
+      "total_periods": 3,
+      "title_ar": "تحليل تمثيل البيانات",
+      "periods": [
+        {
+          "period": 1,
+          "focus_ar": "التعرّف على أنواع تمثيل البيانات وقراءتها",
+          "five_e_stage": "Engage+Explore",
+          "bloom_levels": ["Remember", "Understand"],
+          "learning_outcomes_focus": ["تمييز أنواع التمثيل", "قراءة القيم من التمثيل"],
+          "primary_interaction_types": ["data-reveal", "think-pair-share"],
+          "summative_weight": 0.0
+        },
+        {
+          "period": 2,
+          "focus_ar": "تحليل التمثيل واستخراج الشكل والمركز والانتشار",
+          "five_e_stage": "Explain+Elaborate",
+          "bloom_levels": ["Understand", "Apply", "Analyze"],
+          "learning_outcomes_focus": ["تحليل التوزيع", "استخراج المركز والانتشار"],
+          "primary_interaction_types": ["try-then-reveal", "guided-drawing"],
+          "summative_weight": 0.0
+        },
+        {
+          "period": 3,
+          "focus_ar": "تطبيق + تقييم ختامي للدرس",
+          "five_e_stage": "Elaborate+Evaluate",
+          "bloom_levels": ["Apply", "Analyze", "Evaluate"],
+          "learning_outcomes_focus": ["توظيف التمثيل في الحكم", "تبرير الاختيار"],
+          "primary_interaction_types": ["think-pair-share", "try-then-reveal"],
+          "summative_weight": 0.5
+        }
+      ]
+    },
+    "5-2": {
+      "total_periods": 3,
+      "title_ar": "مقارنة مجموعات البيانات",
+      "periods": [
+        {
+          "period": 1,
+          "focus_ar": "استخدام مقاييس النزعة المركزية لمقارنة مجموعتَي بيانات",
+          "five_e_stage": "Engage+Explore",
+          "bloom_levels": ["Remember", "Understand"],
+          "learning_outcomes_focus": ["استرجاع الوسط/الوسيط/المنوال", "اختيار مقياس المقارنة"],
+          "primary_interaction_types": ["data-reveal", "try-then-reveal"],
+          "summative_weight": 0.0
+        },
+        {
+          "period": 2,
+          "focus_ar": "دمج مقاييس التشتّت (المدى، IQR) في المقارنة",
+          "five_e_stage": "Explain+Elaborate",
+          "bloom_levels": ["Understand", "Apply", "Analyze"],
+          "learning_outcomes_focus": ["حساب مقاييس التشتت", "ربط التشتّت بالمقارنة"],
+          "primary_interaction_types": ["guided-drawing", "think-pair-share"],
+          "summative_weight": 0.0
+        },
+        {
+          "period": 3,
+          "focus_ar": "تطبيق متكامل + تقييم ختامي",
+          "five_e_stage": "Elaborate+Evaluate",
+          "bloom_levels": ["Apply", "Analyze", "Evaluate"],
+          "learning_outcomes_focus": ["إصدار حكم مبرَّر على مجموعتَي بيانات"],
+          "primary_interaction_types": ["try-then-reveal"],
+          "summative_weight": 0.55
+        }
+      ]
+    },
+    "5-3": {
+      "total_periods": 4,
+      "title_ar": "تفسير أشكال تمثيل البيانات",
+      "_note": "درس رئيسي ممتد على أسبوعين (2+2) حسب الخطة الفصلية — يسمح بعمق تفسيري",
+      "periods": [
+        {
+          "period": 1,
+          "focus_ar": "أشكال التوزيع وعلاقة الوسط بالوسيط",
+          "five_e_stage": "Engage+Explore",
+          "bloom_levels": ["Remember", "Understand"],
+          "learning_outcomes_focus": ["تصنيف شكل التوزيع", "ربط الشكل بالمقاييس"],
+          "primary_interaction_types": ["data-reveal", "try-then-reveal"],
+          "summative_weight": 0.0
+        },
+        {
+          "period": 2,
+          "focus_ar": "اختيار المقياس المناسب للشكل والقيم الشاذة",
+          "five_e_stage": "Explain+Elaborate",
+          "bloom_levels": ["Understand", "Apply"],
+          "learning_outcomes_focus": ["تبرير اختيار الوسط/الوسيط", "التعامل مع القيم الشاذة"],
+          "primary_interaction_types": ["think-pair-share", "try-then-reveal"],
+          "summative_weight": 0.0
+        },
+        {
+          "period": 3,
+          "focus_ar": "الاستدلال والتنبؤ من التمثيلات (سياق بيئي)",
+          "five_e_stage": "Elaborate",
+          "bloom_levels": ["Apply", "Analyze", "Evaluate"],
+          "learning_outcomes_focus": ["بناء استنتاجات", "بناء توقعات من البيانات"],
+          "primary_interaction_types": ["guided-drawing", "data-reveal"],
+          "summative_weight": 0.15
+        },
+        {
+          "period": 4,
+          "focus_ar": "تقييم ختامي شامل + جزء من المهمة الأدائية",
+          "five_e_stage": "Evaluate",
+          "bloom_levels": ["Analyze", "Evaluate", "Create"],
+          "learning_outcomes_focus": ["إنتاج تفسير مكتوب متكامل"],
+          "primary_interaction_types": ["try-then-reveal"],
+          "summative_weight": 0.6
+        }
+      ]
+    },
+    "5-4": {
+      "total_periods": 3,
+      "title_ar": "الانحراف المعياري",
+      "periods": [
+        {
+          "period": 1,
+          "focus_ar": "فكرة الانحراف عن الوسط والحاجة لمقياس تشتّت دقيق",
+          "five_e_stage": "Engage+Explore",
+          "bloom_levels": ["Remember", "Understand"],
+          "learning_outcomes_focus": ["تفسير معنى الانحراف", "تبرير تربيع الانحرافات"],
+          "primary_interaction_types": ["data-reveal", "try-then-reveal"],
+          "summative_weight": 0.0
+        },
+        {
+          "period": 2,
+          "focus_ar": "حساب الانحراف المعياري وتفسيره",
+          "five_e_stage": "Explain+Elaborate",
+          "bloom_levels": ["Understand", "Apply"],
+          "learning_outcomes_focus": ["تطبيق صيغة s", "تفسير قيمة s"],
+          "primary_interaction_types": ["guided-drawing", "try-then-reveal"],
+          "summative_weight": 0.0
+        },
+        {
+          "period": 3,
+          "focus_ar": "تطبيق المثال 4 الإثرائي + تقييم ختامي",
+          "five_e_stage": "Elaborate+Evaluate",
+          "bloom_levels": ["Apply", "Analyze", "Evaluate"],
+          "learning_outcomes_focus": ["توظيف s في مقارنة البيانات الحقيقية"],
+          "primary_interaction_types": ["think-pair-share", "try-then-reveal"],
+          "summative_weight": 0.55
+        }
+      ]
+    }
+  }
+}

@@ -37,8 +37,8 @@ export interface LessonContext {
   chapterNumber: number;
   /** Chapter Arabic title */
   chapterTitleAr: string;
-  /** Period number (1 or 2) */
-  periodNumber: 1 | 2;
+  /** Period number (1..N where N = totalPeriods in pedagogy map, typically 2-4) */
+  periodNumber: number;
   /** Teacher guide page range */
   teacherGuidePages?: string;
   /** Student book page range */
@@ -74,6 +74,23 @@ export interface LessonContext {
    * D:/SMA/docs/plan.txt. 5th source layer (DEC-SMA logic-gate v2 [FT]).
    */
   semesterPlan?: string;
+  /**
+   * Per-period pedagogical guidance produced by the education advisor
+   * (advisor.education_pedagogy.v1). Loaded from
+   * docs/unit-5-period-pedagogy-map.json and matched by (lessonNumber, period).
+   * Binds each period to its intended 5E stage, Bloom levels, focus, and
+   * summative weight so the generator produces professionally-split periods
+   * that never duplicate other periods' content. 6th source layer.
+   */
+  periodPedagogy?: {
+    totalPeriods: number;
+    focusAr: string;
+    fiveEStage: string;
+    bloomLevels: string[];
+    learningOutcomesFocus: string[];
+    primaryInteractionTypes: string[];
+    summativeWeight: number;
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -134,6 +151,57 @@ ${layer('semester_plan', 'الخطة الفصلية الرسمية من وزار
 }
 
 // ---------------------------------------------------------------------------
+// 6th layer — Period Pedagogical Guidance
+// ---------------------------------------------------------------------------
+
+/**
+ * Builds the 6th prompt layer: per-period pedagogical guidance from the
+ * education advisor's pedagogy map. Binds this specific period to its
+ * focus, 5E stage, Bloom levels, and summative weight so the model
+ * doesn't duplicate content across periods.
+ *
+ * summative_weight semantics:
+ *   0.0          → لا يُبنى تقييم ختامي شامل في هذه الحصة (تكوينّي فقط)
+ *   0 < w ≤ 0.3  → تقييم تكوينّي موسَّع (جزء من المهمة الأدائية)
+ *   w > 0.3      → تقييم ختامي شامل يغطي نتاجات الدرس
+ */
+function buildPeriodPedagogyBlock(ctx: LessonContext): string {
+  const p = ctx.periodPedagogy;
+  if (!p) return '';
+  const summativeDirective =
+    p.summativeWeight === 0
+      ? 'لا تبنِ تقييماً ختامياً شاملاً في هذه الحصة. قسم assess تكوينّي فقط (2-3 بنود قصيرة للتحقق من الفهم).'
+      : p.summativeWeight <= 0.3
+      ? `وزن التقييم الختامي ${p.summativeWeight} — أدرج جزءاً من المهمة الأدائية في assess دون أن يكون التقييم شاملاً لكامل الدرس.`
+      : `وزن التقييم الختامي ${p.summativeWeight} — هذه حصة تقييم ختامي شامل. يجب أن يغطي assess نتاجات الدرس الأساسية بعمق (4+ بنود متنوعة بلوم).`;
+
+  return `
+<period_pedagogy>
+🎯 التوجيه التربوي المُلزِم لهذه الحصة (من المستشار التربوي — advisor.education_pedagogy.v1)
+
+هذه حصة ${ctx.periodNumber} من ${p.totalPeriods} لهذا الدرس.
+الاتّباع الكامل لـ focus_ar أدناه إلزامي. لا تولّد محتوى من حصص أخرى في هذا الدرس.
+
+- محور التركيز (focus_ar): ${p.focusAr}
+- مرحلة 5E لهذه الحصة: ${p.fiveEStage}
+- مستويات بلوم المستهدفة: ${p.bloomLevels.join('، ')}
+- بؤرة نتاجات التعلم لهذه الحصة تحديداً: ${p.learningOutcomesFocus.join(' / ')}
+- أنماط التفاعل الموصى بها: ${p.primaryInteractionTypes.join('، ')}
+- وزن التقييم الختامي (summative_weight): ${p.summativeWeight}
+
+📌 ${summativeDirective}
+
+قواعد صارمة:
+1. كل نشاط/تمرين/سؤال في هذه الخطة يجب أن يخدم focus_ar أعلاه — لا محتوى لحصة أخرى.
+2. استخدم مستويات بلوم المذكورة أعلاه كأغلبية في bloom_level لبنود practice و assess.
+3. نوّع interaction_type لكن اجعل الأنماط المذكورة أعلاه هي الأغلب.
+4. إن كانت الحصة السابقة غطّت مفهوماً فلا تعد شرحه — ابنِ عليه.
+5. explore/practice/assess يعكس مرحلة 5E المحددة لهذه الحصة وليس الدرس كاملاً.
+</period_pedagogy>
+`.trim();
+}
+
+// ---------------------------------------------------------------------------
 // System Prompt Builder
 // ---------------------------------------------------------------------------
 
@@ -172,6 +240,10 @@ export function buildSystemPrompt(ctx: LessonContext): string {
 
   // 3-layer verbatim source injection — the only authorized content surface.
   const sourceSection = buildSourceSection(ctx);
+
+  // 6th layer — per-period pedagogical guidance from education advisor.
+  const periodPedagogyBlock = buildPeriodPedagogyBlock(ctx);
+  const totalPeriods = ctx.periodPedagogy?.totalPeriods ?? 2;
 
   const misconceptionCodesBlock = MISCONCEPTION_CODES.map(
     (code) => `  - ${code}`,
@@ -216,7 +288,7 @@ export function buildSystemPrompt(ctx: LessonContext): string {
 - الدولة: قطر
 - الفصل: ${ctx.chapterNumber} — ${ctx.chapterTitleAr}
 - الدرس: ${ctx.lessonTitleAr}${ctx.lessonTitleEn ? ' (' + ctx.lessonTitleEn + ')' : ''}
-- الحصة: ${ctx.periodNumber} من 2
+- الحصة: ${ctx.periodNumber} من ${totalPeriods}
 ${ctx.teacherGuidePages ? '- صفحات دليل المعلم: ' + ctx.teacherGuidePages : ''}
 ${ctx.studentBookPages ? '- صفحات كتاب الطالب: ' + ctx.studentBookPages : ''}
 </context>
@@ -244,6 +316,8 @@ ${buildCatalogPromptReference()}
 
 ${sourceSection}
 
+${periodPedagogyBlock}
+
 <constraints>
 1. المصادر المسموحة حصراً: دليل المعلم + كتاب الطالب (DEC-SMA-032). لا تخترع أمثلة من خارج المنهج. التزم بالحرفية 100% كما في <content_policy> أعلاه.
 2. اتبع نموذج 5E (Engage → Explore → Explain → Elaborate → Evaluate).
@@ -263,8 +337,8 @@ ${sourceSection}
 </constraints>
 
 <timing>
-مدة الحصة الواحدة 45 دقيقة. هذا التحضير **للحصة رقم ${ctx.periodNumber} من حصتين** في هذا الدرس (DEC-SMA-012).
-لا توزّع المحتوى على الحصتين في تحضير واحد — التحضير الحالي يغطي الحصة ${ctx.periodNumber} فقط.
+مدة الحصة الواحدة 45 دقيقة. هذا التحضير **للحصة رقم ${ctx.periodNumber} من ${totalPeriods} حصص** في هذا الدرس (DEC-SMA-012).
+لا توزّع المحتوى على كل الحصص في تحضير واحد — التحضير الحالي يغطي الحصة ${ctx.periodNumber} فقط.
 التوزيع المقترح داخل الحصة (45 دقيقة):
 - warm_up: 5 دقائق
 - explore: 15 دقيقة
@@ -283,7 +357,7 @@ ${sourceSection}
     "lesson_title_ar": "عنوان الدرس",
     "lesson_title_en": "Lesson Title (optional)",
     "unit_number": رقم الوحدة,
-    "period": "1" أو "2",
+    "period": "1" أو "2" أو "3" أو "4",
     "teacher_guide_pages": "ص X-Y",
     "student_book_pages": "ص X-Y"
   },

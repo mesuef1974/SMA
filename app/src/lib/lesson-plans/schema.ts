@@ -89,7 +89,7 @@ export const headerSchema = z.object({
   lesson_title_ar: z.string().min(1),
   lesson_title_en: z.string().optional(),
   unit_number: z.number(),
-  period: z.enum(['1', '2']),
+  period: z.enum(['1', '2', '3', '4']),
   date: z.string().optional(),
   teacher_guide_pages: z.string(),
   student_book_pages: z.string(),
