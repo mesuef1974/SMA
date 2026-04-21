@@ -9,7 +9,10 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
-  --font-heading: var(--font-sans);
+  /* Teacher UI v2 (design-handoff) — brand typographic pairing */
+  --font-heading: var(--font-cairo, var(--font-sans));
+  --font-body: var(--font-tajawal, var(--font-sans));
+  --font-numeric: var(--font-jetbrains, var(--font-mono));
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -201,6 +204,20 @@
   --team-3: oklch(0.70 0.17 162);  /* green */
   --team-4: oklch(0.77 0.15 85);   /* amber */
 
+  /* ----- Teacher UI v2 (design-handoff) — explicit aliases ------------- */
+  /* README-required accents (already exist above; named here for clarity) */
+  --teacher-primary:       oklch(0.55 0.18 265);      /* نيلي — teacher hero indigo */
+  --teacher-najm-700:      var(--sma-najm-700);
+  --teacher-sahla-600:     var(--sma-sahla-600);
+  --teacher-qamar-600:     var(--sma-qamar-600);
+  /* Teacher-specific radii per handoff */
+  --r-card:   16px;   /* main cards */
+  --r-inner:  12px;   /* inner cards */
+  --r-btn:    8px;    /* buttons */
+  --r-pill:   999px;  /* pills */
+  /* Handoff standard ease */
+  --ease-teacher-standard: cubic-bezier(0.2, 0, 0, 1);
+
   /* Sidebar */
   --sidebar:                       var(--sma-najm-950);
   --sidebar-foreground:            oklch(0.93 0.015 280);
@@ -257,6 +274,12 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+
+  /* Teacher UI v2 — dark counterparts */
+  --teacher-primary:     oklch(0.72 0.14 265);
+  --teacher-najm-700:    var(--sma-najm-400);
+  --teacher-sahla-600:   var(--sma-sahla-400);
+  --teacher-qamar-600:   var(--sma-qamar-500);
 
   --sidebar:                     var(--sma-najm-950);
   --sidebar-foreground:          oklch(0.96 0.010 280);
