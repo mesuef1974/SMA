@@ -1,4 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 import { ComposerShell } from "./composer-shell";
 
 type Props = {
@@ -10,6 +12,12 @@ type Props = {
 export default async function LessonComposerPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect(`/${locale}/login`);
+  }
+
   return <ComposerShell />;
 }
 

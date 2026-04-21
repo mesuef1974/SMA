@@ -118,8 +118,8 @@ async function main() {
     const trace = validateSourceTraceability(result.object as Parameters<typeof validateSourceTraceability>[0], {
       pageStartTe: lesson.pageStartTe, pageEndTe: lesson.pageEndTe,
     });
-    console.log(`triple-gate: ${tg.passed ? 'PASS' : 'FAIL'} bloom=${tg.bloomGate} qncf=${tg.qncfGate} advisor=${tg.advisorGate}`);
-    if (!tg.passed) console.log('triple-gate reasons:', tg.reasons);
+    console.log(`triple-gate: ${tg.passed ? 'PASS' : 'FAIL'} bloom=${tg.results.bloom_gate} qncf=${tg.results.qncf_gate} advisor=${tg.results.advisor_gate}`);
+    if (!tg.passed) console.log('triple-gate reasons:', tg.failure_reasons);
     console.log(`trace: ${trace.passed ? 'PASS' : 'FAIL'}`);
     if (!trace.passed) console.log('trace reasons:', trace.reasons);
   } catch (e) {
