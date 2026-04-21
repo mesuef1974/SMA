@@ -4,7 +4,7 @@
  * Creates a lesson plan from a pre-built template (no AI call needed).
  * Returns the created lesson plan record immediately.
  *
- * Input:  { lessonId: string, periodNumber: 1 | 2 }
+ * Input:  { lessonId: string, periodNumber: 1 | 2 | 3 | 4 }
  * Output: The created lesson plan record (201) or error
  *
  * Requires authentication (enforced by proxy.ts middleware).
@@ -24,7 +24,7 @@ import { lesson51Period1, lesson51Period2 } from '@/lib/lesson-plans/templates/l
 // Template registry
 // ---------------------------------------------------------------------------
 
-const TEMPLATES: Record<string, Record<1 | 2, LessonPlanData>> = {
+const TEMPLATES: Record<string, Partial<Record<1 | 2 | 3 | 4, LessonPlanData>>> = {
   '0f3d5c6d-f8e7-4b24-b1e7-528653eafc36': {
     1: lesson51Period1,
     2: lesson51Period2,
@@ -37,8 +37,8 @@ const TEMPLATES: Record<string, Record<1 | 2, LessonPlanData>> = {
 
 const requestSchema = z.object({
   lessonId: z.string().uuid('lessonId يجب أن يكون UUID صالح'),
-  periodNumber: z.union([z.literal(1), z.literal(2)], {
-    message: 'periodNumber يجب أن يكون 1 أو 2',
+  periodNumber: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)], {
+    message: 'periodNumber يجب أن يكون 1 أو 2 أو 3 أو 4',
   }),
 });
 
@@ -90,7 +90,10 @@ export async function POST(req: Request): Promise<Response> {
       return errorJson('لا يوجد قالب لهذا الدرس', 404);
     }
 
-    const sectionData = lessonTemplates[periodNumber as 1 | 2];
+    const sectionData = lessonTemplates[periodNumber as 1 | 2 | 3 | 4];
+    if (!sectionData) {
+      return errorJson('لا يوجد قالب لهذه الحصة', 404);
+    }
 
     // --- Persist to DB ---
     const plan = await createLessonPlan({

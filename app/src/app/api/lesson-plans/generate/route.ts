@@ -4,7 +4,7 @@
  * Generates a full lesson plan using Claude AI, validates it against the
  * Zod schema, and persists it to the database.
  *
- * Input:  { lessonId: string, periodNumber: 1 | 2 }
+ * Input:  { lessonId: string, periodNumber: 1 | 2 | 3 | 4 }
  * Output: The created lesson plan record (with sectionData populated).
  *
  * Requires authentication (enforced by proxy.ts middleware).
@@ -41,8 +41,8 @@ import { getLessonById, getMisconceptionStats, createLessonPlan } from '@/db/que
 
 const requestSchema = z.object({
   lessonId: z.string().uuid('lessonId يجب أن يكون UUID صالح'),
-  periodNumber: z.union([z.literal(1), z.literal(2)], {
-    message: 'periodNumber يجب أن يكون 1 أو 2',
+  periodNumber: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)], {
+    message: 'periodNumber يجب أن يكون 1 أو 2 أو 3 أو 4',
   }),
   teacherNotes: z
     .string()
@@ -152,7 +152,7 @@ export async function POST(req: Request): Promise<Response> {
       lessonTitleEn: lesson.title,
       chapterNumber: lesson.chapter?.number ?? 0,
       chapterTitleAr: lesson.chapter?.titleAr ?? '',
-      periodNumber: periodNumber as 1 | 2,
+      periodNumber: periodNumber as 1 | 2 | 3 | 4,
       teacherGuidePages,
       studentBookPages,
       learningOutcomes: (lesson.learningOutcomes ?? []).map((lo) => ({
