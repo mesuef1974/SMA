@@ -1,4 +1,5 @@
 export { Chrome } from "./Chrome";
+export type { ChromeUser } from "./Chrome";
 export { StatCard } from "./StatCard";
 export { Sparkline } from "./Sparkline";
 export { LessonRow } from "./LessonRow";

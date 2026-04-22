@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getLessonById, getLessonPlansByTeacher } from "@/db/queries";
+import { roleToArabic } from "@/lib/role-labels";
 import { ComposerShell, type ComposerLessonSeed } from "./composer-shell";
 
 type Props = {
@@ -77,7 +78,13 @@ export default async function LessonComposerPage({
     }
   }
 
-  return <ComposerShell seed={seed} locale={locale} />;
+  const chromeUser = {
+    name: session.user.name ?? "معلم",
+    email: session.user.email ?? "",
+    roleLabel: roleToArabic(session.user.role),
+  };
+
+  return <ComposerShell seed={seed} locale={locale} user={chromeUser} />;
 }
 
 export const metadata = {

@@ -11,7 +11,7 @@ import {
   BookOpen,
   ArrowLeft,
 } from "lucide-react";
-import { Chrome } from "@/components/teacher-ui";
+import { Chrome, type ChromeUser } from "@/components/teacher-ui";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -176,9 +176,9 @@ function sectionsFromPrior(prior: PriorPlanShape): Section[] {
 // Empty state — no lessonId in query string
 // ---------------------------------------------------------------------------
 
-function EmptyComposerState({ locale }: { locale: string }) {
+function EmptyComposerState({ locale, user }: { locale: string; user?: ChromeUser }) {
   return (
-    <Chrome activeTab="lessons">
+    <Chrome activeTab="lessons" user={user}>
       <div className="max-w-[820px] mx-auto px-7 py-16">
         <div className="bg-card border border-border rounded-[20px] p-10 text-center">
           <div className="inline-flex size-14 items-center justify-center rounded-full bg-primary/10 mb-4">
@@ -214,22 +214,26 @@ function EmptyComposerState({ locale }: { locale: string }) {
 export function ComposerShell({
   seed,
   locale,
+  user,
 }: {
   seed: ComposerLessonSeed | null;
   locale: string;
+  user?: ChromeUser;
 }) {
   if (!seed) {
-    return <EmptyComposerState locale={locale} />;
+    return <EmptyComposerState locale={locale} user={user} />;
   }
-  return <ComposerShellBody seed={seed} locale={locale} />;
+  return <ComposerShellBody seed={seed} locale={locale} user={user} />;
 }
 
 function ComposerShellBody({
   seed,
   locale,
+  user,
 }: {
   seed: ComposerLessonSeed;
   locale: string;
+  user?: ChromeUser;
 }) {
   const initialSections = seed.priorPlan?.sectionData
     ? sectionsFromPrior(seed.priorPlan.sectionData as PriorPlanShape)
@@ -280,7 +284,7 @@ function ComposerShellBody({
     : "";
 
   return (
-    <Chrome activeTab="lessons">
+    <Chrome activeTab="lessons" user={user}>
       <div className="max-w-[1440px] mx-auto px-7 py-7">
         {/* header row */}
         <div className="flex flex-wrap items-end justify-between gap-3 mb-5">

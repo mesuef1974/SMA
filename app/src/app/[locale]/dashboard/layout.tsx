@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { Chrome } from '@/components/teacher-ui';
 import { auth } from '@/lib/auth';
+import { roleToArabic } from '@/lib/role-labels';
 
 type Props = {
   children: React.ReactNode;
@@ -29,5 +30,11 @@ export default async function DashboardLayout({ children, params }: Props) {
     redirect(`/${locale}/login`);
   }
 
-  return <Chrome>{children}</Chrome>;
+  const chromeUser = {
+    name: session.user.name ?? 'معلم',
+    email: session.user.email ?? '',
+    roleLabel: roleToArabic(session.user.role),
+  };
+
+  return <Chrome user={chromeUser}>{children}</Chrome>;
 }
