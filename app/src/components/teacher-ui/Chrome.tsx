@@ -318,31 +318,25 @@ export function Chrome({ user, children }: ChromeProps) {
         {/* avatar + dropdown menu */}
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={(props) => (
-              <button
-                type="button"
-                {...props}
-                aria-label="قائمة المستخدم"
-                className="flex items-center gap-2.5 ps-1 pe-2.5 py-1 rounded-full border border-border bg-card hover:border-primary/60 transition-colors cursor-pointer"
-              >
-                <div className="text-xs text-end leading-tight">
-                  <div className="font-semibold">{displayName}</div>
-                  <div className="text-muted-foreground text-[10px]">
-                    {displayRole}
-                  </div>
-                </div>
-                <div
-                  className="w-[30px] h-[30px] rounded-full text-white flex items-center justify-center font-bold text-xs"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, var(--sma-najm-600), var(--sma-najm-800))",
-                  }}
-                >
-                  {avatarInitials}
-                </div>
-              </button>
-            )}
-          />
+            aria-label="قائمة المستخدم"
+            className="flex items-center gap-2.5 ps-1 pe-2.5 py-1 rounded-full border border-border bg-card hover:border-primary/60 transition-colors cursor-pointer"
+          >
+            <div className="text-xs text-end leading-tight">
+              <div className="font-semibold">{displayName}</div>
+              <div className="text-muted-foreground text-[10px]">
+                {displayRole}
+              </div>
+            </div>
+            <div
+              className="w-[30px] h-[30px] rounded-full text-white flex items-center justify-center font-bold text-xs"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--sma-najm-600), var(--sma-najm-800))",
+              }}
+            >
+              {avatarInitials}
+            </div>
+          </DropdownMenuTrigger>
           <DropdownMenuContent align="end" sideOffset={6} className="min-w-[220px]">
             <DropdownMenuLabel>
               <div className="flex flex-col gap-0.5 py-1">
@@ -364,7 +358,6 @@ export function Chrome({ user, children }: ChromeProps) {
               disabled
               title="قريباً"
               aria-disabled="true"
-              onSelect={(e) => e.preventDefault?.()}
             >
               <Settings /> الإعدادات
               <span className="ms-auto text-[10px] text-muted-foreground">
