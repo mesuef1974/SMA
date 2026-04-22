@@ -243,6 +243,16 @@ function ComposerShellBody({
   const [activeId, setActiveId] = React.useState<string>(initialSections[0].id);
   const [title, setTitle] = React.useState(seed.titleAr);
   const [toast, setToast] = React.useState<string | null>(null);
+  const [planId, setPlanId] = React.useState<string | null>(
+    seed.priorPlan?.id ?? null,
+  );
+  const [isPending, startTransition] = React.useTransition();
+  const [autoSaveState, setAutoSaveState] = React.useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+  // Skip the first autosave run — nothing has been edited yet and we don't
+  // want to create redundant revisions of the seeded content.
+  const didMountRef = React.useRef(false);
 
   const active = sections.find((s) => s.id === activeId) ?? sections[0];
   const total = sections.reduce((s, x) => s + x.minutes, 0);
@@ -267,17 +277,108 @@ function ComposerShellBody({
     );
   };
 
+  // -------------------------------------------------------------------------
+  // Persistence (P0.7)
+  //
+  // Three entry points share `persist()`:
+  //   - handleSaveDraft  — explicit "حفظ كمسودة"
+  //   - handlePublish    — explicit "نشر للطلاب" (published → in_review)
+  //   - auto-save effect — debounced 3s after last edit, draft only
+  //
+  // persist() decides POST-create vs PATCH-update based on whether we
+  // already have a planId (seeded from priorPlan or stored after first save).
+  // -------------------------------------------------------------------------
+
+  const persist = React.useCallback(
+    async (opts: {
+      status: "draft" | "published";
+      silent?: boolean;
+    }): Promise<"ok" | "error"> => {
+      const { status, silent } = opts;
+      const payloadSections = sections.map((s) => ({
+        id: s.id,
+        title: s.title,
+        minutes: s.minutes,
+        body: s.body,
+      }));
+      try {
+        if (planId) {
+          const res = await fetch(`/api/lesson-plans/${planId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title,
+              sections: payloadSections,
+              status,
+            }),
+          });
+          if (!res.ok) throw new Error(`PATCH ${res.status}`);
+        } else {
+          const period = Math.max(
+            1,
+            Math.min(4, seed.priorPlan?.periodNumber ?? 1),
+          );
+          const res = await fetch(`/api/lesson-plans`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              lessonId: seed.lessonId,
+              period,
+              title,
+              sections: payloadSections,
+              status,
+            }),
+          });
+          if (!res.ok) throw new Error(`POST ${res.status}`);
+          const json = (await res.json()) as { id: string };
+          setPlanId(json.id);
+        }
+        if (!silent)
+          flashToast(
+            status === "published" ? "تم الإرسال للمراجعة" : "تم حفظ المسودة",
+          );
+        return "ok";
+      } catch (err) {
+        console.error("[composer] persist error", err);
+        if (!silent) flashToast("تعذّر الحفظ — تحقّق من الاتصال");
+        return "error";
+      }
+    },
+    [planId, title, sections, seed.lessonId, seed.priorPlan?.periodNumber],
+  );
+
   const handleSaveDraft = () => {
-    // TODO(integration): POST to a dedicated draft endpoint once it exists.
-    // For now we only have /api/lesson-plans/generate which runs the full
-    // AI pipeline, so a blind "save" would overwrite teacher edits.
-    flashToast("جارٍ الحفظ... (ربط الحفظ قيد التطوير)");
+    startTransition(async () => {
+      await persist({ status: "draft" });
+    });
   };
 
   const handlePublish = () => {
-    // TODO(integration): mark plan as in_review + notify advisor.
-    flashToast("نشر للطلاب قيد التطوير — سيتوفر قريباً");
+    startTransition(async () => {
+      await persist({ status: "published" });
+    });
   };
+
+  // Debounced auto-save (draft only). Fires 3s after the last edit to
+  // title/sections. Skipped on initial mount and while a manual save is in
+  // flight (isPending) — the manual save already covers fresh content.
+  React.useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    if (isPending) return;
+    const t = window.setTimeout(() => {
+      setAutoSaveState("saving");
+      void persist({ status: "draft", silent: true }).then((r) => {
+        setAutoSaveState(r === "ok" ? "saved" : "error");
+        if (r === "ok") {
+          window.setTimeout(() => setAutoSaveState("idle"), 2500);
+        }
+      });
+    }, 3000);
+    return () => window.clearTimeout(t);
+  }, [title, sections, isPending, persist]);
 
   const chapterLabel = seed.chapter
     ? `الفصل ${seed.chapter.number} — ${seed.chapter.titleAr}`
@@ -458,23 +559,34 @@ function ComposerShellBody({
         {/* sticky bottom bar */}
         <div className="sticky bottom-4 mt-5 flex justify-end">
           <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/90 backdrop-blur-md px-2 py-2 shadow-md">
-            <span className="text-[11px] text-muted-foreground pe-2">
-              {seed.priorPlan
-                ? `مسودة قائمة · `
-                : `مسودة جديدة · `}
+            <span className="text-[11px] text-muted-foreground pe-2 inline-flex items-center gap-1.5">
+              {planId ? `مسودة قائمة · ` : `مسودة جديدة · `}
               <span className="font-numeric tabular-nums">{total}</span> دقيقة
+              {autoSaveState === "saving" && (
+                <span className="text-muted-foreground/80">· جارٍ الحفظ…</span>
+              )}
+              {autoSaveState === "saved" && (
+                <span className="text-emerald-600 dark:text-emerald-400">
+                  · تم الحفظ ✓
+                </span>
+              )}
+              {autoSaveState === "error" && (
+                <span className="text-destructive">· تعذّر الحفظ</span>
+              )}
             </span>
             <button
               type="button"
               onClick={handleSaveDraft}
-              className="inline-flex items-center gap-1.5 h-[34px] px-3 rounded-[10px] border border-border bg-transparent text-foreground text-xs font-medium hover:border-primary/60"
+              disabled={isPending}
+              className="inline-flex items-center gap-1.5 h-[34px] px-3 rounded-[10px] border border-border bg-transparent text-foreground text-xs font-medium hover:border-primary/60 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save size={14} /> حفظ كمسودة
             </button>
             <button
               type="button"
               onClick={handlePublish}
-              className="inline-flex items-center gap-1.5 h-[34px] px-4 rounded-[10px] text-white text-xs font-semibold shadow-sm"
+              disabled={isPending}
+              className="inline-flex items-center gap-1.5 h-[34px] px-4 rounded-[10px] text-white text-xs font-semibold shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
               style={{
                 background:
                   "linear-gradient(135deg, var(--sma-najm-700) 0%, var(--sma-sahla-600) 100%)",
