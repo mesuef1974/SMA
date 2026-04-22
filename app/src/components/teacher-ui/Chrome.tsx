@@ -1,6 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { signOut } from "next-auth/react";
+import { useTheme } from "next-themes";
+import { useLocale } from "next-intl";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import {
   Home,
   Book,
@@ -13,8 +17,22 @@ import {
   Sparkles,
   HelpCircle,
   ChevronDown,
+  Globe,
+  Sun,
+  Moon,
+  Plus,
+  LogOut,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 /** SMA square-mim logo (simplified) */
 function SMAMark({ size = 26 }: { size?: number }) {
@@ -42,22 +60,102 @@ type PrimaryKey =
   | "analytics"
   | "ai";
 
-const primary: { key: PrimaryKey; label: string; icon: React.ElementType }[] = [
-  { key: "home", label: "الرئيسية", icon: Home },
-  { key: "lessons", label: "الدروس", icon: Book },
-  { key: "students", label: "الطلاب", icon: Users },
-  { key: "challenges", label: "التحديات", icon: Swords },
-  { key: "analytics", label: "التحليلات", icon: BarChart3 },
-  { key: "ai", label: "المحادثة الذكية", icon: MessageSquare },
+type PrimaryTab = {
+  key: PrimaryKey;
+  label: string;
+  icon: React.ElementType;
+  /** path suffix appended after `/{locale}` — e.g. "/dashboard" or "/dashboard/lessons" */
+  path: string;
+  /** when true, render a disabled button with "قريباً" tooltip instead of a Link */
+  comingSoon?: boolean;
+};
+
+const primary: PrimaryTab[] = [
+  { key: "home", label: "الرئيسية", icon: Home, path: "/dashboard" },
+  { key: "lessons", label: "الدروس", icon: Book, path: "/dashboard/lessons" },
+  { key: "students", label: "الطلاب", icon: Users, path: "/dashboard/classroom" },
+  { key: "challenges", label: "التحديات", icon: Swords, path: "/dashboard/challenges" },
+  { key: "analytics", label: "التحليلات", icon: BarChart3, path: "/dashboard/analytics", comingSoon: true },
+  { key: "ai", label: "المحادثة الذكية", icon: MessageSquare, path: "/dashboard/chat", comingSoon: true },
 ];
 
+export type ChromeUser = {
+  name?: string | null;
+  email?: string | null;
+  roleLabel?: string | null;
+};
+
 export type ChromeProps = {
+  /** @deprecated active tab is now derived from `usePathname()` */
   activeTab?: PrimaryKey;
+  /** @deprecated tabs are now real Links */
   onTab?: (key: PrimaryKey) => void;
+  /** Optional user meta for the avatar/dropdown. Falls back to a stub. */
+  user?: ChromeUser;
   children: React.ReactNode;
 };
 
-export function Chrome({ activeTab = "home", onTab, children }: ChromeProps) {
+/** Derive 2-letter initials from an Arabic or Latin name. */
+function initialsOf(name?: string | null): string {
+  if (!name) return "م.أ";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "م.أ";
+  if (parts.length === 1) return parts[0].slice(0, 2);
+  return `${parts[0][0]}.${parts[1][0]}`;
+}
+
+/** Mount guard — avoids hydration mismatch for theme/locale toggles. */
+function useIsMounted() {
+  return React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
+
+export function Chrome({ user, children }: ChromeProps) {
+  // next-intl's usePathname returns the pathname without the locale prefix
+  const pathname = usePathname() ?? "";
+  const router = useRouter();
+  const locale = useLocale();
+  const { setTheme, resolvedTheme } = useTheme();
+  const mounted = useIsMounted();
+
+  const [notifOpen, setNotifOpen] = React.useState(false);
+  const notifRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    if (!notifOpen) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (!notifRef.current) return;
+      if (!notifRef.current.contains(e.target as Node)) setNotifOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setNotifOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [notifOpen]);
+
+  const otherLocale = locale === "ar" ? "en" : "ar";
+  const otherLocaleLabel = locale === "ar" ? "English" : "العربية";
+
+  const switchLocale = React.useCallback(() => {
+    router.replace(pathname, { locale: otherLocale });
+  }, [router, pathname, otherLocale]);
+
+  const toggleTheme = React.useCallback(() => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  }, [setTheme, resolvedTheme]);
+
+  const displayName = user?.name ?? "أ. محمد العتيبي";
+  const displayRole = user?.roleLabel ?? "معلم · الصف 10";
+  const displayEmail = user?.email ?? null;
+  const avatarInitials = initialsOf(user?.name);
   // TODO(integration): wire ⌘K / ⌘N / ⌘J to a real Command Palette (shadcn command).
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -69,8 +167,7 @@ export function Chrome({ activeTab = "home", onTab, children }: ChromeProps) {
         console.info("[teacher-ui] ⌘K pressed — Command Palette stub");
       } else if (e.key.toLowerCase() === "n") {
         e.preventDefault();
-        // eslint-disable-next-line no-console
-        console.info("[teacher-ui] ⌘N pressed — New lesson stub");
+        router.push("/lesson-composer");
       } else if (e.key.toLowerCase() === "j") {
         e.preventDefault();
         // eslint-disable-next-line no-console
@@ -79,7 +176,7 @@ export function Chrome({ activeTab = "home", onTab, children }: ChromeProps) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [router]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[color:var(--sma-ink-50)] dark:bg-background font-body">
@@ -148,30 +245,141 @@ export function Chrome({ activeTab = "home", onTab, children }: ChromeProps) {
           <Sparkles size={14} /> اسأل سَهْلة
         </button>
 
+        {/* language toggle (ar ↔ en) */}
         <button
           type="button"
-          className="w-[34px] h-[34px] rounded-[10px] bg-transparent border border-border text-foreground flex items-center justify-center relative hover:border-primary/60 transition-colors"
-          aria-label="الإشعارات"
+          onClick={switchLocale}
+          className="h-[34px] px-2.5 rounded-[10px] bg-transparent border border-border text-foreground inline-flex items-center gap-1.5 text-xs hover:border-primary/60 transition-colors"
+          aria-label={locale === "ar" ? "Switch to English" : "التبديل إلى العربية"}
+          title={otherLocaleLabel}
         >
-          <Bell size={15} />
-          <span className="absolute top-1.5 end-1.5 w-[7px] h-[7px] rounded-full bg-[color:var(--sma-qamar-500)]" />
+          <Globe size={14} />
+          <span className="hidden sm:inline">{otherLocaleLabel}</span>
         </button>
 
-        <div className="flex items-center gap-2.5 ps-1 pe-2.5 py-1 rounded-full border border-border bg-card">
-          <div className="text-xs text-end leading-tight">
-            <div className="font-semibold">أ. محمد العتيبي</div>
-            <div className="text-muted-foreground text-[10px]">معلم · الصف 10</div>
-          </div>
-          <div
-            className="w-[30px] h-[30px] rounded-full text-white flex items-center justify-center font-bold text-xs"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--sma-najm-600), var(--sma-najm-800))",
-            }}
+        {/* dark mode toggle */}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="w-[34px] h-[34px] rounded-[10px] bg-transparent border border-border text-foreground flex items-center justify-center hover:border-primary/60 transition-colors"
+          aria-label={
+            resolvedTheme === "dark"
+              ? "تفعيل الوضع النهاري"
+              : "تفعيل الوضع الليلي"
+          }
+        >
+          {mounted && resolvedTheme === "dark" ? (
+            <Sun size={15} />
+          ) : (
+            <Moon size={15} />
+          )}
+        </button>
+
+        {/* notifications bell + popover */}
+        <div className="relative" ref={notifRef}>
+          <button
+            type="button"
+            onClick={() => setNotifOpen((v) => !v)}
+            aria-haspopup="dialog"
+            aria-expanded={notifOpen}
+            className="w-[34px] h-[34px] rounded-[10px] bg-transparent border border-border text-foreground flex items-center justify-center relative hover:border-primary/60 transition-colors"
+            aria-label="الإشعارات"
           >
-            م.أ
-          </div>
+            <Bell size={15} />
+          </button>
+          {notifOpen ? (
+            <div
+              role="dialog"
+              aria-label="الإشعارات"
+              className="absolute end-0 mt-2 w-[260px] rounded-lg bg-popover text-popover-foreground border border-border shadow-md p-4 z-50"
+            >
+              <div className="text-xs font-semibold mb-1">الإشعارات</div>
+              <div className="text-xs text-muted-foreground">
+                لا إشعارات جديدة
+              </div>
+            </div>
+          ) : null}
         </div>
+
+        {/* + new lesson — primary/najm */}
+        <button
+          type="button"
+          onClick={() => router.push("/lesson-composer")}
+          className="h-[34px] px-3 rounded-[10px] inline-flex items-center gap-1.5 text-white text-xs font-semibold shadow-sm hover:opacity-95 transition-opacity"
+          style={{
+            background:
+              "linear-gradient(135deg, var(--sma-najm-700) 0%, var(--sma-sahla-600) 100%)",
+          }}
+          aria-label="تحضير درس جديد"
+        >
+          <Plus size={14} /> درس جديد
+        </button>
+
+        {/* avatar + dropdown menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={(props) => (
+              <button
+                type="button"
+                {...props}
+                aria-label="قائمة المستخدم"
+                className="flex items-center gap-2.5 ps-1 pe-2.5 py-1 rounded-full border border-border bg-card hover:border-primary/60 transition-colors cursor-pointer"
+              >
+                <div className="text-xs text-end leading-tight">
+                  <div className="font-semibold">{displayName}</div>
+                  <div className="text-muted-foreground text-[10px]">
+                    {displayRole}
+                  </div>
+                </div>
+                <div
+                  className="w-[30px] h-[30px] rounded-full text-white flex items-center justify-center font-bold text-xs"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, var(--sma-najm-600), var(--sma-najm-800))",
+                  }}
+                >
+                  {avatarInitials}
+                </div>
+              </button>
+            )}
+          />
+          <DropdownMenuContent align="end" sideOffset={6} className="min-w-[220px]">
+            <DropdownMenuLabel>
+              <div className="flex flex-col gap-0.5 py-1">
+                <span className="text-sm font-semibold text-foreground">
+                  {displayName}
+                </span>
+                {displayEmail ? (
+                  <span
+                    className="text-[11px] text-muted-foreground"
+                    style={{ direction: "ltr", textAlign: "start" }}
+                  >
+                    {displayEmail}
+                  </span>
+                ) : null}
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              disabled
+              title="قريباً"
+              aria-disabled="true"
+              onSelect={(e) => e.preventDefault?.()}
+            >
+              <Settings /> الإعدادات
+              <span className="ms-auto text-[10px] text-muted-foreground">
+                قريباً
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => signOut({ callbackUrl: "/login" })}
+            >
+              <LogOut /> تسجيل الخروج
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       {/* ---------------- subnav ---------------- */}
@@ -183,24 +391,54 @@ export function Chrome({ activeTab = "home", onTab, children }: ChromeProps) {
       >
         {primary.map((t) => {
           const Ic = t.icon;
-          const isActive = activeTab === t.key;
-          return (
-            <button
-              key={t.key}
-              type="button"
-              onClick={() => onTab?.(t.key)}
-              className={cn(
-                "relative inline-flex items-center gap-1.5 h-[46px] px-3 bg-transparent border-0 text-[13px] transition-colors",
-                isActive
-                  ? "text-foreground font-semibold"
-                  : "text-muted-foreground font-medium hover:text-foreground",
-              )}
-            >
+          const href = t.path;
+          // next-intl usePathname() strips the locale, so match against t.path directly
+          // exact match for /dashboard (home) to avoid always-active; prefix match for nested
+          const isActive =
+            t.path === "/dashboard"
+              ? pathname === href || pathname === `${href}/`
+              : pathname === href || pathname.startsWith(`${href}/`);
+
+          const inner = (
+            <>
               <Ic size={15} /> {t.label}
               {isActive ? (
                 <span className="absolute start-2 end-2 -bottom-px h-[2px] rounded-[2px] bg-[color:var(--sma-najm-700)]" />
               ) : null}
-            </button>
+            </>
+          );
+
+          const baseCls = cn(
+            "relative inline-flex items-center gap-1.5 h-[46px] px-3 bg-transparent border-0 text-[13px] transition-colors",
+            isActive
+              ? "text-foreground font-semibold"
+              : "text-muted-foreground font-medium hover:text-foreground",
+          );
+
+          if (t.comingSoon) {
+            return (
+              <button
+                key={t.key}
+                type="button"
+                disabled
+                title="قريباً"
+                aria-disabled="true"
+                className={cn(baseCls, "cursor-not-allowed opacity-60 hover:text-muted-foreground")}
+              >
+                {inner}
+              </button>
+            );
+          }
+
+          return (
+            <Link
+              key={t.key}
+              href={href}
+              aria-current={isActive ? "page" : undefined}
+              className={baseCls}
+            >
+              {inner}
+            </Link>
           );
         })}
         <div className="flex-1" />
