@@ -144,7 +144,7 @@ export async function getTeacherDashboardData(
     .limit(50);
 
   const severityRank = { high: 3, medium: 2, low: 1 } as const;
-  const topMisconceptions: DashboardMisconception[] = [...freqRows]
+  const ranked = [...freqRows]
     .sort((a, b) => {
       const byFreq = (b.occurrences ?? 0) - (a.occurrences ?? 0);
       if (byFreq !== 0) return byFreq;
@@ -160,6 +160,13 @@ export async function getTeacherDashboardData(
       frequency: r.occurrences ?? 0,
       severity: (r.severity ?? 'low') as 'high' | 'medium' | 'low',
     }));
+  // If every top candidate has zero detections, surface empty state instead
+  // of cards that say "0 طالبًا · عالية" (QA #5, 2026-04-22).
+  const topMisconceptions: DashboardMisconception[] = ranked.every(
+    (m) => m.frequency === 0,
+  )
+    ? []
+    : ranked;
 
   // Week lessons — surface up to 4 most-recent plans.
   const weekLessons: DashboardLessonItem[] = plans.slice(0, 4).map((p) => ({
@@ -190,9 +197,13 @@ export async function getTeacherDashboardData(
       }
     : null;
 
-  // Bloom distribution — seed data marks outcomes as "understand";
-  // real data would join learning_outcomes.bloom_level per approved plan.
-  // TODO(integration): aggregate real bloom levels once plans carry them.
+  // Bloom distribution — aggregate real bloom_level values from each plan's
+  // section_data (jsonb). Sources per plan:
+  //   - learning_outcomes[].bloom_level
+  //   - practice.items[].bloom_level
+  //   - assess.items[].bloom_level
+  // Only plans in approved/in_review contribute so the chart reflects
+  // "finalized pedagogy", not half-written drafts.
   const bloom: DashboardBloom = {
     remember: 0,
     understand: 0,
@@ -201,9 +212,34 @@ export async function getTeacherDashboardData(
     evaluate: 0,
     create: 0,
   };
+  const validBloom = new Set<keyof DashboardBloom>([
+    'remember',
+    'understand',
+    'apply',
+    'analyze',
+    'evaluate',
+    'create',
+  ]);
+  const bumpBloom = (level: unknown) => {
+    if (typeof level === 'string' && validBloom.has(level as keyof DashboardBloom)) {
+      bloom[level as keyof DashboardBloom] += 1;
+    }
+  };
   for (const p of plans) {
-    if (p.status === 'approved' || p.status === 'in_review') {
-      bloom.understand += 1;
+    if (p.status !== 'approved' && p.status !== 'in_review') continue;
+    const sd = (p.sectionData ?? null) as Record<string, unknown> | null;
+    if (!sd) continue;
+    const los = (sd['learning_outcomes'] as Array<{ bloom_level?: unknown }> | undefined) ?? [];
+    for (const lo of los) bumpBloom(lo?.bloom_level);
+    const practice = sd['practice'] as { items?: Array<{ bloom_level?: unknown }> } | undefined;
+    for (const it of practice?.items ?? []) bumpBloom(it?.bloom_level);
+    const assess = sd['assess'] as { items?: Array<{ bloom_level?: unknown }> } | undefined;
+    for (const it of assess?.items ?? []) bumpBloom(it?.bloom_level);
+    // Also pick up header.bloom_levels if a future pedagogy-map injection
+    // writes it there (currently absent from the schema but cheap to read).
+    const header = sd['header'] as { bloom_levels?: unknown } | undefined;
+    if (Array.isArray(header?.bloom_levels)) {
+      for (const b of header!.bloom_levels) bumpBloom(b);
     }
   }
 

@@ -257,8 +257,10 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
   const periodCount = lesson.periodCount ?? 2;
   const defaultTab = `period-1`;
 
+  const hasAnyPlan = existingPlans.length > 0;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Breadcrumb-like header */}
       <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
         <span>الدروس</span>
@@ -344,6 +346,32 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
                 </li>
               ))}
             </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* No-plans banner — surfaces the fact that nothing exists yet so the
+          page doesn't look like a silent shell (QA #14, 2026-04-22). */}
+      {!hasAnyPlan && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-3 py-4">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15">
+              <Sparkles className="size-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium">لا توجد خطط لهذا الدرس بعد</p>
+              <p className="text-sm text-muted-foreground">
+                ابدأ بتوليد خطة لكل حصّة، أو انتقل للمحرّر لتحضير يدوي.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href={`/ar/lesson-composer?lessonId=${lesson.id}`} />}
+            >
+              <FileText className="size-3.5" />
+              فتح في المحرّر
+            </Button>
           </CardContent>
         </Card>
       )}
