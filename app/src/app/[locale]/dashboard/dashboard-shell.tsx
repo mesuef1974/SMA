@@ -1,11 +1,9 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Sparkles, Plus } from "lucide-react";
 import {
-  Chrome,
   StatCard,
   LessonRow,
   MisconceptionAlert,
@@ -66,12 +64,9 @@ export function DashboardShell({
   bloom,
 }: DashboardShellProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = React.useState<
-    "home" | "lessons" | "students" | "challenges" | "analytics" | "ai"
-  >("home");
 
   return (
-    <Chrome activeTab={activeTab} onTab={setActiveTab}>
+    <>
       <div className="max-w-[1440px] mx-auto px-7 py-7">
         {/* greeting row */}
         <section className="flex flex-wrap items-end justify-between gap-3 mb-6">
@@ -234,7 +229,7 @@ export function DashboardShell({
           )}
         </section>
       </div>
-    </Chrome>
+    </>
   );
 }
 
