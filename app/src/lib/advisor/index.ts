@@ -25,3 +25,9 @@ export function isAdvisor(
   const role = session.user.role;
   return role === 'advisor' || role === 'admin';
 }
+
+export {
+  ADVISOR_DECISIONS,
+  isAdvisorDecision,
+  type AdvisorDecision,
+} from './decisions';
