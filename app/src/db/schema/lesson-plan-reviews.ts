@@ -50,6 +50,13 @@ export const lessonPlanReviews = pgTable('lesson_plan_reviews', {
   createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' })
     .notNull()
     .defaultNow(),
+  // BL-026 — per-teacher read state. NULL = unread (surfaces in the bell
+  // dropdown); populated with the moment the teacher acknowledged the
+  // review (opened the plan or dismissed from the dropdown).
+  readByTeacherAt: timestamp('read_by_teacher_at', {
+    withTimezone: true,
+    mode: 'date',
+  }),
 });
 
 // ---------------------------------------------------------------------------
