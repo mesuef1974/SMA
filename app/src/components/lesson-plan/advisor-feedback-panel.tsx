@@ -3,11 +3,11 @@
 /**
  * AdvisorFeedbackPanel — shows the latest advisor review for a lesson plan.
  *
- * Fetches `/api/lesson-plans/{planId}/reviews` client-side on mount when
- * the plan is in a reviewed state (approved | changes_requested | rejected)
- * and renders a semantic Card (green/amber/red) with the latest decision,
- * advisor comment, rubric scores (for changes_requested), reviewer name +
- * timestamp, and a link to the full history drawer on the lesson-plan page.
+ * BL-027 — renders server-fetched `initialReview` immediately (no flicker)
+ * and only falls back to the client-side `/api/lesson-plans/{planId}/reviews`
+ * fetch when the caller did not hydrate data (legacy / unknown planId).
+ * Also fires the BL-026 mark-read POST on mount so opening the plan
+ * acknowledges unread advisor decisions for the teacher.
  */
 
 import { useEffect, useState } from 'react';
@@ -56,20 +56,45 @@ interface Props {
   status: 'approved' | 'changes_requested' | 'rejected';
   /** e.g. "ar" — used to build the lesson-plan detail link. */
   locale: string;
+  /**
+   * BL-027 — server-fetched latest review. When provided, the panel
+   * skips the client fetch entirely. Pass `null` explicitly to signal
+   * "server confirmed no review exists" (still skips the fetch).
+   */
+  initialReview?: ReviewRow | null;
 }
 
-export function AdvisorFeedbackPanel({ planId, status, locale }: Props) {
-  const [review, setReview] = useState<ReviewRow | null>(null);
-  const [loading, setLoading] = useState(true);
+export function AdvisorFeedbackPanel({
+  planId,
+  status,
+  locale,
+  initialReview,
+}: Props) {
+  const hasInitial = initialReview !== undefined;
+  const [review] = useState<ReviewRow | null>(initialReview ?? null);
+  const [fetchedReview, setFetchedReview] = useState<ReviewRow | null>(null);
+  const [loading, setLoading] = useState(!hasInitial);
   const [error, setError] = useState<string | null>(null);
 
+  // BL-026 — acknowledge the advisor decision once the plan is opened.
+  // Fire-and-forget; the bell dropdown's next poll reconciles on failure.
   useEffect(() => {
+    void fetch('/api/teacher/unread-reviews', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ planId }),
+    }).catch(() => {});
+  }, [planId]);
+
+  // Legacy client-side fetch — only runs when the caller did not hydrate
+  // `initialReview`. Kept so the component remains usable in isolation.
+  useEffect(() => {
+    if (hasInitial) return;
     let cancelled = false;
     fetch(`/api/lesson-plans/${planId}/reviews`, { cache: 'no-store' })
       .then(async (res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return (await res.json()) as { reviews: ReviewRow[] };
       })
       .then((body) => {
@@ -78,7 +103,7 @@ export function AdvisorFeedbackPanel({ planId, status, locale }: Props) {
           (a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
-        setReview(sorted[0] ?? null);
+        setFetchedReview(sorted[0] ?? null);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -90,7 +115,9 @@ export function AdvisorFeedbackPanel({ planId, status, locale }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [planId]);
+  }, [planId, hasInitial]);
+
+  const effectiveReview = hasInitial ? review : fetchedReview;
 
   if (loading) {
     return (
@@ -102,15 +129,17 @@ export function AdvisorFeedbackPanel({ planId, status, locale }: Props) {
     );
   }
 
-  if (error || !review) {
+  if (error || !effectiveReview) {
     // Silent fallback — we don't want to block the plan view if reviews
     // can't load. Show a minimal inline note.
     return null;
   }
 
   const name =
-    review.reviewer?.fullNameAr ?? review.reviewer?.fullName ?? 'المستشار';
-  const when = new Date(review.createdAt).toLocaleString('ar-QA');
+    effectiveReview.reviewer?.fullNameAr ??
+    effectiveReview.reviewer?.fullName ??
+    'المستشار';
+  const when = new Date(effectiveReview.createdAt).toLocaleString('ar-QA');
 
   const meta = {
     approved: {
@@ -158,16 +187,16 @@ export function AdvisorFeedbackPanel({ planId, status, locale }: Props) {
           </div>
         </div>
 
-        {review.comment && (
+        {effectiveReview.comment && (
           <p className="whitespace-pre-wrap text-sm text-foreground/90">
-            {review.comment}
+            {effectiveReview.comment}
           </p>
         )}
 
-        {status === 'changes_requested' && review.rubricScores && (
+        {status === 'changes_requested' && effectiveReview.rubricScores && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
             {(Object.keys(RUBRIC_LABELS) as (keyof RubricScores)[]).map((k) => {
-              const v = review.rubricScores?.[k];
+              const v = effectiveReview.rubricScores?.[k];
               if (v === undefined) return null;
               return (
                 <div

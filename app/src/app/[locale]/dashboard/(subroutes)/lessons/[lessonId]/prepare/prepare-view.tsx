@@ -94,9 +94,37 @@ interface ExistingPlan {
   createdAt: string | null;
 }
 
+// BL-027 — shape of a serialized review row passed from the server. Kept
+// in sync with the API response in /api/lesson-plans/[id]/reviews.
+export interface SerializedReview {
+  id: string;
+  decision: 'approved' | 'rejected' | 'changes_requested';
+  comment: string | null;
+  rubricScores: {
+    scientific_accuracy?: number;
+    qncf_alignment?: number;
+    pedagogical_flow?: number;
+    assessment_quality?: number;
+    language_clarity?: number;
+  } | null;
+  createdAt: string;
+  reviewer: {
+    id: string;
+    fullName: string;
+    fullNameAr: string | null;
+    email: string;
+    role: string;
+  } | null;
+}
+
 interface PrepareViewProps {
   lesson: LessonData;
   existingPlans: ExistingPlan[];
+  /**
+   * BL-027 — latest advisor review per plan, fetched server-side to avoid
+   * the "loading ملاحظات المستشار…" flicker. Maps planId → review | null.
+   */
+  initialReviews?: Record<string, SerializedReview | null>;
 }
 
 // ---------------------------------------------------------------------------
@@ -168,7 +196,11 @@ function normalizeStatus(raw: string | null | undefined): PlanStatus | null {
 // Component
 // ---------------------------------------------------------------------------
 
-export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
+export function PrepareView({
+  lesson,
+  existingPlans,
+  initialReviews,
+}: PrepareViewProps) {
   const pathname = usePathname();
   // Derive the present URL from the current prepare path
   // e.g. /ar/dashboard/lessons/xyz/prepare → /ar/dashboard/lessons/xyz/present
@@ -579,6 +611,7 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
                           planId={state.planId}
                           status={state.status}
                           locale={locale}
+                          initialReview={initialReviews?.[state.planId] ?? null}
                         />
                       )}
                     <div className="flex items-center justify-between flex-wrap gap-3">

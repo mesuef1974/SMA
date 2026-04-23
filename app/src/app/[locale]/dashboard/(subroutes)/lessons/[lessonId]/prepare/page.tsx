@@ -8,8 +8,12 @@
 import { setRequestLocale } from 'next-intl/server';
 import { redirect, notFound } from 'next/navigation';
 import { auth } from '@/lib/auth';
-import { getLessonById, getLessonPlansByTeacher } from '@/db/queries';
-import { PrepareView } from './prepare-view';
+import {
+  getLessonById,
+  getLessonPlansByTeacher,
+  getLessonPlanReviewsByPlanId,
+} from '@/db/queries';
+import { PrepareView, type SerializedReview } from './prepare-view';
 
 type Props = {
   params: Promise<{ locale: string; lessonId: string }>;
@@ -77,7 +81,50 @@ export default async function PreparePage({ params }: Props) {
     createdAt: p.createdAt?.toISOString() ?? null,
   }));
 
+  // BL-027 — SSR the latest advisor review per plan so the feedback
+  // panel hydrates with data and skips the client-side fetch flicker.
+  // Only plans in a reviewed state (approved | changes_requested |
+  // rejected) carry a review — other plans map to null.
+  const reviewableStatuses = new Set([
+    'approved',
+    'changes_requested',
+    'rejected',
+  ]);
+  const initialReviewsEntries = await Promise.all(
+    lessonPlans
+      .filter((p) => p.status && reviewableStatuses.has(p.status))
+      .map(async (p): Promise<[string, SerializedReview | null]> => {
+        const rows = await getLessonPlanReviewsByPlanId(p.id);
+        const r = rows[0];
+        if (!r) return [p.id, null];
+        return [
+          p.id,
+          {
+            id: r.id,
+            decision: r.decision,
+            comment: r.comment,
+            rubricScores: (r.rubricScores ?? null) as SerializedReview['rubricScores'],
+            createdAt: r.createdAt.toISOString(),
+            reviewer: r.reviewer
+              ? {
+                  id: r.reviewer.id,
+                  fullName: r.reviewer.fullName,
+                  fullNameAr: r.reviewer.fullNameAr,
+                  email: r.reviewer.email,
+                  role: r.reviewer.role,
+                }
+              : null,
+          },
+        ];
+      }),
+  );
+  const initialReviews = Object.fromEntries(initialReviewsEntries);
+
   return (
-    <PrepareView lesson={serializedLesson} existingPlans={serializedPlans} />
+    <PrepareView
+      lesson={serializedLesson}
+      existingPlans={serializedPlans}
+      initialReviews={initialReviews}
+    />
   );
 }
