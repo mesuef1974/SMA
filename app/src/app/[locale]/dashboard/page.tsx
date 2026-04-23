@@ -28,6 +28,7 @@ export default async function DashboardPage({ params }: Props) {
       sub: `${data.stats.approved} معتمد · ${data.stats.drafts} مسودة`,
       accent: 'var(--sma-najm-500)',
       deltaDir: 'flat',
+      spark: data.sparklines.plansCreated,
     },
     {
       label: 'الدروس في المنهج',
@@ -35,6 +36,7 @@ export default async function DashboardPage({ params }: Props) {
       sub: 'إجمالي الدروس',
       accent: 'var(--success)',
       deltaDir: 'flat',
+      spark: data.sparklines.lessonsPrepared,
     },
     {
       label: 'المفاهيم الخاطئة',
@@ -42,6 +44,7 @@ export default async function DashboardPage({ params }: Props) {
       sub: 'آخر 7 أيام',
       accent: 'var(--sma-qamar-500)',
       deltaDir: 'flat',
+      spark: data.sparklines.misconceptionsFlagged,
     },
     {
       label: 'نسبة الإنجاز',
@@ -49,6 +52,7 @@ export default async function DashboardPage({ params }: Props) {
       sub: `${data.stats.approved} من ${data.stats.totalLessons}`,
       accent: 'var(--sma-sahla-500)',
       deltaDir: 'flat',
+      spark: data.sparklines.plansApproved,
     },
   ];
 

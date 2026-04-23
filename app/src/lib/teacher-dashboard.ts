@@ -12,6 +12,8 @@ import {
   chapters,
   misconceptionTypes,
   studentMisconceptions,
+  classrooms,
+  classroomStudents,
 } from '@/db/schema';
 import { getGradeLevelForSubject } from '@/db/queries';
 
@@ -53,6 +55,19 @@ export type DashboardBloom = {
   create: number;
 };
 
+export type DashboardSparklines = {
+  /** Plans created by this teacher per day (last 7 days, oldest-first). */
+  plansCreated: number[];
+  /** Distinct lessons prepared (plans grouped by lesson) per day. */
+  lessonsPrepared: number[];
+  /** Students who joined this teacher's classrooms per day. */
+  studentsEngaged: number[];
+  /** Misconceptions detected across this teacher's classrooms per day. */
+  misconceptionsFlagged: number[];
+  /** Plans approved (status = approved, by updatedAt) per day. */
+  plansApproved: number[];
+};
+
 export type DashboardData = {
   stats: DashboardStats;
   todayLesson:
@@ -66,7 +81,42 @@ export type DashboardData = {
   weekLessons: DashboardLessonItem[];
   misconceptions: DashboardMisconception[];
   bloom: DashboardBloom;
+  sparklines: DashboardSparklines;
 };
+
+// ---------------------------------------------------------------------------
+// Sparkline helper — bucketize a list of {day: 'YYYY-MM-DD', count: number}
+// rows into a fixed-length array[7] aligned to the last 7 local days
+// (oldest first). Missing days fill with 0.
+// ---------------------------------------------------------------------------
+function bucketizeLast7Days(
+  rows: Array<{ day: string | null; count: number | null }>,
+): number[] {
+  const buckets = new Array<number>(7).fill(0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const keys: string[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    // YYYY-MM-DD (UTC-agnostic — use local date parts so it aligns with
+    // DATE(created_at) evaluated in the database's default timezone).
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    keys.push(`${y}-${m}-${dd}`);
+  }
+  const keyIdx = new Map(keys.map((k, i) => [k, i]));
+  for (const r of rows) {
+    if (!r.day) continue;
+    // Normalize row key — PostgreSQL's DATE() cast may return either a
+    // plain 'YYYY-MM-DD' string or an ISO timestamp depending on driver.
+    const k = r.day.slice(0, 10);
+    const idx = keyIdx.get(k);
+    if (idx !== undefined) buckets[idx] = Number(r.count ?? 0);
+  }
+  return buckets;
+}
 
 // Normalize lesson-plan status -> UI status bucket.
 function mapStatus(s: string | null): 'draft' | 'review' | 'approved' {
@@ -246,6 +296,94 @@ export async function getTeacherDashboardData(
   const completionPct =
     totalLessons > 0 ? Math.round((approved / totalLessons) * 100) : 0;
 
+  // -------------------------------------------------------------------------
+  // Sparkline series — last 7 days of real activity, bucketed per day.
+  // Each query uses DATE(col) on a timestamp and a 7-day lower bound; results
+  // are normalized to a fixed-length array[7] (oldest-first) via bucketize.
+  // -------------------------------------------------------------------------
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  // Plans created by this teacher per day.
+  const plansCreatedRows = await db
+    .select({
+      day: sql<string>`to_char(date_trunc('day', ${lessonPlans.createdAt}), 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(lessonPlans)
+    .where(
+      and(
+        eq(lessonPlans.teacherId, teacherId),
+        gte(lessonPlans.createdAt, sevenDaysAgo),
+      ),
+    )
+    .groupBy(sql`date_trunc('day', ${lessonPlans.createdAt})`);
+
+  // Distinct lessons with at least one plan created per day.
+  const lessonsPreparedRows = await db
+    .select({
+      day: sql<string>`to_char(date_trunc('day', ${lessonPlans.createdAt}), 'YYYY-MM-DD')`,
+      count: sql<number>`count(DISTINCT ${lessonPlans.lessonId})::int`,
+    })
+    .from(lessonPlans)
+    .where(
+      and(
+        eq(lessonPlans.teacherId, teacherId),
+        gte(lessonPlans.createdAt, sevenDaysAgo),
+      ),
+    )
+    .groupBy(sql`date_trunc('day', ${lessonPlans.createdAt})`);
+
+  // Plans approved per day (by updatedAt if present, else createdAt).
+  const plansApprovedRows = await db
+    .select({
+      day: sql<string>`to_char(date_trunc('day', ${lessonPlans.createdAt}), 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(lessonPlans)
+    .where(
+      and(
+        eq(lessonPlans.teacherId, teacherId),
+        eq(lessonPlans.status, 'approved'),
+        gte(lessonPlans.createdAt, sevenDaysAgo),
+      ),
+    )
+    .groupBy(sql`date_trunc('day', ${lessonPlans.createdAt})`);
+
+  // Students joined to this teacher's classrooms per day.
+  const studentsEngagedRows = await db
+    .select({
+      day: sql<string>`to_char(date_trunc('day', ${classroomStudents.joinedAt}), 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(classroomStudents)
+    .innerJoin(classrooms, eq(classroomStudents.classroomId, classrooms.id))
+    .where(
+      and(
+        eq(classrooms.teacherId, teacherId),
+        gte(classroomStudents.joinedAt, sevenDaysAgo),
+      ),
+    )
+    .groupBy(sql`date_trunc('day', ${classroomStudents.joinedAt})`);
+
+  // Misconceptions detected per day (platform-wide, mirrors
+  // `recentMisconceptionCount` scoping which is not teacher-filtered).
+  const misconceptionsFlaggedRows = await db
+    .select({
+      day: sql<string>`to_char(date_trunc('day', ${studentMisconceptions.detectedAt}), 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(studentMisconceptions)
+    .where(gte(studentMisconceptions.detectedAt, sevenDaysAgo))
+    .groupBy(sql`date_trunc('day', ${studentMisconceptions.detectedAt})`);
+
+  const sparklines: DashboardSparklines = {
+    plansCreated: bucketizeLast7Days(plansCreatedRows),
+    lessonsPrepared: bucketizeLast7Days(lessonsPreparedRows),
+    plansApproved: bucketizeLast7Days(plansApprovedRows),
+    studentsEngaged: bucketizeLast7Days(studentsEngagedRows),
+    misconceptionsFlagged: bucketizeLast7Days(misconceptionsFlaggedRows),
+  };
+
   return {
     stats: {
       totalPlans,
@@ -261,6 +399,7 @@ export async function getTeacherDashboardData(
     weekLessons,
     misconceptions: topMisconceptions,
     bloom,
+    sparklines,
   };
 }
 

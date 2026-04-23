@@ -23,6 +23,7 @@ import {
   Plus,
   LogOut,
   Settings,
+  Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -33,6 +34,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { CommandPalette } from "./command-palette";
 
 /** SMA square-mim logo (simplified) */
 function SMAMark({ size = 26 }: { size?: number }) {
@@ -123,6 +132,8 @@ export function Chrome({ user, children }: ChromeProps) {
 
   const [notifOpen, setNotifOpen] = React.useState(false);
   const notifRef = React.useRef<HTMLDivElement | null>(null);
+  const [commandOpen, setCommandOpen] = React.useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (!notifOpen) return;
@@ -156,22 +167,17 @@ export function Chrome({ user, children }: ChromeProps) {
   const displayRole = user?.roleLabel ?? "معلم · الصف 10";
   const displayEmail = user?.email ?? null;
   const avatarInitials = initialsOf(user?.name);
-  // TODO(integration): wire ⌘K / ⌘N / ⌘J to a real Command Palette (shadcn command).
+  // ⌘K / Ctrl+K opens Command Palette; ⌘N jumps to composer.
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
       if (!mod) return;
       if (e.key.toLowerCase() === "k") {
         e.preventDefault();
-        // eslint-disable-next-line no-console
-        console.info("[teacher-ui] ⌘K pressed — Command Palette stub");
+        setCommandOpen((v) => !v);
       } else if (e.key.toLowerCase() === "n") {
         e.preventDefault();
         router.push("/lesson-composer");
-      } else if (e.key.toLowerCase() === "j") {
-        e.preventDefault();
-        // eslint-disable-next-line no-console
-        console.info("[teacher-ui] ⌘J pressed — Help stub");
       }
     };
     window.addEventListener("keydown", handler);
@@ -183,23 +189,83 @@ export function Chrome({ user, children }: ChromeProps) {
       {/* ---------------- top bar ---------------- */}
       <header
         className={cn(
-          "h-[60px] px-7 flex items-center gap-3.5",
+          "h-[60px] px-4 md:px-7 flex items-center gap-2 md:gap-3.5",
           "bg-card/80 backdrop-blur-md backdrop-saturate-150",
           "border-b border-border sticky top-0 z-40",
         )}
       >
+        {/* mobile hamburger — nav sheet */}
+        <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+          <SheetTrigger
+            aria-label="قائمة التنقل"
+            className="md:hidden w-[34px] h-[34px] rounded-[10px] bg-transparent border border-border text-foreground inline-flex items-center justify-center hover:border-primary/60 transition-colors"
+          >
+            <Menu size={16} />
+          </SheetTrigger>
+          <SheetContent side="right" className="w-[80vw] max-w-[320px] p-0">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <SMAMark size={22} /> SMA
+              </SheetTitle>
+            </SheetHeader>
+            <nav className="flex flex-col px-2 pb-4">
+              {primary.map((t) => {
+                const Ic = t.icon;
+                const href = t.path;
+                const isActive =
+                  t.path === "/dashboard"
+                    ? pathname === href || pathname === `${href}/`
+                    : pathname === href || pathname.startsWith(`${href}/`);
+                const cls = cn(
+                  "flex items-center gap-2.5 px-3 h-[42px] rounded-lg text-sm transition-colors",
+                  isActive
+                    ? "bg-accent text-accent-foreground font-semibold"
+                    : "text-foreground hover:bg-accent/60",
+                  t.comingSoon && "opacity-60 cursor-not-allowed",
+                );
+                if (t.comingSoon) {
+                  return (
+                    <button
+                      key={t.key}
+                      type="button"
+                      disabled
+                      className={cls}
+                      title="قريباً"
+                    >
+                      <Ic size={16} /> {t.label}
+                      <span className="ms-auto text-[10px] text-muted-foreground">
+                        قريباً
+                      </span>
+                    </button>
+                  );
+                }
+                return (
+                  <Link
+                    key={t.key}
+                    href={href}
+                    onClick={() => setMobileNavOpen(false)}
+                    className={cls}
+                  >
+                    <Ic size={16} /> {t.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </SheetContent>
+        </Sheet>
+
         <div className="flex items-center gap-2.5">
           <SMAMark size={26} />
-          <div className="flex flex-col leading-tight">
+          <div className="hidden sm:flex flex-col leading-tight">
             <span className="text-sm font-bold tracking-wide font-heading">SMA</span>
             <span className="text-[10px] text-muted-foreground">محلل الرياضيات</span>
           </div>
         </div>
 
-        {/* workspace switcher */}
+        {/* workspace switcher — hide on small */}
         <button
           type="button"
-          className="flex items-center gap-2 h-[34px] px-3 rounded-[10px] bg-muted border border-border text-foreground text-xs mr-1.5 hover:border-primary/60 transition-colors"
+          className="hidden lg:flex items-center gap-2 h-[34px] px-3 rounded-[10px] bg-muted border border-border text-foreground text-xs mr-1.5 hover:border-primary/60 transition-colors"
         >
           <span
             className="w-[18px] h-[18px] rounded-[5px]"
@@ -214,10 +280,19 @@ export function Chrome({ user, children }: ChromeProps) {
 
         <div className="flex-1" />
 
-        {/* ⌘K search */}
+        {/* ⌘K search — icon-only on mobile, full pill on md+ */}
         <button
           type="button"
-          className="flex items-center gap-2.5 h-[34px] pr-3 pl-2.5 rounded-[10px] bg-muted border border-border text-muted-foreground text-xs min-w-[260px] hover:border-primary/60 transition-colors"
+          onClick={() => setCommandOpen(true)}
+          className="md:hidden w-[34px] h-[34px] rounded-[10px] bg-muted border border-border text-muted-foreground inline-flex items-center justify-center hover:border-primary/60 transition-colors"
+          aria-label="بحث أو تشغيل أمر"
+        >
+          <Search size={15} />
+        </button>
+        <button
+          type="button"
+          onClick={() => setCommandOpen(true)}
+          className="hidden md:flex items-center gap-2.5 h-[34px] pr-3 pl-2.5 rounded-[10px] bg-muted border border-border text-muted-foreground text-xs min-w-[200px] lg:min-w-[260px] hover:border-primary/60 transition-colors"
           aria-label="بحث أو تشغيل أمر"
         >
           <Search size={15} />
@@ -230,10 +305,10 @@ export function Chrome({ user, children }: ChromeProps) {
           </kbd>
         </button>
 
-        {/* AI shortcut — gold */}
+        {/* AI shortcut — gold; hide label on small */}
         <button
           type="button"
-          className="h-[34px] px-3 rounded-[10px] inline-flex items-center gap-1.5 font-semibold text-xs"
+          className="hidden md:inline-flex h-[34px] px-3 rounded-[10px] items-center gap-1.5 font-semibold text-xs"
           style={{
             background:
               "color-mix(in srgb, var(--sma-sahla-500) 12%, transparent)",
@@ -312,7 +387,7 @@ export function Chrome({ user, children }: ChromeProps) {
           }}
           aria-label="تحضير درس جديد"
         >
-          <Plus size={14} /> درس جديد
+          <Plus size={14} /> <span className="hidden sm:inline">درس جديد</span>
         </button>
 
         {/* avatar + dropdown menu */}
@@ -321,7 +396,7 @@ export function Chrome({ user, children }: ChromeProps) {
             aria-label="قائمة المستخدم"
             className="flex items-center gap-2.5 ps-1 pe-2.5 py-1 rounded-full border border-border bg-card hover:border-primary/60 transition-colors cursor-pointer"
           >
-            <div className="text-xs text-end leading-tight">
+            <div className="hidden md:block text-xs text-end leading-tight">
               <div className="font-semibold">{displayName}</div>
               <div className="text-muted-foreground text-[10px]">
                 {displayRole}
@@ -375,10 +450,10 @@ export function Chrome({ user, children }: ChromeProps) {
         </DropdownMenu>
       </header>
 
-      {/* ---------------- subnav ---------------- */}
+      {/* ---------------- subnav (desktop/tablet) ---------------- */}
       <nav
         className={cn(
-          "bg-card border-b border-border px-7 flex gap-1",
+          "bg-card border-b border-border px-4 md:px-7 hidden md:flex gap-1 overflow-x-auto",
           "sticky top-[60px] z-30",
         )}
       >
@@ -450,7 +525,7 @@ export function Chrome({ user, children }: ChromeProps) {
 
       {/* ---------------- footer ---------------- */}
       <footer className="mt-8 border-t border-border bg-card">
-        <div className="max-w-[1440px] mx-auto px-7 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="max-w-[1440px] mx-auto px-4 md:px-7 py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center gap-2.5 mb-3">
               <SMAMark size={22} />
@@ -485,6 +560,9 @@ export function Chrome({ user, children }: ChromeProps) {
           </div>
         </div>
       </footer>
+
+      {/* ---------------- command palette ---------------- */}
+      <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
     </div>
   );
 }

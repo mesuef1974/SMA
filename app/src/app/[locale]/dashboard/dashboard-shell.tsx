@@ -102,7 +102,7 @@ export function DashboardShell({
         </section>
 
         {/* bento grid */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 mb-3.5">
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-3.5">
           {/* left: alerts + bloom (2fr) */}
           <div className="lg:col-span-2 flex flex-col gap-3.5">
             <div className="bg-card border border-border rounded-[16px] p-5">
