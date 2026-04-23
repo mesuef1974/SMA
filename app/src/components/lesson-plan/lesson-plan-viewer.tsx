@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * LessonPlanViewer — displays the 9-section lesson plan in a rich, RTL-first layout.
+ * LessonPlanViewer — displays the 8-section lesson plan in a rich, RTL-first layout.
  *
  * Sections:
  *   1. Header          — lesson metadata card
@@ -12,7 +12,6 @@
  *   6. Practice        — exercises with Bloom + Tier badges
  *   7. Assess          — assessment questions with model answers
  *   8. Extend          — optional enrichment (distinct border)
- *   9. Metadata        — technical details (collapsed by default)
  */
 
 import type {
@@ -22,12 +21,14 @@ import type {
   LearningOutcomeItem,
   PracticeItem,
   AssessItem,
+  InteractionType,
 } from '@/lib/lesson-plans/schema';
+// Note: Metadata section removed in schema v2 (optional parameter count reduction)
 import { MathDisplay, MathText } from '@/components/math/math-display';
+import { isMixedLatex } from '@/lib/latex/sanitize';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import {
   BookOpen,
@@ -38,11 +39,177 @@ import {
   PenTool,
   ClipboardCheck,
   Rocket,
-  Info,
   Clock,
   AlertTriangle,
-  ChevronDown,
+  Check,
+  X,
+  Clock as ClockIcon,
 } from 'lucide-react';
+
+// ---------------------------------------------------------------------------
+// Helper: compute total duration for a section (D-27)
+// ---------------------------------------------------------------------------
+
+function sectionTotal(section: {
+  teacher_minutes: number;
+  student_minutes: number;
+}): number {
+  return section.teacher_minutes + section.student_minutes;
+}
+
+// ---------------------------------------------------------------------------
+// D-UX1: Student/Teacher split bar (target 85/15)
+// ---------------------------------------------------------------------------
+
+function StudentTeacherBar({ plan }: { plan: LessonPlanData }) {
+  const sections = [
+    plan.warm_up,
+    plan.explore,
+    plan.explain,
+    plan.practice,
+    plan.assess,
+    ...(plan.extend ? [plan.extend] : []),
+  ];
+  const student = sections.reduce((a, s) => a + s.student_minutes, 0);
+  const teacher = sections.reduce((a, s) => a + s.teacher_minutes, 0);
+  const total = student + teacher;
+  const studentPct = total > 0 ? Math.round((student / total) * 100) : 0;
+  const teacherPct = 100 - studentPct;
+
+  return (
+    <div className="flex items-center gap-3 text-xs">
+      <span className="shrink-0 text-muted-foreground">
+        الطالب <span className="font-bold text-foreground">{studentPct}%</span>
+      </span>
+      <div
+        className="flex-1 h-2 bg-muted rounded overflow-hidden"
+        role="progressbar"
+        aria-valuenow={studentPct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`نسبة الطالب ${studentPct} بالمئة`}
+      >
+        <div
+          className="h-full bg-primary transition-all"
+          style={{ width: `${studentPct}%` }}
+        />
+      </div>
+      <span className="shrink-0 text-muted-foreground">
+        <span className="font-bold text-foreground">{teacherPct}%</span> المعلم
+      </span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// D-36: Triple-gate badges (Bloom / QNCF / Advisor)
+// ---------------------------------------------------------------------------
+
+function TripleGateBadges({ gates }: { gates: NonNullable<LessonPlanData['gate_results']> }) {
+  const gateItem = (
+    label: string,
+    state: 'pass' | 'fail' | 'approved' | 'pending' | 'needs_revision',
+  ) => {
+    const isOk = state === 'pass' || state === 'approved';
+    const isPending = state === 'pending';
+    const Icon = isOk ? Check : isPending ? ClockIcon : X;
+    const color = isOk
+      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300'
+      : isPending
+      ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+    return (
+      <Badge className={cn('gap-1', color)}>
+        <Icon className="size-3" />
+        {label}
+      </Badge>
+    );
+  };
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {gateItem('Bloom', gates.bloom_gate)}
+      {gateItem('QNCF', gates.qncf_gate)}
+      {gateItem('المستشار', gates.advisor_gate)}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Small badges: teacher guide page + Qatar context
+// ---------------------------------------------------------------------------
+
+function TeacherGuidePageBadge({ page }: { page: number }) {
+  return (
+    <Badge variant="outline" className="gap-1 text-xs shrink-0">
+      <BookOpen className="size-3" />
+      ص. {page}
+    </Badge>
+  );
+}
+
+// D-32: QNCF code chip (subtle monospace)
+function QncfCodeChip({ code }: { code: string }) {
+  return (
+    <span
+      dir="ltr"
+      className="inline-flex items-center rounded bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground"
+      title="Qatar National Curriculum Framework"
+    >
+      {code}
+    </span>
+  );
+}
+
+// D-UX2: interaction_type badge (Arabic labels; static → no badge)
+const interactionTypeLabels: Partial<Record<InteractionType, string>> = {
+  data_reveal: 'كشف بيانات',
+  try_reveal: 'حلّ ثم اكشف',
+  think_pair_share: 'فكّر-ناقش-شارك',
+  guided_drawing: 'رسم موجّه',
+};
+
+const interactionTypeColors: Partial<Record<InteractionType, string>> = {
+  data_reveal: 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300',
+  try_reveal: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+  think_pair_share: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+  guided_drawing: 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300',
+};
+
+function InteractionTypeBadge({ type }: { type: InteractionType }) {
+  const label = interactionTypeLabels[type];
+  if (!label) return null; // static → no badge
+  return (
+    <Badge className={cn('shrink-0 text-xs', interactionTypeColors[type])}>
+      {label}
+    </Badge>
+  );
+}
+
+// D-UX2: Arabic hint (L1) — collapsible disclosure for teacher reveal
+function HintDisclosure({ hint }: { hint: string }) {
+  return (
+    <details className="ms-8 mt-1 rounded-md border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/20 p-2 text-xs">
+      <summary className="cursor-pointer select-none font-medium text-amber-800 dark:text-amber-300">
+        💡 تلميح
+      </summary>
+      <div className="mt-1.5 text-amber-900 dark:text-amber-200 leading-relaxed">
+        <MathText text={hint} />
+      </div>
+    </details>
+  );
+}
+
+// Free-text Qatar context note (practice items only)
+function QatarContextNote({ text }: { text: string }) {
+  return (
+    <div className="ms-8 mt-1 rounded-md bg-rose-50 dark:bg-rose-950/20 p-2 text-xs text-rose-900 dark:text-rose-200">
+      <span className="me-1" aria-hidden="true">🇶🇦</span>
+      <span className="font-medium">سياق قطري: </span>
+      <MathText text={text} />
+    </div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Bloom color mapping
@@ -114,6 +281,8 @@ function SectionCard({
   accent,
   children,
   className,
+  teacherGuidePage,
+  qncfCode,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
@@ -121,15 +290,23 @@ function SectionCard({
   accent?: string;
   children: React.ReactNode;
   className?: string;
+  teacherGuidePage?: number;
+  qncfCode?: string;
 }) {
   return (
     <Card className={cn(accent, className)}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex flex-wrap items-center gap-2">
           <Icon className="size-5 shrink-0" />
           <span className="flex-1">{title}</span>
+          {teacherGuidePage != null && <TeacherGuidePageBadge page={teacherGuidePage} />}
           {duration != null && <DurationBadge minutes={duration} />}
         </CardTitle>
+        {qncfCode && (
+          <div className="pt-1">
+            <QncfCodeChip code={qncfCode} />
+          </div>
+        )}
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>
@@ -202,14 +379,15 @@ function LearningOutcomesSection({ outcomes }: { outcomes: LearningOutcomeItem[]
               {i + 1}
             </span>
             <div className="flex-1 space-y-1">
-              <p className="text-sm">{outcome.outcome_ar}</p>
-              <div className="flex flex-wrap gap-1.5">
+              <p className="text-sm"><MathText text={outcome.outcome_ar} /></p>
+              <div className="flex flex-wrap items-center gap-1.5">
                 <BloomBadge level={outcome.bloom_level} />
                 {outcome.action_verb_ar && (
                   <Badge variant="outline" className="text-xs">
                     {outcome.action_verb_ar}
                   </Badge>
                 )}
+                {outcome.qncf_code && <QncfCodeChip code={outcome.qncf_code} />}
               </div>
             </div>
           </li>
@@ -228,30 +406,12 @@ function WarmUpSection({ data }: { data: LessonPlanData['warm_up'] }) {
     <SectionCard
       icon={Lightbulb}
       title="التهيئة"
-      duration={data.duration_minutes}
+      duration={sectionTotal(data)}
+      teacherGuidePage={data.teacher_guide_page}
+      qncfCode={data.qncf_code}
     >
       <div className="space-y-3">
-        <p className="text-sm leading-relaxed">{data.activity_ar}</p>
-
-        {data.prerequisite_concepts && data.prerequisite_concepts.length > 0 && (
-          <div>
-            <p className="text-xs font-medium text-muted-foreground mb-1">المفاهيم المطلوبة:</p>
-            <div className="flex flex-wrap gap-1.5">
-              {data.prerequisite_concepts.map((concept, i) => (
-                <Badge key={i} variant="secondary" className="text-xs">
-                  {concept}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {data.target_bloom && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">مستوى بلوم المستهدف:</span>
-            <BloomBadge level={data.target_bloom} />
-          </div>
-        )}
+        <p className="text-sm leading-relaxed"><MathText text={data.activity_ar} /></p>
       </div>
     </SectionCard>
   );
@@ -272,10 +432,12 @@ function ExploreSection({ data }: { data: LessonPlanData['explore'] }) {
     <SectionCard
       icon={Compass}
       title="الاستكشاف"
-      duration={data.duration_minutes}
+      duration={sectionTotal(data)}
+      teacherGuidePage={data.teacher_guide_page}
+      qncfCode={data.qncf_code}
     >
       <div className="space-y-4">
-        <p className="text-sm leading-relaxed">{data.activity_ar}</p>
+        <p className="text-sm leading-relaxed"><MathText text={data.activity_ar} /></p>
 
         {data.guiding_questions && data.guiding_questions.length > 0 && (
           <div>
@@ -283,7 +445,7 @@ function ExploreSection({ data }: { data: LessonPlanData['explore'] }) {
             <ul className="space-y-1.5">
               {data.guiding_questions.map((q, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm">
-                  <span className="mt-0.5 text-muted-foreground text-xs">&#9679;</span>
+                  <span className="mt-0.5 text-muted-foreground text-xs">•</span>
                   <MathText text={q} />
                 </li>
               ))}
@@ -345,10 +507,12 @@ function ExplainSection({ data }: { data: LessonPlanData['explain'] }) {
     <SectionCard
       icon={GraduationCap}
       title="الشرح"
-      duration={data.duration_minutes}
+      duration={sectionTotal(data)}
+      teacherGuidePage={data.teacher_guide_page}
+      qncfCode={data.qncf_code}
     >
       <div className="space-y-4">
-        <p className="text-sm leading-relaxed">{data.concept_ar}</p>
+        <p className="text-sm leading-relaxed"><MathText text={data.concept_ar} /></p>
 
         {/* Key Vocabulary */}
         {data.key_vocabulary && data.key_vocabulary.length > 0 && (
@@ -370,17 +534,32 @@ function ExplainSection({ data }: { data: LessonPlanData['explain'] }) {
             <p className="text-xs font-medium text-muted-foreground mb-2">القوانين:</p>
             <div className="space-y-2">
               {data.formulas.map((formula, i) => {
-                // Check if the formula contains LaTeX-like content
-                const hasLatex = /[\\^_{}]/.test(formula) || /\$/.test(formula);
-                if (hasLatex) {
-                  // Strip surrounding $ or $$ if present
-                  const cleaned = formula.replace(/^\$\$?|\$\$?$/g, '').trim();
+                // `formulas[]` entries are LaTeX by contract (schema.ts), but
+                // in practice the AI often emits mixed content (LaTeX + prose
+                // in the same string). Route those through `<MathText>` — the
+                // segment parser handles inline `$…$` correctly. Feeding mixed
+                // content to `<MathDisplay>` would double-wrap it as display
+                // math and cause `ParseError: Can't use function '$' in math
+                // mode`. See `isMixedLatex` in lib/latex/sanitize.ts.
+                if (isMixedLatex(formula)) {
                   return (
                     <div
                       key={i}
                       className="rounded-lg bg-muted/50 p-3 text-center"
                     >
-                      <MathDisplay latex={cleaned} display />
+                      <MathText text={formula} />
+                    </div>
+                  );
+                }
+                const hasAnyMath =
+                  /[\\^_{}]/.test(formula) || /\$/.test(formula) || /=/.test(formula);
+                if (hasAnyMath) {
+                  return (
+                    <div
+                      key={i}
+                      className="rounded-lg bg-muted/50 p-3 text-center"
+                    >
+                      <MathDisplay latex={formula} display />
                     </div>
                   );
                 }
@@ -446,7 +625,8 @@ function PracticeSection({ data }: { data: LessonPlanData['practice'] }) {
     <SectionCard
       icon={PenTool}
       title="التمارين"
-      duration={data.duration_minutes}
+      duration={sectionTotal(data)}
+      teacherGuidePage={data.teacher_guide_page}
     >
       <div className="space-y-3">
         {data.items.map((item: PracticeItem, i: number) => (
@@ -463,14 +643,21 @@ function PracticeSection({ data }: { data: LessonPlanData['practice'] }) {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 ms-8">
+            <div className="flex flex-wrap items-center gap-1.5 ms-8">
               {item.bloom_level && <BloomBadge level={item.bloom_level} />}
               {item.tier && <TierBadge tier={item.tier} />}
+              {item.interaction_type && (
+                <InteractionTypeBadge type={item.interaction_type} />
+              )}
               {item.source_page && (
                 <Badge variant="outline" className="text-xs">
                   ص {item.source_page}
                 </Badge>
               )}
+              {item.teacher_guide_page != null && (
+                <TeacherGuidePageBadge page={item.teacher_guide_page} />
+              )}
+              {item.qncf_code && <QncfCodeChip code={item.qncf_code} />}
             </div>
 
             {item.expected_answer && (
@@ -479,6 +666,10 @@ function PracticeSection({ data }: { data: LessonPlanData['practice'] }) {
                 <MathText text={item.expected_answer} />
               </div>
             )}
+
+            {item.hint_ar && <HintDisclosure hint={item.hint_ar} />}
+
+            {item.qatar_context && <QatarContextNote text={item.qatar_context} />}
           </div>
         ))}
       </div>
@@ -501,7 +692,8 @@ function AssessSection({ data }: { data: LessonPlanData['assess'] }) {
     <SectionCard
       icon={ClipboardCheck}
       title="التقويم"
-      duration={data.duration_minutes}
+      duration={sectionTotal(data)}
+      teacherGuidePage={data.teacher_guide_page}
     >
       <div className="space-y-3">
         {data.items.map((item: AssessItem, i: number) => (
@@ -518,13 +710,20 @@ function AssessSection({ data }: { data: LessonPlanData['assess'] }) {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 ms-8">
+            <div className="flex flex-wrap items-center gap-1.5 ms-8">
               {item.type && (
                 <Badge variant="outline" className="text-xs">
                   {questionTypeLabels[item.type] ?? item.type}
                 </Badge>
               )}
               {item.bloom_level && <BloomBadge level={item.bloom_level} />}
+              {item.interaction_type && (
+                <InteractionTypeBadge type={item.interaction_type} />
+              )}
+              {item.teacher_guide_page != null && (
+                <TeacherGuidePageBadge page={item.teacher_guide_page} />
+              )}
+              {item.qncf_code && <QncfCodeChip code={item.qncf_code} />}
             </div>
 
             {item.model_answer_ar && (
@@ -533,6 +732,8 @@ function AssessSection({ data }: { data: LessonPlanData['assess'] }) {
                 <MathText text={item.model_answer_ar} />
               </div>
             )}
+
+            {item.hint_ar && <HintDisclosure hint={item.hint_ar} />}
           </div>
         ))}
       </div>
@@ -548,15 +749,28 @@ function ExtendSection({ data }: { data: NonNullable<LessonPlanData['extend']> }
   return (
     <Card className="border-2 border-dashed border-purple-300 dark:border-purple-700">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex flex-wrap items-center gap-2">
           <Rocket className="size-5 shrink-0 text-purple-600 dark:text-purple-400" />
           <span className="flex-1">الإثراء</span>
-          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-            اختياري
-          </Badge>
-          <DurationBadge minutes={data.duration_minutes} />
+          {data.is_optional && (
+            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+              اختياري
+            </Badge>
+          )}
+          {data.excluded_from_assessments && (
+            <Badge className="bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 text-xs">
+              خارج التقييم
+            </Badge>
+          )}
+          <TeacherGuidePageBadge page={data.teacher_guide_page} />
+          <DurationBadge minutes={sectionTotal(data)} />
         </CardTitle>
         <CardDescription>نشاط إثرائي اختياري لا يُقيّم ضمن الدرجات</CardDescription>
+        {data.qncf_code && (
+          <div className="pt-1">
+            <QncfCodeChip code={data.qncf_code} />
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <p className="text-sm leading-relaxed">
@@ -564,71 +778,6 @@ function ExtendSection({ data }: { data: NonNullable<LessonPlanData['extend']> }
         </p>
       </CardContent>
     </Card>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Section 9: Metadata (collapsed by default)
-// ---------------------------------------------------------------------------
-
-function MetadataSection({ data }: { data: NonNullable<LessonPlanData['metadata']> }) {
-  return (
-    <Collapsible>
-      <Card>
-        <CardHeader className="pb-0">
-          <CollapsibleTrigger className="flex w-full items-center gap-2 text-start">
-            <Info className="size-5 shrink-0 text-muted-foreground" />
-            <span className="flex-1 text-base font-medium">تفاصيل تقنية</span>
-            <ChevronDown className="size-4 text-muted-foreground transition-transform data-[state=open]:rotate-180" />
-          </CollapsibleTrigger>
-        </CardHeader>
-        <CollapsibleContent>
-          <CardContent className="pt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-              {data.generated_at && (
-                <div>
-                  <span className="text-muted-foreground">تاريخ التوليد:</span>{' '}
-                  <span className="font-mono text-xs">{data.generated_at}</span>
-                </div>
-              )}
-              <div>
-                <span className="text-muted-foreground">المصدر:</span>{' '}
-                <span className="font-medium">{data.generated_by === 'ai' ? 'ذكاء اصطناعي' : 'المعلم'}</span>
-              </div>
-
-              {data.bloom_distribution && Object.keys(data.bloom_distribution).length > 0 && (
-                <div className="sm:col-span-2">
-                  <span className="text-muted-foreground block mb-1">توزيع مستويات بلوم:</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(Object.entries(data.bloom_distribution) as [BloomLevel, number][]).map(
-                      ([level, count]) =>
-                        count > 0 && (
-                          <Badge key={level} className={cn('gap-1', bloomColors[level])}>
-                            {bloomLabels[level]}: {count}
-                          </Badge>
-                        ),
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {data.teacher_guide_pages && data.teacher_guide_pages.length > 0 && (
-                <div>
-                  <span className="text-muted-foreground">صفحات دليل المعلم:</span>{' '}
-                  <span className="font-medium">{data.teacher_guide_pages.join('، ')}</span>
-                </div>
-              )}
-              {data.student_book_pages && data.student_book_pages.length > 0 && (
-                <div>
-                  <span className="text-muted-foreground">صفحات كتاب الطالب:</span>{' '}
-                  <span className="font-medium">{data.student_book_pages.join('، ')}</span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
   );
 }
 
@@ -650,6 +799,14 @@ interface LessonPlanViewerProps {
 export function LessonPlanViewer({ plan, className }: LessonPlanViewerProps) {
   return (
     <div className={cn('space-y-4', className)}>
+      {/* D-UX1: 85/15 bar + D-36: Triple-gate badges */}
+      <Card>
+        <CardContent className="pt-6 space-y-3">
+          <StudentTeacherBar plan={plan} />
+          {plan.gate_results && <TripleGateBadges gates={plan.gate_results} />}
+        </CardContent>
+      </Card>
+
       {/* 1. Header */}
       <HeaderSection data={plan} />
 
@@ -673,9 +830,6 @@ export function LessonPlanViewer({ plan, className }: LessonPlanViewerProps) {
 
       {/* 8. Extend (optional) */}
       {plan.extend && <ExtendSection data={plan.extend} />}
-
-      {/* 9. Metadata (optional, collapsed) */}
-      {plan.metadata && <MetadataSection data={plan.metadata} />}
     </div>
   );
 }

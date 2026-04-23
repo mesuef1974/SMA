@@ -2,7 +2,9 @@
  * Few-shot example: Lesson 3-1 — Absolute Value Function
  *
  * A complete lesson plan for Grade 11 Literary Track (Qatar curriculum).
- * Conforms exactly to the LessonPlanData type from ../schema.ts.
+ * Conforms exactly to the LessonPlanData type from ../schema.ts (Wave 1/2:
+ * teacher_minutes/student_minutes split, qncf_code, teacher_guide_page).
+ * Note: qatar_context enum was removed in DEC-SMA-044 (2026-04-19).
  *
  * Used as a few-shot example in the system prompt so that Claude sees
  * a concrete, high-quality output before generating a new plan.
@@ -20,8 +22,8 @@ export const EXAMPLE_3_1: LessonPlanData = {
     lesson_title_en: 'Absolute Value Function',
     unit_number: 3,
     period: '1',
-    teacher_guide_pages: 'ص 5A-10',
-    student_book_pages: 'ص 132-138',
+    teacher_guide_pages: '5-10',
+    student_book_pages: '132-138',
   },
 
   learning_outcomes: [
@@ -30,35 +32,38 @@ export const EXAMPLE_3_1: LessonPlanData = {
         'يمثّل دالة القيمة المطلقة بيانيًّا ويحدّد الخواص الأساسية للتمثيل البياني (الرأس، محور التناظر، المجال، المدى)',
       bloom_level: 'apply',
       action_verb_ar: 'يمثّل ويحدّد',
+      qncf_code: 'QNCF-G11-M-FUN-001',
     },
     {
       outcome_ar:
         'يفسّر التمثيل البياني لدالة قيمة مطلقة تنمذج موقفًا حياتيًّا',
       bloom_level: 'understand',
       action_verb_ar: 'يفسّر',
+      qncf_code: 'QNCF-G11-M-FUN-002',
     },
     {
       outcome_ar:
         'يستكشف التحويلات الهندسية لدالة القيمة المطلقة ويقارن تمثيلاتها البيانية',
       bloom_level: 'analyze',
       action_verb_ar: 'يستكشف ويقارن',
+      qncf_code: 'QNCF-G11-M-FUN-003',
     },
   ],
 
   warm_up: {
-    duration_minutes: 5,
+    teacher_minutes: 2,
+    student_minutes: 3,
+    teacher_guide_page: 5,
+    qncf_code: 'QNCF-G11-M-FUN-001',
     activity_ar:
-      'راجع مفهوم القيمة المطلقة كمسافة على خط الأعداد. اسأل الطلاب: ما المسافة بين العدد \\(-3\\) والصفر على خط الأعداد؟ وبين \\(3\\) والصفر؟ ماذا تلاحظ؟ ثم اعرض: \\(|{-3}| = 3\\) و \\(|3| = 3\\). ذكّر بتعريف: \\(|x| = x\\) إذا \\(x \\geq 0\\)، و \\(|x| = -x\\) إذا \\(x < 0\\).',
-    prerequisite_concepts: [
-      'القيمة المطلقة كمسافة',
-      'خط الأعداد',
-      'المتباينات الخطية',
-    ],
-    target_bloom: 'remember',
+      'راجع مفهوم القيمة المطلقة كمسافة على خط الأعداد. اسأل الطلاب: ما المسافة بين العدد \\(-3\\) والصفر على خط الأعداد؟ وبين \\(3\\) والصفر؟ ماذا تلاحظ؟ ثم اعرض: \\(|{-3}| = 3\\) و \\(|3| = 3\\). ذكّر بتعريف: \\(|x| = x\\) إذا \\(x \\geq 0\\)، و \\(|x| = -x\\) إذا \\(x < 0\\). مثال حياتي: المسافة من تمثال اللؤلؤة على الكورنيش إلى نقطة ما (شرقاً أو غرباً) هي دوماً عدد موجب.',
   },
 
   explore: {
-    duration_minutes: 15,
+    teacher_minutes: 1,
+    student_minutes: 14,
+    teacher_guide_page: 6,
+    qncf_code: 'QNCF-G11-M-FUN-001',
     activity_ar:
       'وزّع على الطلاب جدولاً فارغاً لقيم الدالة \\(f(x) = |x|\\). اطلب منهم حساب \\(f(x)\\) للقيم \\(x = -3, -2, -1, 0, 1, 2, 3\\) ثم تمثيل النقاط على المستوى الإحداثي وربطها. ناقش: ما شكل الرسم البياني؟ أين يقع الرأس؟ ما محور التناظر؟ ثم كرّر مع الدالة \\(g(x) = |x - 2| + 1\\) وقارن بين التمثيلين.',
     guiding_questions: [
@@ -78,7 +83,10 @@ export const EXAMPLE_3_1: LessonPlanData = {
   },
 
   explain: {
-    duration_minutes: 5,
+    teacher_minutes: 5,
+    student_minutes: 0,
+    teacher_guide_page: 7,
+    qncf_code: 'QNCF-G11-M-FUN-002',
     concept_ar:
       'دالة القيمة المطلقة الأم هي \\(f(x) = |x|\\). تمثيلها البياني على شكل حرف V رأسه عند نقطة الأصل \\((0, 0)\\) ومحور تناظره هو المحور \\(y\\). الصورة العامة: \\(f(x) = a|x - h| + k\\) حيث \\((h, k)\\) هي إحداثيات الرأس، و \\(x = h\\) هو محور التناظر. إذا \\(a > 0\\) يفتح لأعلى (قيمة صغرى)، وإذا \\(a < 0\\) يفتح لأسفل (قيمة عظمى).',
     key_vocabulary: [
@@ -106,7 +114,9 @@ export const EXAMPLE_3_1: LessonPlanData = {
   },
 
   practice: {
-    duration_minutes: 12,
+    teacher_minutes: 1,
+    student_minutes: 11,
+    teacher_guide_page: 8,
     items: [
       {
         question_ar:
@@ -116,6 +126,8 @@ export const EXAMPLE_3_1: LessonPlanData = {
         expected_answer:
           'أ) الرأس: \\((4, 0)\\)، محور التناظر: \\(x = 4\\)، يفتح لأعلى.\nب) الرأس: \\((-2, -3)\\)، محور التناظر: \\(x = -2\\)، يفتح لأعلى.\nج) الرأس: \\((1, 6)\\)، محور التناظر: \\(x = 1\\)، يفتح لأسفل.',
         source_page: 'ص 134',
+        qncf_code: 'QNCF-G11-M-FUN-001',
+        teacher_guide_page: 8,
       },
       {
         question_ar:
@@ -125,6 +137,8 @@ export const EXAMPLE_3_1: LessonPlanData = {
         expected_answer:
           'الرأس: \\((-1, -2)\\). محور التناظر: \\(x = -1\\). المجال: \\(\\mathbb{R}\\). المدى: \\([-2, +\\infty)\\). الرسم على شكل V يفتح لأعلى.',
         source_page: 'ص 135',
+        qncf_code: 'QNCF-G11-M-FUN-001',
+        teacher_guide_page: 8,
       },
       {
         question_ar:
@@ -134,6 +148,8 @@ export const EXAMPLE_3_1: LessonPlanData = {
         expected_answer:
           '\\(f(-2) = 2\\)، \\(f(-1) = 1\\)، \\(f(0) = 0\\)، \\(f(1) = 1\\)، \\(f(2) = 2\\). الرسم على شكل V رأسه عند الأصل.',
         source_page: 'ص 133',
+        qncf_code: 'QNCF-G11-M-FUN-001',
+        teacher_guide_page: 8,
       },
       {
         question_ar:
@@ -143,12 +159,16 @@ export const EXAMPLE_3_1: LessonPlanData = {
         expected_answer:
           'الرأس: \\((2, -1)\\). محور التناظر: \\(x = 2\\). يفتح لأعلى (\\(a=3>0\\)). الدالة متناقصة على \\((-\\infty, 2)\\) ومتزايدة على \\((2, +\\infty)\\).',
         source_page: 'ص 137',
+        qncf_code: 'QNCF-G11-M-FUN-003',
+        teacher_guide_page: 9,
       },
     ],
   },
 
   assess: {
-    duration_minutes: 5,
+    teacher_minutes: 0,
+    student_minutes: 5,
+    teacher_guide_page: 9,
     items: [
       {
         question_ar:
@@ -156,6 +176,8 @@ export const EXAMPLE_3_1: LessonPlanData = {
         type: 'mcq',
         model_answer_ar: 'أ) \\((5, 3)\\) — لأن \\(h = 5\\) و \\(k = 3\\) في الصورة \\(|x - h| + k\\).',
         bloom_level: 'remember',
+        qncf_code: 'QNCF-G11-M-FUN-001',
+        teacher_guide_page: 9,
       },
       {
         question_ar:
@@ -164,32 +186,23 @@ export const EXAMPLE_3_1: LessonPlanData = {
         model_answer_ar:
           '\\(f(x) = -a|x - 2| - 4\\) حيث \\(a > 0\\). أبسط إجابة: \\(f(x) = -|x - 2| - 4\\).',
         bloom_level: 'apply',
+        qncf_code: 'QNCF-G11-M-FUN-001',
+        teacher_guide_page: 9,
       },
     ],
   },
 
   extend: {
-    duration_minutes: 3,
+    teacher_minutes: 0,
+    student_minutes: 3,
+    teacher_guide_page: 10,
+    qncf_code: 'QNCF-G11-M-FUN-003',
     challenge_ar:
       'تحدٍّ إثرائي (اختياري): يقف أحمد عند النقطة \\(x = 0\\) ويمشي نحو صديقه خالد عند \\(x = 8\\). المسافة بين أحمد وخالد في أي لحظة تُعطى بالدالة \\(d(x) = |x - 8|\\). ارسم هذه الدالة وفسّر: ماذا يمثل الرأس في هذا السياق؟ متى تكون المسافة أقل من \\(3\\) وحدات؟ (حل المتباينة \\(|x - 8| < 3\\)).',
     is_optional: true,
     excluded_from_assessments: true,
   },
 
-  metadata: {
-    generated_at: '2026-04-13T10:00:00.000Z',
-    generated_by: 'ai',
-    bloom_distribution: {
-      remember: 2,
-      understand: 1,
-      apply: 4,
-      analyze: 1,
-      evaluate: 0,
-      create: 0,
-    },
-    teacher_guide_pages: ['5A', '6', '7', '8', '9', '10'],
-    student_book_pages: ['132', '133', '134', '135', '136', '137', '138'],
-  },
 };
 
 /**

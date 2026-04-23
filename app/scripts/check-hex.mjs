@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs';
 
 const ALLOWLIST = [
   /components[\\/]brand[\\/]Logo\.tsx$/,
+  /components[\\/]charts[\\/]/, // SVG fill/stroke attributes require literal hex — CSS vars unreliable in SVG
 ];
 
 const HEX_RE = /#[0-9a-fA-F]{3,8}\b/;

@@ -1,0 +1,1083 @@
+'use client';
+
+/**
+ * PresentationView — full-screen, projector-friendly slide show.
+ *
+ * Converts a 9-section lesson plan into discrete slides that the teacher
+ * can navigate with keyboard arrows, on-screen buttons, or (later) swipe.
+ *
+ * Design:
+ *   - Dark gradient background (always dark, independent of system theme)
+ *   - Large, projector-friendly typography (min 24px body, 48px headers)
+ *   - RTL layout
+ *   - Full viewport height (100vh, no scrollbar)
+ *   - No sidebar/header — clean presentation
+ *   - ESC / X button to exit back to the lesson
+ */
+
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Target,
+  Lightbulb,
+  Compass,
+  GraduationCap,
+  PenTool,
+  ClipboardCheck,
+  Rocket,
+  BookOpen,
+  AlertTriangle,
+} from 'lucide-react';
+import { MathDisplay, MathText } from '@/components/math/math-display';
+import { isMixedLatex } from '@/lib/latex/sanitize';
+import { cn } from '@/lib/utils';
+import type { LessonPlanData } from '@/lib/lesson-plans/schema';
+import { Check, X as XIcon, Clock as ClockIcon } from 'lucide-react';
+import { VisualAidsSlide } from '@/components/lesson-plan/visual-aids-slide';
+import { getVisualAidsForLesson } from '@/lib/lesson-plans/visual-aids-registry';
+import {
+  TeacherModeProvider,
+  useTeacherMode,
+} from '@/components/presentation/teacher-mode-context';
+import { TeacherModeToggle } from '@/components/presentation/teacher-mode-toggle';
+import { RevealControls } from '@/components/presentation/reveal-controls';
+import { InteractiveDataReveal } from '@/components/presentation/slides/InteractiveDataReveal';
+import { GuidedDrawing } from '@/components/presentation/slides/GuidedDrawing';
+import { TryThenReveal } from '@/components/presentation/slides/TryThenReveal';
+import { ThinkPairShare } from '@/components/presentation/slides/ThinkPairShare';
+import type { PracticeItem, AssessItem, InteractionType } from '@/lib/lesson-plans/schema';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface LessonInfo {
+  id: string;
+  titleAr: string;
+  title: string;
+  number: string;
+  chapter: {
+    number: number;
+    titleAr: string;
+  } | null;
+}
+
+interface PresentationViewProps {
+  lesson: LessonInfo;
+  plan: Record<string, unknown>;
+  periodNumber: number;
+  locale: string;
+  lessonId: string;
+}
+
+interface Slide {
+  id: string;
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  render: () => React.ReactNode;
+  teacherGuidePage?: number;
+}
+
+// ---------------------------------------------------------------------------
+// Bloom / Tier mappings (presentation-sized)
+// ---------------------------------------------------------------------------
+
+const bloomColors: Record<string, string> = {
+  remember: 'bg-zinc-700 text-zinc-200',
+  understand: 'bg-blue-800 text-blue-100',
+  apply: 'bg-green-800 text-green-100',
+  analyze: 'bg-amber-800 text-amber-100',
+  evaluate: 'bg-orange-800 text-orange-100',
+  create: 'bg-purple-800 text-purple-100',
+};
+
+const bloomLabels: Record<string, string> = {
+  remember: 'تذكّر',
+  understand: 'فهم',
+  apply: 'تطبيق',
+  analyze: 'تحليل',
+  evaluate: 'تقويم',
+  create: 'إبداع',
+};
+
+const tierLabels: Record<string, string> = {
+  approaching: 'دون المستوى',
+  meeting: 'ضمن المستوى',
+  exceeding: 'فوق المستوى',
+};
+
+const tierColors: Record<string, string> = {
+  approaching: 'bg-red-800 text-red-100',
+  meeting: 'bg-blue-800 text-blue-100',
+  exceeding: 'bg-emerald-800 text-emerald-100',
+};
+
+const questionTypeLabels: Record<string, string> = {
+  mcq: 'اختيار من متعدد',
+  short_answer: 'إجابة قصيرة',
+  problem_solving: 'حل مسائل',
+};
+
+// ---------------------------------------------------------------------------
+// D-27: total section duration = teacher_minutes + student_minutes
+// ---------------------------------------------------------------------------
+
+function sectionTotal(section: {
+  teacher_minutes: number;
+  student_minutes: number;
+}): number {
+  return section.teacher_minutes + section.student_minutes;
+}
+
+// ---------------------------------------------------------------------------
+// D-UX1: 85/15 split bar (projector-sized)
+// ---------------------------------------------------------------------------
+
+function PresentSplitBar({ plan }: { plan: LessonPlanData }) {
+  const sections = [
+    plan.warm_up,
+    plan.explore,
+    plan.explain,
+    plan.practice,
+    plan.assess,
+    ...(plan.extend ? [plan.extend] : []),
+  ];
+  const student = sections.reduce((a, s) => a + s.student_minutes, 0);
+  const teacher = sections.reduce((a, s) => a + s.teacher_minutes, 0);
+  const total = student + teacher;
+  const studentPct = total > 0 ? Math.round((student / total) * 100) : 0;
+  const teacherPct = 100 - studentPct;
+
+  return (
+    <div className="flex items-center gap-3 text-sm md:text-base">
+      <span className="shrink-0 text-zinc-400">
+        الطالب <span className="font-bold text-white">{studentPct}%</span>
+      </span>
+      <div
+        className="flex-1 h-2 bg-white/10 rounded overflow-hidden"
+        role="progressbar"
+        aria-valuenow={studentPct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
+        <div
+          className="h-full bg-emerald-500 transition-all"
+          style={{ width: `${studentPct}%` }}
+        />
+      </div>
+      <span className="shrink-0 text-zinc-400">
+        <span className="font-bold text-white">{teacherPct}%</span> المعلم
+      </span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// D-36: Triple-gate badges (projector-sized)
+// ---------------------------------------------------------------------------
+
+function PresentGateBadges({
+  gates,
+}: {
+  gates: NonNullable<LessonPlanData['gate_results']>;
+}) {
+  const gateItem = (
+    label: string,
+    state: 'pass' | 'fail' | 'approved' | 'pending' | 'needs_revision',
+  ) => {
+    const isOk = state === 'pass' || state === 'approved';
+    const isPending = state === 'pending';
+    const Icon = isOk ? Check : isPending ? ClockIcon : XIcon;
+    const color = isOk
+      ? 'bg-emerald-900/40 text-emerald-200 border-emerald-700/50'
+      : isPending
+      ? 'bg-amber-900/40 text-amber-200 border-amber-700/50'
+      : 'bg-red-900/40 text-red-200 border-red-700/50';
+    return (
+      <span
+        className={cn(
+          'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1 text-sm md:text-base',
+          color,
+        )}
+      >
+        <Icon className="size-4" />
+        {label}
+      </span>
+    );
+  };
+
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-2">
+      {gateItem('Bloom', gates.bloom_gate)}
+      {gateItem('QNCF', gates.qncf_gate)}
+      {gateItem('المستشار', gates.advisor_gate)}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Presentation badge components
+// ---------------------------------------------------------------------------
+
+function PresentBloomBadge({ level }: { level: string }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center rounded-lg px-4 py-1.5 text-lg font-bold',
+        bloomColors[level] ?? 'bg-zinc-700 text-zinc-200',
+      )}
+    >
+      {bloomLabels[level] ?? level}
+    </span>
+  );
+}
+
+function PresentTierBadge({ tier }: { tier: string }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center rounded-lg px-4 py-1.5 text-lg font-bold',
+        tierColors[tier] ?? 'bg-zinc-700 text-zinc-200',
+      )}
+    >
+      {tierLabels[tier] ?? tier}
+    </span>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Helper: detect and render math content
+// ---------------------------------------------------------------------------
+
+function PresentMathText({ text, className }: { text: string; className?: string }) {
+  return (
+    <span className={className}>
+      <MathText text={text} className="[&_.katex]:text-[1.4em]" />
+    </span>
+  );
+}
+
+function PresentFormula({ formula }: { formula: string }) {
+  // `formulas[]` entries SHOULD be LaTeX by contract, but in practice the
+  // AI often emits mixed content (LaTeX + Arabic prose). `isMixedLatex`
+  // (shared with the Viewer) detects these shapes and routes through
+  // `PresentMathText` so inline `$…$` segments parse correctly. Pure-LaTeX
+  // entries (no `$` at all, or a single `$…$` wrapping the entire trimmed
+  // string) go to MathDisplay.
+  if (isMixedLatex(formula)) {
+    return (
+      <div className="my-4 rounded-xl bg-white/10 p-6 text-center text-xl leading-loose">
+        <PresentMathText text={formula} />
+      </div>
+    );
+  }
+  const hasAnyMath =
+    /[\\^_{}]/.test(formula) || /\$/.test(formula) || /=/.test(formula);
+  if (hasAnyMath) {
+    return (
+      <div className="my-4 rounded-xl bg-white/10 p-6 text-center">
+        <MathDisplay latex={formula} display className="[&_.katex]:text-[2em]" />
+      </div>
+    );
+  }
+  return (
+    <div className="my-4 rounded-xl bg-white/10 p-6 text-center text-2xl">
+      <PresentMathText text={formula} />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Slide builders
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Interactive practice/assess renderers (dispatch by interaction_type)
+// ---------------------------------------------------------------------------
+
+function parseDataFromQuestion(text: string): number[] | null {
+  // Arabic uses '،' as separator. Extract first comma-separated run of numbers.
+  const normalized = text.replace(/،/g, ',');
+  const match = normalized.match(/(-?\d+(?:\.\d+)?(?:\s*,\s*-?\d+(?:\.\d+)?){2,})/);
+  if (!match) return null;
+  const nums = match[1]
+    .split(',')
+    .map((s) => Number.parseFloat(s.trim()))
+    .filter((n) => Number.isFinite(n));
+  return nums.length >= 3 ? nums : null;
+}
+
+function pickNumericAnswer(expected: string): string | number {
+  const m = expected.match(/=\s*(-?\d+(?:\.\d+)?)/);
+  if (m) return Number.parseFloat(m[1]);
+  const m2 = expected.match(/^\s*(-?\d+(?:\.\d+)?)\b/);
+  if (m2) return Number.parseFloat(m2[1]);
+  return expected;
+}
+
+/**
+ * Infer an interaction_type from question shape when the generator didn't
+ * emit one. Replaces the old blind `?? 'try_reveal'` fallback (which forced
+ * ~88–100% of items into try_reveal — P1.5 bug).
+ *
+ * Cheap, deterministic heuristics:
+ *   - draw verb (ارسم / مثّل) + numeric data → `guided_drawing`
+ *   - 3+ comma-separated numbers           → `data_reveal`
+ *   - open-ended verb (فسّر / ناقش / قارن / اشرح / لماذا) → `think_pair_share`
+ *   - otherwise → `try_reveal`
+ */
+function inferInteractionType(
+  questionAr: string,
+  hasNumericData: boolean,
+): InteractionType {
+  const q = questionAr;
+  const hasDrawVerb = /(ارسم|مثّل|مثل|اصنع|ارسمي)/.test(q);
+  if (hasDrawVerb && hasNumericData) return 'guided_drawing';
+  if (hasNumericData) return 'data_reveal';
+  if (/(فسّر|فسر|ناقش|قارن|اشرح|وضّح|وضح|برهن|علّل|علل|لماذا|متى نستخدم)/.test(q)) {
+    return 'think_pair_share';
+  }
+  return 'try_reveal';
+}
+
+function resolveInteractionType(
+  item: { interaction_type?: InteractionType; question_ar: string },
+  hasNumericData: boolean,
+): InteractionType {
+  // Honor generator-supplied value first (P1.5).
+  if (item.interaction_type) return item.interaction_type;
+  return inferInteractionType(item.question_ar, hasNumericData);
+}
+
+function PracticeSlide({
+  item,
+  index,
+  total,
+}: {
+  item: PracticeItem;
+  index: number;
+  total: number;
+}) {
+  const { isTeacher, revealLevel } = useTeacherMode();
+  const showExpected = isTeacher && revealLevel >= 2;
+  const data = parseDataFromQuestion(item.question_ar);
+  const kind: InteractionType = resolveInteractionType(item, data !== null);
+
+  const body = () => {
+    if (kind === 'data_reveal' && data) {
+      return (
+        <InteractiveDataReveal
+          data={data}
+          operations={['sort', 'median']}
+          label="تفاعل: رتّب البيانات ثم أوجد الوسيط"
+        />
+      );
+    }
+    if (kind === 'guided_drawing' && data) {
+      const min = Math.floor(Math.min(...data));
+      const max = Math.ceil(Math.max(...data));
+      return (
+        <GuidedDrawing
+          data={data}
+          chartType="dotplot"
+          min={min}
+          max={max}
+          label="ارسم التمثيل بالنقاط على خط الأعداد"
+        />
+      );
+    }
+    if (kind === 'think_pair_share') {
+      return (
+        <ThinkPairShare
+          question={item.question_ar}
+          modelAnswer={item.expected_answer}
+        />
+      );
+    }
+    if (kind === 'static') {
+      // Reference/definition item — show the question plainly, no try/reveal UI.
+      return (
+        <div className="rounded-xl bg-white/5 border border-white/10 p-6 text-2xl leading-relaxed">
+          <MathText text={item.question_ar} />
+        </div>
+      );
+    }
+    // try_reveal (explicit) — or fell back to data_reveal/guided_drawing
+    // but no parsable numeric data → degrade to try_reveal rather than crash.
+    return (
+      <TryThenReveal
+        question={item.question_ar}
+        expectedAnswer={pickNumericAnswer(item.expected_answer)}
+        solutionSteps={item.expected_answer.split('\n').filter(Boolean)}
+        hint={item.hint_ar}
+      />
+    );
+  };
+
+  return (
+    <div className="flex h-full flex-col justify-center gap-6 px-4 overflow-y-auto">
+      <div className="text-center space-y-2">
+        <h2 className="text-4xl font-bold md:text-5xl">التمارين</h2>
+        <p className="text-xl text-zinc-400">
+          تمرين {index + 1} من {total}
+        </p>
+      </div>
+      <div className="max-w-4xl mx-auto w-full space-y-5">
+        {body()}
+        {/* Non-TryThenReveal interactions still need the raw question visible.
+            Skip for try_reveal (it shows the question internally),
+            think_pair_share (shows it), and static (renders the question itself). */}
+        {kind !== 'try_reveal' && kind !== 'think_pair_share' && kind !== 'static' && (
+          <div className="rounded-xl bg-white/5 border border-white/10 p-5 text-xl leading-relaxed">
+            <MathText text={item.question_ar} />
+          </div>
+        )}
+        <div className="flex flex-wrap gap-3">
+          {item.bloom_level && <PresentBloomBadge level={item.bloom_level} />}
+          {item.tier && <PresentTierBadge tier={item.tier} />}
+          {item.source_page && (
+            <span className="inline-flex items-center rounded-lg border border-zinc-600 px-4 py-1.5 text-lg text-zinc-400">
+              ص {item.source_page}
+            </span>
+          )}
+        </div>
+        {/* CRITICAL: expected_answer only in teacher mode + L2.
+            try_reveal and think_pair_share show the answer through their own
+            reveal UI, so we skip the duplicate card for those. */}
+        {showExpected &&
+          item.expected_answer &&
+          kind !== 'try_reveal' &&
+          kind !== 'think_pair_share' && (
+            <div className="rounded-xl bg-emerald-900/20 border border-emerald-700/50 p-6 text-xl">
+              <span className="font-bold text-emerald-400 me-2">الإجابة المتوقعة:</span>
+              <MathText text={item.expected_answer} />
+            </div>
+          )}
+      </div>
+    </div>
+  );
+}
+
+function AssessSlide({
+  item,
+  index,
+  total,
+}: {
+  item: AssessItem;
+  index: number;
+  total: number;
+}) {
+  const { isTeacher, revealLevel } = useTeacherMode();
+  const showModel = isTeacher && revealLevel >= 2;
+  const data = parseDataFromQuestion(item.question_ar);
+  const kind: InteractionType = resolveInteractionType(item, data !== null);
+
+  const body = () => {
+    if (kind === 'data_reveal' && data) {
+      return (
+        <InteractiveDataReveal
+          data={data}
+          operations={['sort', 'median']}
+          label="تفاعل: رتّب البيانات ثم أوجد الوسيط"
+        />
+      );
+    }
+    if (kind === 'guided_drawing' && data) {
+      const min = Math.floor(Math.min(...data));
+      const max = Math.ceil(Math.max(...data));
+      return (
+        <GuidedDrawing
+          data={data}
+          chartType="dotplot"
+          min={min}
+          max={max}
+          label="ارسم التمثيل بالنقاط على خط الأعداد"
+        />
+      );
+    }
+    if (kind === 'think_pair_share') {
+      return (
+        <ThinkPairShare
+          question={item.question_ar}
+          modelAnswer={item.model_answer_ar}
+        />
+      );
+    }
+    if (kind === 'static') {
+      return (
+        <div className="rounded-xl bg-white/5 border border-white/10 p-6 text-2xl leading-relaxed">
+          <MathText text={item.question_ar} />
+        </div>
+      );
+    }
+    return (
+      <TryThenReveal
+        question={item.question_ar}
+        expectedAnswer={pickNumericAnswer(item.model_answer_ar)}
+        solutionSteps={item.model_answer_ar.split('\n').filter(Boolean)}
+        hint={item.hint_ar}
+      />
+    );
+  };
+
+  return (
+    <div className="flex h-full flex-col justify-center gap-6 px-4 overflow-y-auto">
+      <div className="text-center space-y-2">
+        <h2 className="text-4xl font-bold md:text-5xl">التقويم</h2>
+        <p className="text-xl text-zinc-400">
+          سؤال {index + 1} من {total}
+        </p>
+      </div>
+      <div className="max-w-4xl mx-auto w-full space-y-5">
+        {body()}
+        {/* data_reveal / guided_drawing render the interactive widget only —
+            show the raw question so the teacher/student can read it. */}
+        {(kind === 'data_reveal' || kind === 'guided_drawing') && (
+          <div className="rounded-xl bg-white/5 border border-white/10 p-5 text-xl leading-relaxed">
+            <MathText text={item.question_ar} />
+          </div>
+        )}
+        <div className="flex flex-wrap gap-3">
+          {item.type && (
+            <span className="inline-flex items-center rounded-lg border border-zinc-600 px-4 py-1.5 text-lg text-zinc-300">
+              {questionTypeLabels[item.type] ?? item.type}
+            </span>
+          )}
+          {item.bloom_level && <PresentBloomBadge level={item.bloom_level} />}
+        </div>
+        {showModel && item.model_answer_ar && kind !== 'try_reveal' && kind !== 'think_pair_share' && (
+          <div className="rounded-xl bg-emerald-900/20 border border-emerald-700/50 p-6 text-xl">
+            <span className="font-bold text-emerald-400 me-2">الإجابة النموذجية:</span>
+            <MathText text={item.model_answer_ar} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function buildSlides(
+  plan: LessonPlanData,
+  lesson: LessonInfo,
+  periodNumber: number,
+  lessonId: string,
+): Slide[] {
+  const slides: Slide[] = [];
+
+  // --- Slide 1: Header ---
+  slides.push({
+    id: 'header',
+    title: 'عنوان الدرس',
+    icon: BookOpen,
+    render: () => (
+      <div className="flex h-full flex-col items-center justify-center text-center gap-8">
+        {lesson.chapter && (
+          <p className="text-2xl text-zinc-400">
+            الفصل {lesson.chapter.number}: {lesson.chapter.titleAr}
+          </p>
+        )}
+        <h1 className="text-5xl font-bold leading-tight md:text-6xl lg:text-7xl">
+          {plan.header.lesson_title_ar}
+        </h1>
+        {plan.header.lesson_title_en && (
+          <p className="text-2xl text-zinc-400" dir="ltr">
+            {plan.header.lesson_title_en}
+          </p>
+        )}
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-6 text-xl text-zinc-400">
+          <span>الحصة {periodNumber}</span>
+          {plan.header.unit_number != null && <span>الوحدة {plan.header.unit_number}</span>}
+          {plan.header.teacher_guide_pages && (
+            <span>دليل المعلم: ص {plan.header.teacher_guide_pages}</span>
+          )}
+        </div>
+        {/* D-UX1: 85/15 split bar */}
+        <div className="mt-4 w-full max-w-2xl">
+          <PresentSplitBar plan={plan} />
+        </div>
+        {/* D-36: Triple-gate badges on title slide */}
+        {plan.gate_results && (
+          <div className="mt-4">
+            <PresentGateBadges gates={plan.gate_results} />
+          </div>
+        )}
+      </div>
+    ),
+  });
+
+  // --- Slide 2: Learning Outcomes ---
+  if (plan.learning_outcomes?.length) {
+    slides.push({
+      id: 'outcomes',
+      title: 'مخرجات التعلم',
+      icon: Target,
+      render: () => (
+        <div className="flex h-full flex-col justify-center gap-8 px-4">
+          <h2 className="text-4xl font-bold text-center mb-4 md:text-5xl">مخرجات التعلم</h2>
+          <ul className="space-y-6 max-w-4xl mx-auto w-full">
+            {plan.learning_outcomes.map((outcome, i) => (
+              <li key={i} className="flex items-start gap-5">
+                <span className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-xl font-bold">
+                  {i + 1}
+                </span>
+                <div className="flex-1 space-y-2">
+                  <p className="text-2xl leading-relaxed md:text-3xl">
+                    {outcome.outcome_ar}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <PresentBloomBadge level={outcome.bloom_level} />
+                    {outcome.action_verb_ar && (
+                      <span className="inline-flex items-center rounded-lg border border-zinc-600 px-4 py-1.5 text-lg text-zinc-300">
+                        {outcome.action_verb_ar}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ),
+    });
+  }
+
+  // --- Slide 2b: Misconception Alerts (teacher pre-review) ---
+  // Collected from plan.explain.misconception_alerts (array of strings).
+  // Each string may be prefixed with a code tag like "[MC-STA-001]" followed
+  // by "name: description" or a free-form remediation hint. We render the
+  // raw string — parsing variants is brittle and the AI output format
+  // already reads well as-is. The slide is hidden if the array is empty.
+  const misconceptionAlerts = plan.explain?.misconception_alerts ?? [];
+  if (misconceptionAlerts.length > 0) {
+    slides.push({
+      id: 'misconception_alerts',
+      title: 'تنبيهات مفاهيم خاطئة',
+      icon: AlertTriangle,
+      teacherGuidePage: plan.explain.teacher_guide_page,
+      render: () => (
+        <div className="flex h-full flex-col justify-center gap-6 px-4 overflow-y-auto">
+          <div className="text-center space-y-2">
+            <h2 className="text-4xl font-bold md:text-5xl text-amber-300 flex items-center justify-center gap-3">
+              <AlertTriangle className="size-10 md:size-12" aria-hidden />
+              <span>تنبيهات مفاهيم خاطئة شائعة</span>
+            </h2>
+            <p className="text-xl text-zinc-400">
+              راجع هذه المفاهيم قبل بدء الشرح ({misconceptionAlerts.length})
+            </p>
+          </div>
+          <div className="max-w-4xl mx-auto w-full grid gap-4 md:gap-5">
+            {misconceptionAlerts.map((alert, i) => (
+              <div
+                key={i}
+                className="rounded-xl border-2 border-amber-500/60 bg-amber-950/40 p-5 md:p-6 shadow-lg"
+              >
+                <div className="flex items-start gap-4">
+                  <span
+                    className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/50 text-lg font-bold"
+                    aria-hidden
+                  >
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 text-xl md:text-2xl leading-relaxed text-amber-50">
+                    <PresentMathText text={alert} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ),
+    });
+  }
+
+  // --- Slide 3: Warm-Up ---
+  slides.push({
+    id: 'warm_up',
+    title: 'التهيئة',
+    icon: Lightbulb,
+    teacherGuidePage: plan.warm_up.teacher_guide_page,
+    render: () => (
+      <div className="flex h-full flex-col justify-center gap-8 px-4">
+        <div className="text-center space-y-2">
+          <h2 className="text-4xl font-bold md:text-5xl">التهيئة</h2>
+          <p className="text-xl text-zinc-400">{sectionTotal(plan.warm_up)} دقائق</p>
+        </div>
+        <div className="max-w-4xl mx-auto w-full space-y-6">
+          <p className="text-2xl leading-relaxed text-center md:text-3xl">
+            <PresentMathText text={plan.warm_up.activity_ar} />
+          </p>
+        </div>
+      </div>
+    ),
+  });
+
+  // --- Slide 4: Explore ---
+  slides.push({
+    id: 'explore',
+    title: 'الاستكشاف',
+    icon: Compass,
+    teacherGuidePage: plan.explore.teacher_guide_page,
+    render: () => (
+      <div className="flex h-full flex-col justify-center gap-6 px-4">
+        <div className="text-center space-y-2">
+          <h2 className="text-4xl font-bold md:text-5xl">الاستكشاف</h2>
+          <p className="text-xl text-zinc-400">{sectionTotal(plan.explore)} دقائق</p>
+        </div>
+        <div className="max-w-4xl mx-auto w-full space-y-6">
+          <p className="text-2xl leading-relaxed text-center md:text-3xl">
+            <PresentMathText text={plan.explore.activity_ar} />
+          </p>
+          {plan.explore.guiding_questions && plan.explore.guiding_questions.length > 0 && (
+            <div>
+              <p className="text-xl text-zinc-400 mb-3 text-center">أسئلة موجّهة:</p>
+              <ul className="space-y-3 max-w-3xl mx-auto">
+                {plan.explore.guiding_questions.map((q, i) => (
+                  <li key={i} className="flex items-start gap-3 text-xl leading-relaxed">
+                    <span className="mt-1 text-zinc-500 shrink-0">•</span>
+                    <PresentMathText text={q} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    ),
+  });
+
+  // --- Slide 5: Explain ---
+  slides.push({
+    id: 'explain',
+    title: 'الشرح',
+    icon: GraduationCap,
+    teacherGuidePage: plan.explain.teacher_guide_page,
+    render: () => (
+      <div className="flex h-full flex-col justify-center gap-6 px-4 overflow-y-auto">
+        <div className="text-center space-y-2">
+          <h2 className="text-4xl font-bold md:text-5xl">الشرح</h2>
+          <p className="text-xl text-zinc-400">{sectionTotal(plan.explain)} دقائق</p>
+        </div>
+        <div className="max-w-4xl mx-auto w-full space-y-6">
+          <p className="text-2xl leading-relaxed text-center">
+            <PresentMathText text={plan.explain.concept_ar} />
+          </p>
+
+          {/* Key Vocabulary */}
+          {plan.explain.key_vocabulary && plan.explain.key_vocabulary.length > 0 && (
+            <div className="text-center">
+              <p className="text-xl text-zinc-400 mb-3">المفردات الرياضية:</p>
+              <div className="flex flex-wrap justify-center gap-3">
+                {plan.explain.key_vocabulary.map((word, i) => (
+                  <span
+                    key={i}
+                    className="rounded-lg bg-blue-900/40 border border-blue-700/50 px-4 py-2 text-xl text-blue-100"
+                  >
+                    {word}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Formulas */}
+          {plan.explain.formulas && plan.explain.formulas.length > 0 && (
+            <div>
+              <p className="text-xl text-zinc-400 mb-3 text-center">القوانين:</p>
+              {plan.explain.formulas.map((formula, i) => (
+                <PresentFormula key={i} formula={formula} />
+              ))}
+            </div>
+          )}
+
+          {/* Worked Examples */}
+          {plan.explain.worked_examples && plan.explain.worked_examples.length > 0 && (
+            <div>
+              <p className="text-xl text-zinc-400 mb-3 text-center">أمثلة محلولة:</p>
+              <div className="space-y-4">
+                {plan.explain.worked_examples.map((example, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border border-zinc-600 bg-white/5 p-5 text-xl leading-relaxed"
+                  >
+                    <span className="font-bold text-amber-400 me-2">مثال {i + 1}:</span>
+                    <PresentMathText text={example} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    ),
+  });
+
+  // --- Slide 5b: Visual Aids (data-driven; skipped when no config) ---
+  // Source: `lib/lesson-plans/visual-aids-registry.ts` — keyed by lesson UUID.
+  // Returns null when the lesson has no configured visual aids, in which
+  // case we don't push a slide (no placeholder).
+  const visualAids = getVisualAidsForLesson(lessonId);
+  if (visualAids) {
+    slides.push({
+      id: 'visual_aids',
+      title: 'الوسائل التعليمية',
+      icon: BookOpen,
+      render: () => <VisualAidsSlide config={visualAids} />,
+    });
+  }
+
+  // --- Slide 6: Practice (one item per slide, interactive) ---
+  if (plan.practice?.items?.length) {
+    const total = plan.practice.items.length;
+    plan.practice.items.forEach((item, i) => {
+      slides.push({
+        id: `practice-${i}`,
+        title: `تمرين ${i + 1}`,
+        icon: PenTool,
+        teacherGuidePage: item.teacher_guide_page ?? plan.practice.teacher_guide_page,
+        render: () => <PracticeSlide item={item} index={i} total={total} />,
+      });
+    });
+  }
+
+  // --- Slide 7: Assess (interactive) ---
+  if (plan.assess?.items?.length) {
+    const total = plan.assess.items.length;
+    plan.assess.items.forEach((item, i) => {
+      slides.push({
+        id: `assess-${i}`,
+        title: `تقويم ${i + 1}`,
+        icon: ClipboardCheck,
+        teacherGuidePage: item.teacher_guide_page ?? plan.assess.teacher_guide_page,
+        render: () => <AssessSlide item={item} index={i} total={total} />,
+      });
+    });
+  }
+
+  // --- Slide 8: Extend (optional) ---
+  if (plan.extend) {
+    slides.push({
+      id: 'extend',
+      title: 'الإثراء',
+      icon: Rocket,
+      teacherGuidePage: plan.extend.teacher_guide_page,
+      render: () => (
+        <div className="flex h-full flex-col justify-center gap-8 px-4">
+          <div className="text-center space-y-2">
+            <h2 className="text-4xl font-bold md:text-5xl">الإثراء</h2>
+            <div className="flex items-center justify-center gap-4 mt-2">
+              <span className="inline-flex items-center rounded-lg bg-purple-800 px-4 py-1.5 text-lg font-bold text-purple-100">
+                اختياري
+              </span>
+              <span className="text-xl text-zinc-400">{plan.extend ? sectionTotal(plan.extend) : 0} دقائق</span>
+            </div>
+          </div>
+          <div className="max-w-4xl mx-auto w-full">
+            <div className="rounded-xl border-2 border-dashed border-purple-600 bg-purple-900/20 p-8">
+              <p className="text-2xl leading-relaxed text-center md:text-3xl">
+                <PresentMathText text={plan.extend?.challenge_ar ?? ''} />
+              </p>
+            </div>
+          </div>
+        </div>
+      ),
+    });
+  }
+
+  return slides;
+}
+
+// ---------------------------------------------------------------------------
+// Main Component
+// ---------------------------------------------------------------------------
+
+export function PresentationView(props: PresentationViewProps) {
+  return (
+    <TeacherModeProvider>
+      <PresentationViewInner {...props} />
+    </TeacherModeProvider>
+  );
+}
+
+function PresentationViewInner({
+  lesson,
+  plan,
+  periodNumber,
+  locale,
+  lessonId,
+}: PresentationViewProps) {
+  const { isTeacher } = useTeacherMode();
+  const planData = plan as unknown as LessonPlanData;
+  const slides = useMemo(
+    () => buildSlides(planData, lesson, periodNumber, lessonId),
+    [planData, lesson, periodNumber, lessonId],
+  );
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const goNext = useCallback(() => {
+    setCurrentSlide((prev) => Math.min(prev + 1, slides.length - 1));
+  }, [slides.length]);
+
+  const goPrev = useCallback(() => {
+    setCurrentSlide((prev) => Math.max(prev - 1, 0));
+  }, []);
+
+  const handleExit = useCallback(() => {
+    window.location.href = `/${locale}/dashboard/lessons/${lessonId}/prepare`;
+  }, [locale, lessonId]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      switch (e.key) {
+        case 'ArrowLeft':
+          // In RTL, left arrow goes forward
+          goNext();
+          break;
+        case 'ArrowRight':
+          // In RTL, right arrow goes backward
+          goPrev();
+          break;
+        case 'ArrowDown':
+        case ' ':
+        case 'PageDown':
+          e.preventDefault();
+          goNext();
+          break;
+        case 'ArrowUp':
+        case 'PageUp':
+          e.preventDefault();
+          goPrev();
+          break;
+        case 'Escape':
+          handleExit();
+          break;
+        case 'Home':
+          setCurrentSlide(0);
+          break;
+        case 'End':
+          setCurrentSlide(slides.length - 1);
+          break;
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [goNext, goPrev, handleExit, slides.length]);
+
+  const slide = slides[currentSlide];
+  if (!slide) return null;
+
+  return (
+    <div
+      dir="rtl"
+      className="fixed inset-0 z-50 flex flex-col bg-gradient-to-br from-zinc-900 via-zinc-950 to-black text-white select-none"
+      style={{ height: '100vh', overflow: 'hidden' }}
+    >
+      {/* Top bar: exit button + teacher toggle + slide counter */}
+      <div className="flex items-center justify-between px-6 py-3 shrink-0">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExit}
+            className="flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/20 hover:text-white"
+            aria-label="الخروج من العرض التقديمي"
+          >
+            <X className="size-4" />
+            <span>خروج</span>
+          </button>
+          <TeacherModeToggle />
+        </div>
+
+        <div className="flex items-center gap-3 text-sm text-zinc-400">
+          <span>{lesson.titleAr}</span>
+          <span className="text-zinc-600">|</span>
+          <span>الحصة {periodNumber}</span>
+        </div>
+
+        <div className="rounded-lg bg-white/10 px-4 py-2 text-sm text-zinc-300">
+          شريحة {currentSlide + 1} من {slides.length}
+        </div>
+      </div>
+
+      {/* Gold accent bar when teacher mode active */}
+      {isTeacher && (
+        <div
+          className="h-[3px] w-full shrink-0 bg-[color:var(--sma-qamar-500)]"
+          aria-hidden
+        />
+      )}
+
+      {/* Slide content area */}
+      <div className="flex-1 min-h-0 px-8 py-4 md:px-16 lg:px-24 relative">
+        {slide.render()}
+        {/* Sticky footer: teacher guide page for current section */}
+        {slide.teacherGuidePage != null && (
+          <div className="absolute bottom-2 start-2 rounded-lg bg-white/10 px-3 py-1.5 text-sm text-zinc-300 backdrop-blur-sm">
+            <span aria-hidden>📖</span> دليل المعلم ص. {slide.teacherGuidePage}
+          </div>
+        )}
+      </div>
+
+      {/* Reveal controls (teacher only) */}
+      {isTeacher && (
+        <div className="shrink-0 px-6 py-2">
+          <RevealControls />
+        </div>
+      )}
+
+      {/* Bottom navigation bar */}
+      <div className="flex items-center justify-between px-6 py-3 shrink-0">
+        {/* Previous button (on the right in RTL) */}
+        <button
+          onClick={goNext}
+          disabled={currentSlide >= slides.length - 1}
+          className={cn(
+            'flex items-center gap-2 rounded-lg px-6 py-3 text-lg font-medium transition-colors',
+            currentSlide >= slides.length - 1
+              ? 'bg-white/5 text-zinc-600 cursor-not-allowed'
+              : 'bg-white/10 text-white hover:bg-white/20',
+          )}
+          aria-label="الشريحة التالية"
+        >
+          <ChevronLeft className="size-5" />
+          <span>التالي</span>
+        </button>
+
+        {/* Slide dots / progress */}
+        <div className="flex items-center gap-1.5 overflow-x-auto max-w-[60vw] px-2">
+          {slides.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={() => setCurrentSlide(i)}
+              className={cn(
+                'shrink-0 rounded-full transition-all',
+                i === currentSlide
+                  ? 'size-3 bg-white'
+                  : 'size-2 bg-white/30 hover:bg-white/50',
+              )}
+              aria-label={`الانتقال إلى شريحة ${i + 1}: ${s.title}`}
+            />
+          ))}
+        </div>
+
+        {/* Next button (on the left in RTL) */}
+        <button
+          onClick={goPrev}
+          disabled={currentSlide <= 0}
+          className={cn(
+            'flex items-center gap-2 rounded-lg px-6 py-3 text-lg font-medium transition-colors',
+            currentSlide <= 0
+              ? 'bg-white/5 text-zinc-600 cursor-not-allowed'
+              : 'bg-white/10 text-white hover:bg-white/20',
+          )}
+          aria-label="الشريحة السابقة"
+        >
+          <span>السابق</span>
+          <ChevronRight className="size-5" />
+        </button>
+      </div>
+    </div>
+  );
+}

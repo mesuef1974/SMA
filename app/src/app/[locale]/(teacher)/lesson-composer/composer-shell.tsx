@@ -1,0 +1,747 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import {
+  Plus,
+  Sparkles,
+  Save,
+  Upload,
+  GripVertical,
+  BookOpen,
+  ArrowLeft,
+} from "lucide-react";
+import { Chrome, type ChromeUser } from "@/components/teacher-ui";
+import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Lesson Composer — sidebar outline + main editor.
+//
+// P0.5 (2026-04-22):
+//   • Data now flows from the server component (page.tsx) via `seed`.
+//   • Previously the whole editor was a mock with biology sample content
+//     ("كيف يتضاعف عدد خلايا البكتيريا") on a math lesson — removed.
+//   • If no `lessonId` is supplied we show a friendly empty state that
+//     deep-links to /dashboard/lessons for lesson selection.
+//
+// P0.7 (2026-04-22):
+//   • Persistence wired to POST /api/lesson-plans and PATCH
+//     /api/lesson-plans/[id] with debounced auto-save + manual save/publish.
+//
+// P0.7-fix (2026-04-23):
+//   • ComposerField used local useState, so objectives/materials/assessment/
+//     homework were silently dropped from the payload. State is now lifted
+//     to the parent and stored on each Section via optional structured
+//     fields, plus round-tripped through priorPlan hydration.
+// ---------------------------------------------------------------------------
+
+type Section = {
+  id: string;
+  title: string;
+  minutes: number;
+  body: string;
+  // Structured extras — each editable via a dedicated ComposerField. All
+  // optional so older persisted plans keep hydrating cleanly.
+  objectives?: string;
+  materials?: string;
+  assessment?: string;
+  homework?: string;
+};
+
+export type ComposerLessonSeed = {
+  lessonId: string;
+  titleAr: string;
+  titleEn: string | null;
+  lessonNumber: string | null;
+  periodCount: number;
+  chapter: { number: number; titleAr: string } | null;
+  learningOutcomes: Array<{
+    code: string | null;
+    descriptionAr: string;
+    bloomLevel: string | null;
+  }>;
+  priorPlan: {
+    id: string;
+    periodNumber: number | null;
+    status: string | null;
+    sectionData: unknown;
+  } | null;
+};
+
+type PlanSectionShape = {
+  teacher_minutes?: number;
+  student_minutes?: number;
+  activity_ar?: string;
+  concept_ar?: string;
+  challenge_ar?: string;
+  objectives?: string;
+  materials?: string;
+  assessment?: string;
+  homework?: string;
+};
+
+// Shape persisted by the Composer itself (POST/PATCH payload sections).
+// When hydrating we prefer this when present — it round-trips verbatim.
+type ComposerSectionShape = {
+  id?: string;
+  title?: string;
+  minutes?: number;
+  body?: string;
+  objectives?: string;
+  materials?: string;
+  assessment?: string;
+  homework?: string;
+};
+
+type PriorPlanShape = {
+  warm_up?: PlanSectionShape;
+  explore?: PlanSectionShape;
+  explain?: PlanSectionShape;
+  practice?: { teacher_minutes?: number; student_minutes?: number };
+  assess?: { teacher_minutes?: number; student_minutes?: number };
+  extend?: PlanSectionShape;
+};
+
+// Default section skeleton — generic math placeholders, no subject bleed.
+const DEFAULT_SECTIONS: Section[] = [
+  {
+    id: "warmup",
+    title: "تهيئة وتحفيز",
+    minutes: 5,
+    body: "سؤال محفّز يربط الدرس بخبرة سابقة للطلاب.",
+  },
+  {
+    id: "concept",
+    title: "المفهوم الأساسي",
+    minutes: 12,
+    body: "شرح المفهوم الرياضي الأساسي مع الأمثلة والرموز.",
+  },
+  {
+    id: "activity",
+    title: "نشاط تطبيقي",
+    minutes: 18,
+    body: "حل أمثلة متدرجة، مع مناقشة جماعية وتغذية راجعة.",
+  },
+  {
+    id: "assessment",
+    title: "تقييم سريع",
+    minutes: 7,
+    body: "اختبار قصير من 4 أسئلة موزّعة على مستويات بلوم.",
+  },
+  {
+    id: "closure",
+    title: "إغلاق",
+    minutes: 3,
+    body: "تلخيص الفكرة الرئيسية + واجب منزلي أو رابط فيديو.",
+  },
+];
+
+function secondsFrom(section: PlanSectionShape | undefined): number {
+  const t = section?.teacher_minutes ?? 0;
+  const s = section?.student_minutes ?? 0;
+  return t + s;
+}
+
+function truncate(s: string | undefined, max = 240): string {
+  if (!s) return "";
+  return s.length > max ? s.slice(0, max - 1) + "…" : s;
+}
+
+function sectionsFromComposerShape(
+  raw: unknown,
+): Section[] | null {
+  if (!raw || typeof raw !== "object") return null;
+  const container = raw as { sections?: unknown };
+  if (!Array.isArray(container.sections)) return null;
+  const out: Section[] = [];
+  for (const item of container.sections as ComposerSectionShape[]) {
+    if (!item || typeof item !== "object") continue;
+    const id =
+      typeof item.id === "string" && item.id.length > 0
+        ? item.id
+        : `sec-${out.length}-${Date.now()}`;
+    out.push({
+      id,
+      title: typeof item.title === "string" ? item.title : "قسم",
+      minutes: typeof item.minutes === "number" ? item.minutes : 5,
+      body: typeof item.body === "string" ? item.body : "",
+      objectives:
+        typeof item.objectives === "string" ? item.objectives : undefined,
+      materials:
+        typeof item.materials === "string" ? item.materials : undefined,
+      assessment:
+        typeof item.assessment === "string" ? item.assessment : undefined,
+      homework:
+        typeof item.homework === "string" ? item.homework : undefined,
+    });
+  }
+  return out.length > 0 ? out : null;
+}
+
+function sectionsFromPrior(prior: PriorPlanShape): Section[] {
+  const get = (k: keyof PriorPlanShape) =>
+    prior[k] as PlanSectionShape | undefined;
+  const result: Section[] = [];
+  const warm = get("warm_up");
+  if (warm)
+    result.push({
+      id: "warmup",
+      title: "تهيئة وتحفيز",
+      minutes: secondsFrom(warm) || 5,
+      body: truncate(warm.activity_ar),
+      objectives: warm.objectives,
+      materials: warm.materials,
+      assessment: warm.assessment,
+      homework: warm.homework,
+    });
+  const explore = get("explore");
+  if (explore)
+    result.push({
+      id: "explore",
+      title: "استكشاف",
+      minutes: secondsFrom(explore) || 10,
+      body: truncate(explore.activity_ar),
+      objectives: explore.objectives,
+      materials: explore.materials,
+      assessment: explore.assessment,
+      homework: explore.homework,
+    });
+  const explain = get("explain");
+  if (explain)
+    result.push({
+      id: "explain",
+      title: "شرح المفهوم",
+      minutes: secondsFrom(explain) || 12,
+      body: truncate(explain.concept_ar),
+      objectives: explain.objectives,
+      materials: explain.materials,
+      assessment: explain.assessment,
+      homework: explain.homework,
+    });
+  const practice = prior.practice;
+  if (practice)
+    result.push({
+      id: "practice",
+      title: "تطبيق",
+      minutes: (practice.teacher_minutes ?? 0) + (practice.student_minutes ?? 0) || 15,
+      body: "تمارين متدرجة على المفهوم.",
+    });
+  const assess = prior.assess;
+  if (assess)
+    result.push({
+      id: "assess",
+      title: "تقييم",
+      minutes: (assess.teacher_minutes ?? 0) + (assess.student_minutes ?? 0) || 7,
+      body: "أسئلة تقييم ختامية موزّعة على بلوم.",
+    });
+  const extend = get("extend");
+  if (extend)
+    result.push({
+      id: "extend",
+      title: "إثراء (اختياري)",
+      minutes: secondsFrom(extend) || 5,
+      body: truncate(extend.challenge_ar),
+      objectives: extend.objectives,
+      materials: extend.materials,
+      assessment: extend.assessment,
+      homework: extend.homework,
+    });
+  return result.length > 0 ? result : DEFAULT_SECTIONS;
+}
+
+// ---------------------------------------------------------------------------
+// Empty state — no lessonId in query string
+// ---------------------------------------------------------------------------
+
+function EmptyComposerState({ locale, user }: { locale: string; user?: ChromeUser }) {
+  return (
+    <Chrome activeTab="lessons" user={user}>
+      <div className="max-w-[820px] mx-auto px-7 py-16">
+        <div className="bg-card border border-border rounded-[20px] p-10 text-center">
+          <div className="inline-flex size-14 items-center justify-center rounded-full bg-primary/10 mb-4">
+            <BookOpen className="size-7 text-primary" />
+          </div>
+          <h1 className="font-heading text-2xl font-bold text-foreground mb-2">
+            اختر درساً للبدء
+          </h1>
+          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+            لم يتم تحديد درس بعد. اختر درساً من قائمة الدروس لبدء تحضير خطة جديدة
+            أو تعديل خطة قائمة.
+          </p>
+          <Link
+            href={`/${locale}/dashboard/lessons`}
+            className="inline-flex items-center gap-2 h-[40px] px-5 rounded-[10px] text-white text-sm font-semibold shadow-sm"
+            style={{
+              background:
+                "linear-gradient(135deg, var(--sma-najm-700) 0%, var(--sma-sahla-600) 100%)",
+            }}
+          >
+            <ArrowLeft size={16} /> تصفّح الدروس
+          </Link>
+        </div>
+      </div>
+    </Chrome>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main shell
+// ---------------------------------------------------------------------------
+
+export function ComposerShell({
+  seed,
+  locale,
+  user,
+}: {
+  seed: ComposerLessonSeed | null;
+  locale: string;
+  user?: ChromeUser;
+}) {
+  if (!seed) {
+    return <EmptyComposerState locale={locale} user={user} />;
+  }
+  return <ComposerShellBody seed={seed} locale={locale} user={user} />;
+}
+
+function ComposerShellBody({
+  seed,
+  locale,
+  user,
+}: {
+  seed: ComposerLessonSeed;
+  locale: string;
+  user?: ChromeUser;
+}) {
+  // Hydration priority:
+  //   1. Composer-native `{ sections: [...] }` payload (from a prior
+  //      POST/PATCH by this same UI) — round-trips all extras verbatim.
+  //   2. AI/advisor 8-section shape — mapped via sectionsFromPrior.
+  //   3. DEFAULT_SECTIONS placeholder skeleton.
+  const initialSections = (() => {
+    const raw = seed.priorPlan?.sectionData;
+    if (!raw) return DEFAULT_SECTIONS;
+    const composerNative = sectionsFromComposerShape(raw);
+    if (composerNative) return composerNative;
+    return sectionsFromPrior(raw as PriorPlanShape);
+  })();
+
+  const [sections, setSections] = React.useState<Section[]>(initialSections);
+  const [activeId, setActiveId] = React.useState<string>(initialSections[0].id);
+  const [title, setTitle] = React.useState(seed.titleAr);
+  const [toast, setToast] = React.useState<string | null>(null);
+  const [planId, setPlanId] = React.useState<string | null>(
+    seed.priorPlan?.id ?? null,
+  );
+  const [isPending, startTransition] = React.useTransition();
+  const [autoSaveState, setAutoSaveState] = React.useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+  // Skip the first autosave run — nothing has been edited yet and we don't
+  // want to create redundant revisions of the seeded content.
+  const didMountRef = React.useRef(false);
+
+  const active = sections.find((s) => s.id === activeId) ?? sections[0];
+  const total = sections.reduce((s, x) => s + x.minutes, 0);
+
+  const flashToast = (msg: string) => {
+    setToast(msg);
+    window.setTimeout(() => setToast(null), 3200);
+  };
+
+  const addSection = () => {
+    const id = `sec-${Date.now()}`;
+    setSections((list) => [
+      ...list,
+      { id, title: "قسم جديد", minutes: 5, body: "" },
+    ]);
+    setActiveId(id);
+  };
+
+  const patchActive = (patch: Partial<Section>) => {
+    setSections((list) =>
+      list.map((s) => (s.id === active.id ? { ...s, ...patch } : s)),
+    );
+  };
+
+  // -------------------------------------------------------------------------
+  // Persistence (P0.7)
+  //
+  // Three entry points share `persist()`:
+  //   - handleSaveDraft  — explicit "حفظ كمسودة"
+  //   - handlePublish    — explicit "نشر للطلاب" (published → in_review)
+  //   - auto-save effect — debounced 3s after last edit, draft only
+  //
+  // persist() decides POST-create vs PATCH-update based on whether we
+  // already have a planId (seeded from priorPlan or stored after first save).
+  // -------------------------------------------------------------------------
+
+  const persist = React.useCallback(
+    async (opts: {
+      status: "draft" | "published";
+      silent?: boolean;
+    }): Promise<"ok" | "error"> => {
+      const { status, silent } = opts;
+      const payloadSections = sections.map((s) => ({
+        id: s.id,
+        title: s.title,
+        minutes: s.minutes,
+        body: s.body,
+        objectives: s.objectives ?? "",
+        materials: s.materials ?? "",
+        assessment: s.assessment ?? "",
+        homework: s.homework ?? "",
+      }));
+      try {
+        if (planId) {
+          const res = await fetch(`/api/lesson-plans/${planId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title,
+              sections: payloadSections,
+              status,
+            }),
+          });
+          if (!res.ok) throw new Error(`PATCH ${res.status}`);
+        } else {
+          const period = Math.max(
+            1,
+            Math.min(4, seed.priorPlan?.periodNumber ?? 1),
+          );
+          const res = await fetch(`/api/lesson-plans`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              lessonId: seed.lessonId,
+              period,
+              title,
+              sections: payloadSections,
+              status,
+            }),
+          });
+          if (!res.ok) throw new Error(`POST ${res.status}`);
+          const json = (await res.json()) as { id: string };
+          setPlanId(json.id);
+        }
+        if (!silent)
+          flashToast(
+            status === "published" ? "تم الإرسال للمراجعة" : "تم حفظ المسودة",
+          );
+        return "ok";
+      } catch (err) {
+        console.error("[composer] persist error", err);
+        if (!silent) flashToast("تعذّر الحفظ — تحقّق من الاتصال");
+        return "error";
+      }
+    },
+    [planId, title, sections, seed.lessonId, seed.priorPlan?.periodNumber],
+  );
+
+  const handleSaveDraft = () => {
+    startTransition(async () => {
+      await persist({ status: "draft" });
+    });
+  };
+
+  const handlePublish = () => {
+    startTransition(async () => {
+      await persist({ status: "published" });
+    });
+  };
+
+  // Debounced auto-save (draft only). Fires 3s after the last edit to
+  // title/sections. Skipped on initial mount and while a manual save is in
+  // flight (isPending) — the manual save already covers fresh content.
+  React.useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    if (isPending) return;
+    const t = window.setTimeout(() => {
+      setAutoSaveState("saving");
+      void persist({ status: "draft", silent: true }).then((r) => {
+        setAutoSaveState(r === "ok" ? "saved" : "error");
+        if (r === "ok") {
+          window.setTimeout(() => setAutoSaveState("idle"), 2500);
+        }
+      });
+    }, 3000);
+    return () => window.clearTimeout(t);
+  }, [title, sections, isPending, persist]);
+
+  const chapterLabel = seed.chapter
+    ? `الفصل ${seed.chapter.number} — ${seed.chapter.titleAr}`
+    : "";
+
+  return (
+    <Chrome activeTab="lessons" user={user}>
+      <div className="max-w-[1440px] mx-auto px-7 py-7">
+        {/* header row */}
+        <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
+          <div>
+            <div className="text-[11px] text-muted-foreground mb-1">
+              خطة درس — مسودة
+              {seed.priorPlan?.status ? ` · ${seed.priorPlan.status}` : ""}
+            </div>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="font-heading text-[28px] font-bold text-foreground leading-tight bg-transparent border-0 outline-none focus:ring-2 focus:ring-ring rounded-md px-1 -mx-1"
+              aria-label="عنوان الدرس"
+            />
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
+              {seed.lessonNumber && <Chip>درس {seed.lessonNumber}</Chip>}
+              {chapterLabel && <Chip>{chapterLabel}</Chip>}
+              <Chip>
+                {seed.periodCount} حصّة
+              </Chip>
+              <Chip>
+                <span className="font-numeric tabular-nums">{total}</span> دقيقة
+              </Chip>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/${locale}/dashboard/lessons/${seed.lessonId}/prepare`}
+              className="inline-flex items-center gap-1.5 h-[34px] px-3 rounded-[10px] border border-border bg-card text-foreground text-xs font-medium hover:border-primary/60"
+            >
+              <Sparkles size={14} /> توليد بالذكاء الاصطناعي
+            </Link>
+          </div>
+        </div>
+
+        {/* learning outcomes strip (read-only) */}
+        {seed.learningOutcomes.length > 0 && (
+          <div className="bg-muted/40 border border-border rounded-[14px] p-3 mb-4">
+            <div className="text-[11px] font-semibold text-muted-foreground tracking-wide mb-1.5">
+              مخرجات التعلم
+            </div>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5 text-[13px] text-foreground">
+              {seed.learningOutcomes.slice(0, 6).map((lo, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  {lo.code && (
+                    <span className="text-[10px] font-mono text-muted-foreground mt-0.5 shrink-0">
+                      {lo.code}
+                    </span>
+                  )}
+                  <span className="flex-1">{lo.descriptionAr}</span>
+                  {lo.bloomLevel && (
+                    <span className="text-[10px] text-primary/80 shrink-0">
+                      {lo.bloomLevel}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* sidebar + main */}
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-3.5">
+          <aside className="bg-card border border-border rounded-[16px] p-3 h-fit lg:sticky lg:top-[120px]">
+            <div className="flex items-center justify-between px-2 py-1.5 mb-1">
+              <span className="text-[11px] font-semibold text-muted-foreground tracking-wide">
+                المخطط
+              </span>
+              <span className="text-[10px] text-muted-foreground font-numeric tabular-nums">
+                {sections.length} أقسام
+              </span>
+            </div>
+            <ul className="flex flex-col gap-1">
+              {sections.map((s, i) => {
+                const isActive = s.id === activeId;
+                return (
+                  <li key={s.id}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveId(s.id)}
+                      className={cn(
+                        "w-full flex items-center gap-2 px-2 py-2 rounded-[10px] text-start transition-colors",
+                        isActive
+                          ? "bg-primary/10 text-foreground"
+                          : "hover:bg-muted text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      <GripVertical
+                        size={14}
+                        className="text-muted-foreground/60 shrink-0"
+                      />
+                      <span className="font-numeric tabular-nums text-xs w-5 shrink-0 text-muted-foreground">
+                        {i + 1}.
+                      </span>
+                      <span className="flex-1 text-[13px] font-medium truncate">
+                        {s.title}
+                      </span>
+                      <span className="font-numeric tabular-nums text-[10px] text-muted-foreground shrink-0">
+                        {s.minutes}′
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            <button
+              type="button"
+              onClick={addSection}
+              className="mt-2 w-full inline-flex items-center justify-center gap-1.5 h-[34px] rounded-[10px] border border-dashed border-border text-muted-foreground text-xs hover:border-primary hover:text-primary transition-colors"
+            >
+              <Plus size={14} /> إضافة قسم
+            </button>
+          </aside>
+
+          <section className="bg-card border border-border rounded-[16px] p-6 min-h-[520px]">
+            <div className="flex items-center gap-2 mb-4">
+              <input
+                value={active.title}
+                onChange={(e) => patchActive({ title: e.target.value })}
+                className="flex-1 font-heading text-xl font-bold text-foreground bg-transparent border-0 outline-none focus:ring-2 focus:ring-ring rounded-md px-1 -mx-1"
+                aria-label="عنوان القسم"
+              />
+              <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                مدة
+                <input
+                  type="number"
+                  min={1}
+                  value={active.minutes}
+                  onChange={(e) =>
+                    patchActive({ minutes: Number(e.target.value) || 0 })
+                  }
+                  className="w-16 h-8 rounded-md border border-border bg-background font-numeric tabular-nums text-center text-sm"
+                />
+                <span>دقيقة</span>
+              </label>
+            </div>
+
+            <ComposerField
+              label="الأهداف (بلوم)"
+              placeholder="1. يُعرّف الطالب… 2. يطبّق الطالب…"
+              value={active.objectives ?? ""}
+              onChange={(v) => patchActive({ objectives: v })}
+            />
+            <ComposerField
+              label="المواد والأدوات"
+              placeholder="جهاز عرض، ورقة عمل، GeoGebra…"
+              value={active.materials ?? ""}
+              onChange={(v) => patchActive({ materials: v })}
+            />
+
+            <div className="mb-4">
+              <div className="text-[11px] font-semibold text-primary tracking-wide mb-1.5">
+                المحتوى
+              </div>
+              <textarea
+                value={active.body}
+                onChange={(e) => patchActive({ body: e.target.value })}
+                rows={6}
+                className="w-full rounded-[12px] border border-border bg-background p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-ring resize-y"
+                placeholder="اكتب شرح الدرس هنا…"
+              />
+            </div>
+
+            <ComposerField
+              label="التقييم"
+              placeholder="اختبار قصير من 4 أسئلة متعدد المستويات…"
+              value={active.assessment ?? ""}
+              onChange={(v) => patchActive({ assessment: v })}
+            />
+            <ComposerField
+              label="الواجب"
+              placeholder="مسائل من الكتاب، ص …"
+              value={active.homework ?? ""}
+              onChange={(v) => patchActive({ homework: v })}
+            />
+          </section>
+        </div>
+
+        {/* sticky bottom bar */}
+        <div className="sticky bottom-4 mt-5 flex justify-end">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/90 backdrop-blur-md px-2 py-2 shadow-md">
+            <span className="text-[11px] text-muted-foreground pe-2 inline-flex items-center gap-1.5">
+              {planId ? `مسودة قائمة · ` : `مسودة جديدة · `}
+              <span className="font-numeric tabular-nums">{total}</span> دقيقة
+              {autoSaveState === "saving" && (
+                <span className="text-muted-foreground/80">· جارٍ الحفظ…</span>
+              )}
+              {autoSaveState === "saved" && (
+                <span className="text-emerald-600 dark:text-emerald-400">
+                  · تم الحفظ ✓
+                </span>
+              )}
+              {autoSaveState === "error" && (
+                <span className="text-destructive">· تعذّر الحفظ</span>
+              )}
+            </span>
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={isPending}
+              className="inline-flex items-center gap-1.5 h-[34px] px-3 rounded-[10px] border border-border bg-transparent text-foreground text-xs font-medium hover:border-primary/60 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Save size={14} /> حفظ كمسودة
+            </button>
+            <button
+              type="button"
+              onClick={handlePublish}
+              disabled={isPending}
+              className="inline-flex items-center gap-1.5 h-[34px] px-4 rounded-[10px] text-white text-xs font-semibold shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--sma-najm-700) 0%, var(--sma-sahla-600) 100%)",
+              }}
+            >
+              <Upload size={14} /> نشر للطلاب
+            </button>
+          </div>
+        </div>
+
+        {toast && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-foreground text-background px-4 py-2 rounded-full text-xs shadow-lg"
+          >
+            {toast}
+          </div>
+        )}
+      </div>
+    </Chrome>
+  );
+}
+
+function Chip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-muted text-muted-foreground border border-border">
+      {children}
+    </span>
+  );
+}
+
+function ComposerField({
+  label,
+  placeholder,
+  value,
+  onChange,
+}: {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (next: string) => void;
+}) {
+  return (
+    <div className="mb-4">
+      <div className="text-[11px] font-semibold text-primary tracking-wide mb-1.5">
+        {label}
+      </div>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={3}
+        placeholder={placeholder}
+        className="w-full rounded-[12px] border border-border bg-background p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-ring resize-y"
+      />
+    </div>
+  );
+}
+
+export default ComposerShell;

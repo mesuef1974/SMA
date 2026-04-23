@@ -73,3 +73,28 @@ export async function updateLessonPlan(planId: string, data: Partial<NewLessonPl
     .returning();
   return updated;
 }
+
+// ---------------------------------------------------------------------------
+// DEC-SMA-037 — advisor review workflow queries
+// ---------------------------------------------------------------------------
+
+/**
+ * List all lesson plans visible to the academic advisor, newest first.
+ * The advisor's queue is filtered client-side (or via server-component
+ * logic) by the `advisor_gate` value inside sectionData.gate_results.
+ */
+export async function getLessonPlansForAdvisor() {
+  return db.query.lessonPlans.findMany({
+    orderBy: (lp, { desc }) => desc(lp.createdAt),
+    with: {
+      lesson: {
+        with: {
+          chapter: true,
+        },
+      },
+      teacher: true,
+      reviewer: true,
+    },
+    limit: 200,
+  });
+}

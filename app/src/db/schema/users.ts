@@ -14,6 +14,7 @@ import {
 
 export const userRoleEnum = pgEnum('user_role', [
   'teacher',
+  'advisor',
   'admin',
   'student',
 ]);
@@ -37,7 +38,7 @@ export const users = pgTable('users', {
   passwordHash: text('password_hash'),
   fullName: text('full_name').notNull(),
   fullNameAr: text('full_name_ar'),
-  role: userRoleEnum('role').notNull(),
+  role: userRoleEnum('role').notNull().default('teacher'),
   schoolId: uuid('school_id').references(() => schools.id),
   avatarUrl: text('avatar_url'),
   isActive: boolean('is_active').default(true),

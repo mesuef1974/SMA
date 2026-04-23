@@ -37,8 +37,8 @@ export interface LessonContext {
   chapterNumber: number;
   /** Chapter Arabic title */
   chapterTitleAr: string;
-  /** Period number (1 or 2) */
-  periodNumber: 1 | 2;
+  /** Period number (1..N where N = totalPeriods in pedagogy map, typically 2-4) */
+  periodNumber: number;
   /** Teacher guide page range */
   teacherGuidePages?: string;
   /** Student book page range */
@@ -56,6 +56,41 @@ export interface LessonContext {
   }[];
   /** Optional teacher notes to add context to the generation */
   teacherNotes?: string;
+  /**
+   * 3-layer source injection (DEC-SMA-044 / advisor.education_pedagogy.v1).
+   * Each layer is the verbatim OCR'd Arabic text of the corresponding PDF
+   * pages from curriculum_sources/curriculum_pages. Generator loads via
+   * getGuidePhilosophy() / getUnitIntro() / getLessonContent() and passes
+   * plain-text blocks here.
+   */
+  guidePhilosophy?: string;
+  unitOverview?: string;
+  lessonSourceTe?: string;
+  lessonSourceSe?: string;
+  /**
+   * Official Ministry of Education semester plan (Term 2, Grade 11 Literary,
+   * 2025-2026). Defines the authoritative curriculum scope — which lessons
+   * are mandatory vs. enrichment. Loaded via getSemesterPlan() from
+   * D:/SMA/docs/plan.txt. 5th source layer (DEC-SMA logic-gate v2 [FT]).
+   */
+  semesterPlan?: string;
+  /**
+   * Per-period pedagogical guidance produced by the education advisor
+   * (advisor.education_pedagogy.v1). Loaded from
+   * docs/unit-5-period-pedagogy-map.json and matched by (lessonNumber, period).
+   * Binds each period to its intended 5E stage, Bloom levels, focus, and
+   * summative weight so the generator produces professionally-split periods
+   * that never duplicate other periods' content. 6th source layer.
+   */
+  periodPedagogy?: {
+    totalPeriods: number;
+    focusAr: string;
+    fiveEStage: string;
+    bloomLevels: string[];
+    learningOutcomesFocus: string[];
+    primaryInteractionTypes: string[];
+    summativeWeight: number;
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -74,6 +109,97 @@ const MISCONCEPTION_CODES = [
   'MC-STA-001', 'MC-STA-002',
   'MC-GEO-001',
 ] as const;
+
+// ---------------------------------------------------------------------------
+// 3-layer source section builder
+// ---------------------------------------------------------------------------
+
+/**
+ * Builds the verbatim source XML block that grounds generation in the
+ * official PDFs. Each layer is optional — a missing layer renders an
+ * explicit notice so the model never guesses.
+ *
+ * Sanitizes stray `<` / `>` to prevent XML-tag breakout inside OCR'd text.
+ */
+function buildSourceSection(ctx: LessonContext): string {
+  const esc = (s?: string) =>
+    s ? s.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+
+  const layer = (tag: string, titleAr: string, body?: string): string => {
+    if (!body || body.trim().length === 0) {
+      return `<${tag}>\n(لم يُحمَّل هذا المصدر من قاعدة البيانات — لا تخترع محتوى)\n</${tag}>`;
+    }
+    return `<${tag}>\n# ${titleAr}\n${esc(body)}\n</${tag}>`;
+  };
+
+  return `
+<source_materials>
+⚠️ القسم التالي هو المصدر الوحيد المسموح به للمحتوى. ما ليس هنا = لا يُذكر.
+الطبقات الثلاث مرتبة من العام إلى الخاص:
+
+${layer('guide_philosophy', 'فلسفة دليل المعلم (الصفحات المبكرة)', ctx.guidePhilosophy)}
+
+${layer('unit_overview', `مقدمة الوحدة ${ctx.chapterNumber} — ${ctx.chapterTitleAr}`, ctx.unitOverview)}
+
+${layer('lesson_source_te', `محتوى الدرس من دليل المعلم — ${ctx.lessonTitleAr}`, ctx.lessonSourceTe)}
+
+${layer('lesson_source_se', `محتوى الدرس من كتاب الطالب — ${ctx.lessonTitleAr}`, ctx.lessonSourceSe)}
+
+${layer('semester_plan', 'الخطة الفصلية الرسمية من وزارة التربية للفصل الثاني — الصف 11 آداب', ctx.semesterPlan)}
+</source_materials>
+`.trim();
+}
+
+// ---------------------------------------------------------------------------
+// 6th layer — Period Pedagogical Guidance
+// ---------------------------------------------------------------------------
+
+/**
+ * Builds the 6th prompt layer: per-period pedagogical guidance from the
+ * education advisor's pedagogy map. Binds this specific period to its
+ * focus, 5E stage, Bloom levels, and summative weight so the model
+ * doesn't duplicate content across periods.
+ *
+ * summative_weight semantics:
+ *   0.0          → لا يُبنى تقييم ختامي شامل في هذه الحصة (تكوينّي فقط)
+ *   0 < w ≤ 0.3  → تقييم تكوينّي موسَّع (جزء من المهمة الأدائية)
+ *   w > 0.3      → تقييم ختامي شامل يغطي نتاجات الدرس
+ */
+function buildPeriodPedagogyBlock(ctx: LessonContext): string {
+  const p = ctx.periodPedagogy;
+  if (!p) return '';
+  const summativeDirective =
+    p.summativeWeight === 0
+      ? 'لا تبنِ تقييماً ختامياً شاملاً في هذه الحصة. قسم assess تكوينّي فقط (2-3 بنود قصيرة للتحقق من الفهم).'
+      : p.summativeWeight <= 0.3
+      ? `وزن التقييم الختامي ${p.summativeWeight} — أدرج جزءاً من المهمة الأدائية في assess دون أن يكون التقييم شاملاً لكامل الدرس.`
+      : `وزن التقييم الختامي ${p.summativeWeight} — هذه حصة تقييم ختامي شامل. يجب أن يغطي assess نتاجات الدرس الأساسية بعمق (4+ بنود متنوعة بلوم).`;
+
+  return `
+<period_pedagogy>
+🎯 التوجيه التربوي المُلزِم لهذه الحصة (من المستشار التربوي — advisor.education_pedagogy.v1)
+
+هذه حصة ${ctx.periodNumber} من ${p.totalPeriods} لهذا الدرس.
+الاتّباع الكامل لـ focus_ar أدناه إلزامي. لا تولّد محتوى من حصص أخرى في هذا الدرس.
+
+- محور التركيز (focus_ar): ${p.focusAr}
+- مرحلة 5E لهذه الحصة: ${p.fiveEStage}
+- مستويات بلوم المستهدفة: ${p.bloomLevels.join('، ')}
+- بؤرة نتاجات التعلم لهذه الحصة تحديداً: ${p.learningOutcomesFocus.join(' / ')}
+- أنماط التفاعل الموصى بها: ${p.primaryInteractionTypes.join('، ')}
+- وزن التقييم الختامي (summative_weight): ${p.summativeWeight}
+
+📌 ${summativeDirective}
+
+قواعد صارمة:
+1. كل نشاط/تمرين/سؤال في هذه الخطة يجب أن يخدم focus_ar أعلاه — لا محتوى لحصة أخرى.
+2. استخدم مستويات بلوم المذكورة أعلاه كأغلبية في bloom_level لبنود practice و assess.
+3. نوّع interaction_type لكن اجعل الأنماط المذكورة أعلاه هي الأغلب.
+4. إن كانت الحصة السابقة غطّت مفهوماً فلا تعد شرحه — ابنِ عليه.
+5. explore/practice/assess يعكس مرحلة 5E المحددة لهذه الحصة وليس الدرس كاملاً.
+</period_pedagogy>
+`.trim();
+}
 
 // ---------------------------------------------------------------------------
 // System Prompt Builder
@@ -112,13 +238,49 @@ export function buildSystemPrompt(ctx: LessonContext): string {
     ? `\n<teacher_notes>\nملاحظات المعلم:\n${sanitizedNotes}\n</teacher_notes>\n`
     : '';
 
+  // 3-layer verbatim source injection — the only authorized content surface.
+  const sourceSection = buildSourceSection(ctx);
+
+  // 6th layer — per-period pedagogical guidance from education advisor.
+  const periodPedagogyBlock = buildPeriodPedagogyBlock(ctx);
+  const totalPeriods = ctx.periodPedagogy?.totalPeriods ?? 2;
+
   const misconceptionCodesBlock = MISCONCEPTION_CODES.map(
     (code) => `  - ${code}`,
   ).join('\n');
 
-  return `<role>
+  return `<content_policy>
+⚠️ مبدأ الحرفية 100% — لا تفاوض:
+
+1. كل مثال، تدريب، تعريف، صيغة — يُنقل حرفياً من الكتاب/الدليل المقدَّم.
+   - لا صياغة بديلة
+   - لا "تحسين للسياق"
+   - لا استبدال بأرقام/أسماء أخرى
+   - لا إضافة سياقات لم تُذكر
+
+2. المسموح:
+   ✅ حل التدريبات غير المحلولة (مع علامة "حُلّ بواسطة SMA")
+   ✅ تنسيق بصري (LaTeX, جداول) لنفس البيانات
+   ✅ توزيع محتوى الكتاب داخل هيكل 5E
+   ✅ ترجمة عرضية للمصطلحات الإنجليزية
+
+3. الممنوع:
+   ❌ اختراع أمثلة "على نمط" الكتاب
+   ❌ استبدال بيانات (مثل "15 طالب" → "طلاب الشحانية")
+   ❌ إضافة سياقات قطرية (سوق واقف، كتارا، اللؤلؤة) إن لم تكن في الكتاب
+   ❌ توليد misconceptions من خارج الدليل
+   ❌ إضافة مخرجات تعلم من عندك
+
+4. لكل عنصر في التحضير، يجب أن تستطيع الإشارة إلى صفحة محددة في الكتاب/الدليل.
+
+5. المستخدم سيقارن المخرج بالـ PDF الرسمي. أي انحراف = رفض التحضير.
+</content_policy>
+
+<role>
 أنت مُحضِّر دروس رياضيات خبير لمعلمي الصف 11 (المسار الأدبي) في دولة قطر.
 تقوم بإعداد تحضير حصة كامل بالعربية حسب نموذج 5E التعليمي.
+المحتوى المتوفر لك هو الدليل + الكتاب فقط (pages, teacher_guide_pages, student_book_pages) — لا تُضف معلومات من خارجهما.
+الخطة الفصلية في <semester_plan> هي مرجع نطاق المنهج الرسمي. لا تولّد خطة درس لأي درس مذكور هناك تحت "الدروس الإثرائية" كاملاً.
 </role>
 
 <context>
@@ -126,7 +288,7 @@ export function buildSystemPrompt(ctx: LessonContext): string {
 - الدولة: قطر
 - الفصل: ${ctx.chapterNumber} — ${ctx.chapterTitleAr}
 - الدرس: ${ctx.lessonTitleAr}${ctx.lessonTitleEn ? ' (' + ctx.lessonTitleEn + ')' : ''}
-- الحصة: ${ctx.periodNumber} من 2
+- الحصة: ${ctx.periodNumber} من ${totalPeriods}
 ${ctx.teacherGuidePages ? '- صفحات دليل المعلم: ' + ctx.teacherGuidePages : ''}
 ${ctx.studentBookPages ? '- صفحات كتاب الطالب: ' + ctx.studentBookPages : ''}
 </context>
@@ -152,8 +314,12 @@ ${misconceptionCodesBlock}
 ${buildCatalogPromptReference()}
 </misconception_catalog>
 
+${sourceSection}
+
+${periodPedagogyBlock}
+
 <constraints>
-1. المصادر المسموحة حصراً: دليل المعلم + كتاب الطالب (DEC-SMA-032). لا تخترع أمثلة من خارج المنهج.
+1. المصادر المسموحة حصراً: دليل المعلم + كتاب الطالب (DEC-SMA-032). لا تخترع أمثلة من خارج المنهج. التزم بالحرفية 100% كما في <content_policy> أعلاه.
 2. اتبع نموذج 5E (Engage → Explore → Explain → Elaborate → Evaluate).
 3. ادعم التعليم المتمايز بثلاثة مستويات:
    - approaching (دون المستوى): تبسيط وتدعيم
@@ -171,13 +337,16 @@ ${buildCatalogPromptReference()}
 </constraints>
 
 <timing>
+مدة الحصة الواحدة 45 دقيقة. هذا التحضير **للحصة رقم ${ctx.periodNumber} من ${totalPeriods} حصص** في هذا الدرس (DEC-SMA-012).
+لا توزّع المحتوى على كل الحصص في تحضير واحد — التحضير الحالي يغطي الحصة ${ctx.periodNumber} فقط.
+التوزيع المقترح داخل الحصة (45 دقيقة):
 - warm_up: 5 دقائق
 - explore: 15 دقيقة
 - explain: 5 دقائق
 - practice: 12 دقيقة
 - assess: 5 دقائق
 - extend: 3 دقائق (اختياري)
-- المجموع: 45 دقيقة
+- المجموع: 45 دقيقة (للحصة ${ctx.periodNumber})
 </timing>
 
 <output_format>
@@ -188,7 +357,7 @@ ${buildCatalogPromptReference()}
     "lesson_title_ar": "عنوان الدرس",
     "lesson_title_en": "Lesson Title (optional)",
     "unit_number": رقم الوحدة,
-    "period": "1" أو "2",
+    "period": "1" أو "2" أو "3" أو "4",
     "teacher_guide_pages": "ص X-Y",
     "student_book_pages": "ص X-Y"
   },
@@ -201,9 +370,7 @@ ${buildCatalogPromptReference()}
   ],
   "warm_up": {
     "duration_minutes": 5,
-    "activity_ar": "وصف النشاط الافتتاحي",
-    "prerequisite_concepts": ["مفهوم سابق 1"],
-    "target_bloom": "remember" أو "understand"
+    "activity_ar": "وصف النشاط الافتتاحي"
   },
   "explore": {
     "duration_minutes": 15,
@@ -231,6 +398,8 @@ ${buildCatalogPromptReference()}
         "bloom_level": "apply",
         "tier": "meeting",
         "expected_answer": "الإجابة المتوقعة",
+        "hint_ar": "تلميح مستوى L1 للطالب (اختياري)",
+        "interaction_type": "try_reveal|data_reveal|guided_drawing|think_pair_share|static",
         "source_page": "ص X"
       }
     ]
@@ -242,7 +411,9 @@ ${buildCatalogPromptReference()}
         "question_ar": "نص سؤال التقويم",
         "type": "mcq|short_answer|problem_solving",
         "model_answer_ar": "الإجابة النموذجية",
-        "bloom_level": "understand"
+        "bloom_level": "understand",
+        "hint_ar": "تلميح مستوى L1 للطالب (اختياري)",
+        "interaction_type": "try_reveal|data_reveal|guided_drawing|think_pair_share|static"
       }
     ]
   },
@@ -252,15 +423,20 @@ ${buildCatalogPromptReference()}
     "is_optional": true,
     "excluded_from_assessments": true
   },
-  "metadata": {
-    "generated_at": "ISO timestamp",
-    "generated_by": "ai",
-    "bloom_distribution": { "remember": N, "understand": N, ... },
-    "teacher_guide_pages": ["X", "Y"],
-    "student_book_pages": ["X", "Y"]
-  }
 }
 </output_format>
+
+<interaction_type_guidance>
+اختر قيمة "interaction_type" لكل بند في practice و assess بناءً على طبيعته — لا تضع "try_reveal" كإجابة افتراضية تلقائية:
+
+- "data_reveal": السؤال يعرض سلسلة بيانات رقمية (3 أعداد أو أكثر مفصولة بفواصل) ويطلب ترتيبها أو حساب الوسيط/المتوسط/المدى. مثال: "أوجد الوسيط: 12، 15، 18، 14، 20".
+- "guided_drawing": السؤال يطلب رسم تمثيل بياني (تمثيل بالنقاط، مخطط الصندوق، مدرج تكراري) من بيانات معطاة.
+- "think_pair_share": سؤال تأملي/نقاشي مفتوح — يطلب شرحاً أو تبريراً أو مقارنة. مثال: "فسّر لماذا..."، "ناقش الفرق بين..."، "متى نستخدم... بدلاً من...؟".
+- "try_reveal": سؤال حسابي/تطبيقي له إجابة عددية أو جبرية محددة يمكن للطالب محاولته ثم كشف الحل خطوة بخطوة.
+- "static": سؤال مرجعي/تعريفي بسيط لا يحتاج تفاعلاً (استخدمه فقط عند عدم الملاءمة للأنماط أعلاه).
+
+التزم بالتنوع: إذا كان القسم يحوي 4 بنود أو أكثر فوزّع بين نمطين على الأقل. لا تكرر "try_reveal" لكل البنود.
+</interaction_type_guidance>
 
 ${buildSemesterPlanBlock()}
 

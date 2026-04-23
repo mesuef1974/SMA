@@ -17,6 +17,7 @@ import {
   Trophy,
   Swords,
   HelpCircle,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -58,13 +59,21 @@ const analyticsNavItems: NavItem[] = [
   { key: 'reports', href: '/dashboard/reports', icon: BarChart3 },
 ];
 
+const advisorNavItems: NavItem[] = [
+  { key: 'advisorReview', href: '/dashboard/advisor/review', icon: ShieldCheck },
+];
+
 const bottomNavItems: NavItem[] = [
   { key: 'aiChat', href: '/dashboard/ai-chat', icon: MessageCircle },
   { key: 'settings', href: '/dashboard/settings', icon: Settings },
   { key: 'help', href: '/help', icon: HelpCircle },
 ];
 
-export function DashboardSidebar() {
+interface DashboardSidebarProps {
+  isAdvisor?: boolean;
+}
+
+export function DashboardSidebar({ isAdvisor = false }: DashboardSidebarProps) {
   const t = useTranslations('sidebar');
   const pathname = usePathname();
 
@@ -166,6 +175,31 @@ export function DashboardSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdvisor && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-white/40 text-xs uppercase tracking-wider group-data-[collapsible=icon]:hidden">
+              {t('groupAdvisor')}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {advisorNavItems.map((item) => (
+                  <SidebarMenuItem key={item.key}>
+                    <SidebarMenuButton
+                      isActive={isActive(item.href)}
+                      tooltip={t(item.key)}
+                      render={<Link href={item.href} />}
+                      className="text-white/70 hover:text-white hover:bg-white/10 data-[active=true]:bg-white/15 data-[active=true]:text-white rounded-lg"
+                    >
+                      <item.icon className="size-4" />
+                      <span>{t(item.key)}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-white/10 p-2">

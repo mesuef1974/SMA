@@ -17,7 +17,13 @@ export {
   getLessonPlanById,
   createLessonPlan,
   updateLessonPlan,
+  getLessonPlansForAdvisor,
 } from './lesson-plans';
+
+export {
+  createLessonPlanReview,
+  getLessonPlanReviewsByPlanId,
+} from './lesson-plan-reviews';
 
 export {
   getAssessmentsByLesson,

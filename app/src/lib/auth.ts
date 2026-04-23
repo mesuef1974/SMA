@@ -7,7 +7,7 @@ import { users } from '@/db/schema';
 
 declare module 'next-auth' {
   interface User {
-    role: 'teacher' | 'admin' | 'student';
+    role: 'teacher' | 'advisor' | 'admin' | 'student';
   }
 
   interface Session {
@@ -15,7 +15,7 @@ declare module 'next-auth' {
       id: string;
       email: string;
       name: string;
-      role: 'teacher' | 'admin' | 'student';
+      role: 'teacher' | 'advisor' | 'admin' | 'student';
     };
   }
 }
@@ -82,7 +82,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       session.user.id = token.id as string;
-      session.user.role = token.role as 'teacher' | 'admin' | 'student';
+      session.user.role = token.role as 'teacher' | 'advisor' | 'admin' | 'student';
       return session;
     },
   },
