@@ -34,7 +34,7 @@ import {
   updateLessonPlan,
   createLessonPlanReview,
 } from '@/db/queries';
-import { isAdvisor } from '@/lib/advisor';
+import { isAdvisor, type AdvisorDecision } from '@/lib/advisor';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -81,6 +81,11 @@ interface GateResultsLoose {
   failure_reasons?: string[];
   advisor_reviewed_at?: string;
   advisor_reviewer_id?: string;
+  /**
+   * @deprecated P1.3 cleanup (2026-04-23) — writes go to `advisor_comment`
+   * instead. Existing rows retain this field untouched; readers should
+   * prefer `advisor_comment ?? advisor_notes` for backward compatibility.
+   */
   advisor_notes?: string;
   advisor_rubric_scores?: RubricScoresLoose;
   advisor_comment?: string;
@@ -125,8 +130,9 @@ export async function POST(
     const { decision, notes, rubric_scores, comment } = parsed.data;
 
     // P1.3 — 'request_changes' (API) maps to enum value 'changes_requested'
-    // in the DB. Approve/reject keep their existing semantics.
-    const historyDecision: 'approved' | 'rejected' | 'changes_requested' =
+    // in the DB. Approve/reject keep their existing semantics. The resulting
+    // value conforms to the shared `AdvisorDecision` union.
+    const historyDecision: AdvisorDecision =
       decision === 'approved'
         ? 'approved'
         : decision === 'request_changes'
@@ -149,15 +155,21 @@ export async function POST(
         ? { ...(sd.gate_results as GateResultsLoose) }
         : {};
 
+    // P1.3 cleanup (2026-04-23): `advisor_comment` is the canonical field.
+    // We no longer write `advisor_notes` — if the client still sends `notes`
+    // (older UI builds), it is folded into `advisor_comment` so nothing is
+    // lost. Existing rows with `advisor_notes` are untouched; readers should
+    // fall back to `advisor_notes` when `advisor_comment` is absent.
+    const canonicalComment =
+      comment ?? notes ?? existingGate.advisor_comment;
     const nextGate: GateResultsLoose = {
       ...existingGate,
       advisor_gate:
         historyDecision === 'approved' ? 'approved' : 'needs_revision',
       advisor_reviewed_at: new Date().toISOString(),
       advisor_reviewer_id: session.user.id,
-      advisor_notes: notes,
       advisor_rubric_scores: rubric_scores ?? existingGate.advisor_rubric_scores,
-      advisor_comment: comment ?? existingGate.advisor_comment,
+      advisor_comment: canonicalComment,
     };
 
     sd.gate_results = nextGate;

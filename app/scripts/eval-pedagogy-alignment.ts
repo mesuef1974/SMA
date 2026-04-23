@@ -92,7 +92,7 @@ async function main() {
     lesson: string;
     period_number: number;
     status: string;
-    data: any;
+    data: Record<string, unknown> & { warm_up?: { activity_ar?: string }; explore?: { activity_ar?: string }; explain?: { narrative_ar?: string; activity_ar?: string }; assess?: { items?: unknown[] } };
     updated_at: Date;
   }>;
 

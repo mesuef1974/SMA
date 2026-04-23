@@ -13,7 +13,7 @@ async function main() {
 
   const r = (await db.execute(
     sql`SELECT email, role, full_name_ar FROM users WHERE email='teacher@sma.qa'`,
-  )) as any[];
+  )) as Array<{ email: string; role: string; full_name_ar: string }>;
   console.log('\nLogin credentials:');
   console.table(r);
   console.log('\nEmail:    teacher@sma.qa');

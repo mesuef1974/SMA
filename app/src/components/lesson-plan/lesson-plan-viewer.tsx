@@ -21,6 +21,7 @@ import type {
   LearningOutcomeItem,
   PracticeItem,
   AssessItem,
+  InteractionType,
 } from '@/lib/lesson-plans/schema';
 // Note: Metadata section removed in schema v2 (optional parameter count reduction)
 import { MathDisplay, MathText } from '@/components/math/math-display';
@@ -147,6 +148,69 @@ function TeacherGuidePageBadge({ page }: { page: number }) {
   );
 }
 
+// D-32: QNCF code chip (subtle monospace)
+function QncfCodeChip({ code }: { code: string }) {
+  return (
+    <span
+      dir="ltr"
+      className="inline-flex items-center rounded bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] leading-none text-muted-foreground"
+      title="Qatar National Curriculum Framework"
+    >
+      {code}
+    </span>
+  );
+}
+
+// D-UX2: interaction_type badge (Arabic labels; static → no badge)
+const interactionTypeLabels: Partial<Record<InteractionType, string>> = {
+  data_reveal: 'كشف بيانات',
+  try_reveal: 'حلّ ثم اكشف',
+  think_pair_share: 'فكّر-ناقش-شارك',
+  guided_drawing: 'رسم موجّه',
+};
+
+const interactionTypeColors: Partial<Record<InteractionType, string>> = {
+  data_reveal: 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300',
+  try_reveal: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+  think_pair_share: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+  guided_drawing: 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300',
+};
+
+function InteractionTypeBadge({ type }: { type: InteractionType }) {
+  const label = interactionTypeLabels[type];
+  if (!label) return null; // static → no badge
+  return (
+    <Badge className={cn('shrink-0 text-xs', interactionTypeColors[type])}>
+      {label}
+    </Badge>
+  );
+}
+
+// D-UX2: Arabic hint (L1) — collapsible disclosure for teacher reveal
+function HintDisclosure({ hint }: { hint: string }) {
+  return (
+    <details className="ms-8 mt-1 rounded-md border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/20 p-2 text-xs">
+      <summary className="cursor-pointer select-none font-medium text-amber-800 dark:text-amber-300">
+        💡 تلميح
+      </summary>
+      <div className="mt-1.5 text-amber-900 dark:text-amber-200 leading-relaxed">
+        <MathText text={hint} />
+      </div>
+    </details>
+  );
+}
+
+// Free-text Qatar context note (practice items only)
+function QatarContextNote({ text }: { text: string }) {
+  return (
+    <div className="ms-8 mt-1 rounded-md bg-rose-50 dark:bg-rose-950/20 p-2 text-xs text-rose-900 dark:text-rose-200">
+      <span className="me-1" aria-hidden="true">🇶🇦</span>
+      <span className="font-medium">سياق قطري: </span>
+      <MathText text={text} />
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Bloom color mapping
 // ---------------------------------------------------------------------------
@@ -218,6 +282,7 @@ function SectionCard({
   children,
   className,
   teacherGuidePage,
+  qncfCode,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   title: string;
@@ -226,6 +291,7 @@ function SectionCard({
   children: React.ReactNode;
   className?: string;
   teacherGuidePage?: number;
+  qncfCode?: string;
 }) {
   return (
     <Card className={cn(accent, className)}>
@@ -236,6 +302,11 @@ function SectionCard({
           {teacherGuidePage != null && <TeacherGuidePageBadge page={teacherGuidePage} />}
           {duration != null && <DurationBadge minutes={duration} />}
         </CardTitle>
+        {qncfCode && (
+          <div className="pt-1">
+            <QncfCodeChip code={qncfCode} />
+          </div>
+        )}
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>
@@ -309,13 +380,14 @@ function LearningOutcomesSection({ outcomes }: { outcomes: LearningOutcomeItem[]
             </span>
             <div className="flex-1 space-y-1">
               <p className="text-sm"><MathText text={outcome.outcome_ar} /></p>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <BloomBadge level={outcome.bloom_level} />
                 {outcome.action_verb_ar && (
                   <Badge variant="outline" className="text-xs">
                     {outcome.action_verb_ar}
                   </Badge>
                 )}
+                {outcome.qncf_code && <QncfCodeChip code={outcome.qncf_code} />}
               </div>
             </div>
           </li>
@@ -336,6 +408,7 @@ function WarmUpSection({ data }: { data: LessonPlanData['warm_up'] }) {
       title="التهيئة"
       duration={sectionTotal(data)}
       teacherGuidePage={data.teacher_guide_page}
+      qncfCode={data.qncf_code}
     >
       <div className="space-y-3">
         <p className="text-sm leading-relaxed"><MathText text={data.activity_ar} /></p>
@@ -361,6 +434,7 @@ function ExploreSection({ data }: { data: LessonPlanData['explore'] }) {
       title="الاستكشاف"
       duration={sectionTotal(data)}
       teacherGuidePage={data.teacher_guide_page}
+      qncfCode={data.qncf_code}
     >
       <div className="space-y-4">
         <p className="text-sm leading-relaxed"><MathText text={data.activity_ar} /></p>
@@ -435,6 +509,7 @@ function ExplainSection({ data }: { data: LessonPlanData['explain'] }) {
       title="الشرح"
       duration={sectionTotal(data)}
       teacherGuidePage={data.teacher_guide_page}
+      qncfCode={data.qncf_code}
     >
       <div className="space-y-4">
         <p className="text-sm leading-relaxed"><MathText text={data.concept_ar} /></p>
@@ -568,14 +643,21 @@ function PracticeSection({ data }: { data: LessonPlanData['practice'] }) {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 ms-8">
+            <div className="flex flex-wrap items-center gap-1.5 ms-8">
               {item.bloom_level && <BloomBadge level={item.bloom_level} />}
               {item.tier && <TierBadge tier={item.tier} />}
+              {item.interaction_type && (
+                <InteractionTypeBadge type={item.interaction_type} />
+              )}
               {item.source_page && (
                 <Badge variant="outline" className="text-xs">
                   ص {item.source_page}
                 </Badge>
               )}
+              {item.teacher_guide_page != null && (
+                <TeacherGuidePageBadge page={item.teacher_guide_page} />
+              )}
+              {item.qncf_code && <QncfCodeChip code={item.qncf_code} />}
             </div>
 
             {item.expected_answer && (
@@ -584,6 +666,10 @@ function PracticeSection({ data }: { data: LessonPlanData['practice'] }) {
                 <MathText text={item.expected_answer} />
               </div>
             )}
+
+            {item.hint_ar && <HintDisclosure hint={item.hint_ar} />}
+
+            {item.qatar_context && <QatarContextNote text={item.qatar_context} />}
           </div>
         ))}
       </div>
@@ -624,13 +710,20 @@ function AssessSection({ data }: { data: LessonPlanData['assess'] }) {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 ms-8">
+            <div className="flex flex-wrap items-center gap-1.5 ms-8">
               {item.type && (
                 <Badge variant="outline" className="text-xs">
                   {questionTypeLabels[item.type] ?? item.type}
                 </Badge>
               )}
               {item.bloom_level && <BloomBadge level={item.bloom_level} />}
+              {item.interaction_type && (
+                <InteractionTypeBadge type={item.interaction_type} />
+              )}
+              {item.teacher_guide_page != null && (
+                <TeacherGuidePageBadge page={item.teacher_guide_page} />
+              )}
+              {item.qncf_code && <QncfCodeChip code={item.qncf_code} />}
             </div>
 
             {item.model_answer_ar && (
@@ -639,6 +732,8 @@ function AssessSection({ data }: { data: LessonPlanData['assess'] }) {
                 <MathText text={item.model_answer_ar} />
               </div>
             )}
+
+            {item.hint_ar && <HintDisclosure hint={item.hint_ar} />}
           </div>
         ))}
       </div>
@@ -654,16 +749,28 @@ function ExtendSection({ data }: { data: NonNullable<LessonPlanData['extend']> }
   return (
     <Card className="border-2 border-dashed border-purple-300 dark:border-purple-700">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex flex-wrap items-center gap-2">
           <Rocket className="size-5 shrink-0 text-purple-600 dark:text-purple-400" />
           <span className="flex-1">الإثراء</span>
-          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-            اختياري
-          </Badge>
+          {data.is_optional && (
+            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+              اختياري
+            </Badge>
+          )}
+          {data.excluded_from_assessments && (
+            <Badge className="bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 text-xs">
+              خارج التقييم
+            </Badge>
+          )}
           <TeacherGuidePageBadge page={data.teacher_guide_page} />
           <DurationBadge minutes={sectionTotal(data)} />
         </CardTitle>
         <CardDescription>نشاط إثرائي اختياري لا يُقيّم ضمن الدرجات</CardDescription>
+        {data.qncf_code && (
+          <div className="pt-1">
+            <QncfCodeChip code={data.qncf_code} />
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <p className="text-sm leading-relaxed">

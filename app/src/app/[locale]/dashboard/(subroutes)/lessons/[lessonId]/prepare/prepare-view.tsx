@@ -26,8 +26,31 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { LessonPlanViewer } from '@/components/lesson-plan/lesson-plan-viewer';
 import { VisualAids51 } from '@/components/lesson-plan/visual-aids-5-1';
+import { SubmitForReviewButton } from '@/components/lesson-plan/submit-for-review-button';
+import { AdvisorFeedbackPanel } from '@/components/lesson-plan/advisor-feedback-panel';
 import type { LessonPlanData } from '@/lib/lesson-plans/schema';
 import { cn } from '@/lib/utils';
+
+// ---------------------------------------------------------------------------
+// Plan status — mirrors the DB enum for lesson_plans.status
+// ---------------------------------------------------------------------------
+
+type PlanStatus =
+  | 'draft'
+  | 'in_review'
+  | 'changes_requested'
+  | 'approved'
+  | 'rejected';
+
+const STATUS_BADGE: Record<
+  Exclude<PlanStatus, 'draft'>,
+  { label: string; variant: 'info' | 'warning' | 'success' | 'destructive' }
+> = {
+  in_review: { label: 'قيد المراجعة', variant: 'info' },
+  changes_requested: { label: 'تعديلات مطلوبة', variant: 'warning' },
+  approved: { label: 'معتمدة', variant: 'success' },
+  rejected: { label: 'مرفوضة', variant: 'destructive' },
+};
 
 // ---------------------------------------------------------------------------
 // Types — serializable data passed from the server component
@@ -123,6 +146,22 @@ interface PeriodState {
   loading: boolean;
   error: string | null;
   plan: LessonPlanData | null;
+  planId: string | null;
+  status: PlanStatus | null;
+}
+
+function normalizeStatus(raw: string | null | undefined): PlanStatus | null {
+  if (!raw) return null;
+  if (
+    raw === 'draft' ||
+    raw === 'in_review' ||
+    raw === 'changes_requested' ||
+    raw === 'approved' ||
+    raw === 'rejected'
+  ) {
+    return raw;
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -134,6 +173,8 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
   // Derive the present URL from the current prepare path
   // e.g. /ar/dashboard/lessons/xyz/prepare → /ar/dashboard/lessons/xyz/present
   const presentBasePath = pathname.replace(/\/prepare\/?$/, '/present');
+  // Extract locale (first non-empty segment) for in-app links.
+  const locale = pathname.split('/').filter(Boolean)[0] ?? 'ar';
 
   // Initialize period states from existing plans
   const [periodStates, setPeriodStates] = useState<Record<number, PeriodState>>(() => {
@@ -144,6 +185,8 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
         loading: false,
         error: null,
         plan: existing?.sectionData ? (existing.sectionData as LessonPlanData) : null,
+        planId: existing?.id ?? null,
+        status: normalizeStatus(existing?.status),
       };
     }
     return initial;
@@ -153,7 +196,13 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
     async (periodNumber: number) => {
       setPeriodStates((prev) => ({
         ...prev,
-        [periodNumber]: { loading: true, error: null, plan: prev[periodNumber]?.plan ?? null },
+        [periodNumber]: {
+          loading: true,
+          error: null,
+          plan: prev[periodNumber]?.plan ?? null,
+          planId: prev[periodNumber]?.planId ?? null,
+          status: prev[periodNumber]?.status ?? null,
+        },
       }));
 
       try {
@@ -174,17 +223,38 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
           );
           setPeriodStates((prev) => ({
             ...prev,
-            [periodNumber]: { loading: false, error: errorMsg, plan: null },
+            [periodNumber]: {
+              loading: false,
+              error: errorMsg,
+              plan: null,
+              planId: prev[periodNumber]?.planId ?? null,
+              status: prev[periodNumber]?.status ?? null,
+            },
           }));
           return;
         }
 
         const result = await res.json();
         const sectionData = result.sectionData as LessonPlanData;
+        const newPlanId =
+          typeof (result as { id?: unknown }).id === 'string'
+            ? ((result as { id: string }).id)
+            : null;
+        const newStatus = normalizeStatus(
+          (result as { status?: string | null }).status ?? null,
+        );
 
         setPeriodStates((prev) => ({
           ...prev,
-          [periodNumber]: { loading: false, error: null, plan: sectionData },
+          [periodNumber]: {
+            loading: false,
+            error: null,
+            plan: sectionData,
+            planId: newPlanId ?? prev[periodNumber]?.planId ?? null,
+            // After a fresh generate/regenerate the server writes a draft.
+            // Default to 'draft' if the server didn't return the status.
+            status: newStatus ?? 'draft',
+          },
         }));
       } catch {
         setPeriodStates((prev) => ({
@@ -193,6 +263,8 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
             loading: false,
             error: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وإعادة المحاولة.',
             plan: null,
+            planId: prev[periodNumber]?.planId ?? null,
+            status: prev[periodNumber]?.status ?? null,
           },
         }));
       }
@@ -204,7 +276,13 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
     async (periodNumber: number) => {
       setPeriodStates((prev) => ({
         ...prev,
-        [periodNumber]: { loading: true, error: null, plan: prev[periodNumber]?.plan ?? null },
+        [periodNumber]: {
+          loading: true,
+          error: null,
+          plan: prev[periodNumber]?.plan ?? null,
+          planId: prev[periodNumber]?.planId ?? null,
+          status: prev[periodNumber]?.status ?? null,
+        },
       }));
 
       try {
@@ -225,17 +303,38 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
           );
           setPeriodStates((prev) => ({
             ...prev,
-            [periodNumber]: { loading: false, error: errorMsg, plan: null },
+            [periodNumber]: {
+              loading: false,
+              error: errorMsg,
+              plan: null,
+              planId: prev[periodNumber]?.planId ?? null,
+              status: prev[periodNumber]?.status ?? null,
+            },
           }));
           return;
         }
 
         const result = await res.json();
         const sectionData = result.sectionData as LessonPlanData;
+        const newPlanId =
+          typeof (result as { id?: unknown }).id === 'string'
+            ? ((result as { id: string }).id)
+            : null;
+        const newStatus = normalizeStatus(
+          (result as { status?: string | null }).status ?? null,
+        );
 
         setPeriodStates((prev) => ({
           ...prev,
-          [periodNumber]: { loading: false, error: null, plan: sectionData },
+          [periodNumber]: {
+            loading: false,
+            error: null,
+            plan: sectionData,
+            planId: newPlanId ?? prev[periodNumber]?.planId ?? null,
+            // After a fresh generate/regenerate the server writes a draft.
+            // Default to 'draft' if the server didn't return the status.
+            status: newStatus ?? 'draft',
+          },
         }));
       } catch {
         setPeriodStates((prev) => ({
@@ -244,6 +343,8 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
             loading: false,
             error: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وإعادة المحاولة.',
             plan: null,
+            planId: prev[periodNumber]?.planId ?? null,
+            status: prev[periodNumber]?.status ?? null,
           },
         }));
       }
@@ -385,11 +486,32 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
             {Array.from({ length: periodCount }, (_, i) => i + 1).map((p) => {
               const state = periodStates[p];
               const hasExisting = existingPlans.some((ep) => ep.periodNumber === p);
+              const statusForBadge = state?.status ?? null;
+              const showStatusBadge =
+                statusForBadge &&
+                statusForBadge !== 'draft' &&
+                statusForBadge in STATUS_BADGE;
               return (
                 <TabsTrigger key={p} value={`period-${p}`} className="gap-1.5">
                   الحصة {p}
-                  {(state?.plan || hasExisting) && (
+                  {(state?.plan || hasExisting) && !showStatusBadge && (
                     <CheckCircle2 className="size-3.5 text-green-600 dark:text-green-400" />
+                  )}
+                  {showStatusBadge && (
+                    <Badge
+                      variant={
+                        STATUS_BADGE[
+                          statusForBadge as Exclude<PlanStatus, 'draft'>
+                        ].variant
+                      }
+                      className="text-[10px] h-4 px-1.5"
+                    >
+                      {
+                        STATUS_BADGE[
+                          statusForBadge as Exclude<PlanStatus, 'draft'>
+                        ].label
+                      }
+                    </Badge>
                   )}
                 </TabsTrigger>
               );
@@ -397,7 +519,15 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
           </TabsList>
 
           {Array.from({ length: periodCount }, (_, i) => i + 1).map((p) => {
-            const state = periodStates[p] ?? { loading: false, error: null, plan: null };
+            const state =
+              periodStates[p] ??
+              {
+                loading: false,
+                error: null,
+                plan: null,
+                planId: null,
+                status: null,
+              };
 
             return (
               <TabsContent key={p} value={`period-${p}`} className="mt-4">
@@ -438,14 +568,48 @@ export function PrepareView({ lesson, existingPlans }: PrepareViewProps) {
                 {/* Plan View */}
                 {!state.loading && !state.error && state.plan && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    {/* Advisor feedback panel — shown when plan has been
+                        reviewed at least once (approved / changes_requested
+                        / rejected). Fetches latest review client-side. */}
+                    {state.planId &&
+                      (state.status === 'approved' ||
+                        state.status === 'changes_requested' ||
+                        state.status === 'rejected') && (
+                        <AdvisorFeedbackPanel
+                          planId={state.planId}
+                          status={state.status}
+                          locale={locale}
+                        />
+                      )}
+                    <div className="flex items-center justify-between flex-wrap gap-3">
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="size-5 text-green-600 dark:text-green-400" />
                         <span className="text-sm font-medium text-green-700 dark:text-green-400">
                           تم توليد التحضير بنجاح
                         </span>
+                        {state.status === 'in_review' && (
+                          <Badge variant="info">قيد المراجعة</Badge>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {state.planId &&
+                          (state.status === 'draft' ||
+                            state.status === 'changes_requested') && (
+                            <SubmitForReviewButton
+                              planId={state.planId}
+                              status={state.status}
+                              onSubmitted={() => {
+                                setPeriodStates((prev) => {
+                                  const cur = prev[p];
+                                  if (!cur) return prev;
+                                  return {
+                                    ...prev,
+                                    [p]: { ...cur, status: 'in_review' },
+                                  };
+                                });
+                              }}
+                            />
+                          )}
                         <Button
                           variant="outline"
                           size="sm"

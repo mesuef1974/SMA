@@ -15,8 +15,9 @@ async function main() {
       messages: [{ role: 'user', content: 'ping' }],
     });
     console.log('OK:', r.text);
-  } catch (e: any) {
-    console.log('ERR:', e?.message, e?.url);
+  } catch (e) {
+    const err = e as { message?: string; url?: string };
+    console.log('ERR:', err?.message, err?.url);
   }
 }
 main();

@@ -110,7 +110,7 @@ const unit: Case[] = [
     input: 'N/A',
     expect: () => {
       const obj = { a: '\\(x^2\\)', b: { c: ['egin{cases}y end{cases}'] } };
-      const out = sanitizeLatexDeep(obj) as any;
+      const out = sanitizeLatexDeep(obj) as { a: string; b: { c: string[] } };
       return out.a === '$x^2$' && out.b.c[0].includes('\\begin{cases}');
     },
   },
@@ -152,7 +152,7 @@ async function main() {
       WHERE l.number = '5-2'
       ORDER BY lp.period_number, lp.updated_at DESC
       LIMIT 4
-    `)) as Array<{ number: string; period_number: number; section_data: any }>;
+    `)) as Array<{ number: string; period_number: number; section_data: Record<string, unknown> & { explain?: { concept_ar?: string; formulas?: unknown[]; worked_examples?: unknown[] } } }>;
 
     if (rows.length === 0) {
       console.log('  (no lesson 5-2 rows in DB — skipping probe)');

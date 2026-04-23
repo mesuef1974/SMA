@@ -1,4 +1,4 @@
-const dotenv = require('dotenv');
+import dotenv from 'dotenv';
 const r = dotenv.config({ path: '.env.local', override: true, debug: true });
 console.log('parsed keys:', Object.keys(r.parsed || {}));
 console.log('ANTHROPIC_API_KEY parsed val len:', (r.parsed?.ANTHROPIC_API_KEY || '').length);
