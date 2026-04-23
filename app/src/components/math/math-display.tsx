@@ -36,6 +36,22 @@ export function MathDisplay({ latex, display = false, className }: MathDisplayPr
   const html = useMemo(() => {
     // Defense in depth — sanitize artefacts even if the caller forgot to.
     const safe = sanitizeLatexExpression(latex);
+    // Safety net: KaTeX emits `console.warn("No character metrics for '…' …")`
+    // for every Arabic glyph it encounters — unconditional, NOT suppressed by
+    // `strict: false`. The sanitizer strips Arabic inside `\text{…}`, but any
+    // stray Arabic char that slips through (e.g. bare in math mode) would
+    // still spam the console. Filter those specific warnings around the
+    // render call only — leave all other warnings untouched.
+    const originalWarn = console.warn;
+    console.warn = (...args: unknown[]) => {
+      if (
+        typeof args[0] === 'string' &&
+        args[0].startsWith('No character metrics')
+      ) {
+        return;
+      }
+      originalWarn(...args);
+    };
     try {
       return katex.renderToString(safe, {
         displayMode: display,
@@ -47,6 +63,8 @@ export function MathDisplay({ latex, display = false, className }: MathDisplayPr
       });
     } catch {
       return `<span style="color:var(--destructive)">خطأ في عرض المعادلة</span>`;
+    } finally {
+      console.warn = originalWarn;
     }
   }, [latex, display]);
 

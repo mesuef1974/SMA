@@ -115,6 +115,70 @@ function repairArtifacts(input: string): string {
   return s;
 }
 
+// Arabic character range — Arabic + Arabic Supplement + Arabic Extended-A.
+// KaTeX Main-Regular font does not include glyphs for these codepoints, so
+// when they appear inside `\text{...}` (or bare in math mode) KaTeX emits an
+// unconditional `console.warn("No character metrics for '…' in style …")` per
+// character — not suppressible via `strict: false`.
+//
+// Strategy: replace any Arabic run inside `\text{...}` with a thin-space
+// spacer `{\rm\,}` so KaTeX sees no Arabic glyph. The visible math layout
+// stays intact; the descriptive Arabic word is dropped from the rendered
+// formula (but surrounding natural-language Arabic outside math delimiters
+// remains, since only `\text{…}` bodies are touched).
+const ARABIC_RUN = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]+/g;
+
+/**
+ * Walk `\text{...}` bodies and strip Arabic runs, substituting a thin-space
+ * spacer. Respects nested braces by scanning character-by-character.
+ */
+function stripArabicInTextMacros(input: string): string {
+  let out = '';
+  let i = 0;
+  const len = input.length;
+  while (i < len) {
+    // Look for `\text{` (also handles `\textbf{`, `\textit{`, `\textrm{`,
+    // `\textsf{`, `\texttt{`, `\textnormal{` — all have the same Arabic issue).
+    const rest = input.slice(i);
+    const m = rest.match(/^\\text(?:bf|it|rm|sf|tt|normal)?\{/);
+    if (!m) {
+      out += input[i];
+      i += 1;
+      continue;
+    }
+    const openLen = m[0].length;
+    out += m[0];
+    i += openLen;
+    // Scan matching `}` with brace-depth tracking.
+    let depth = 1;
+    let body = '';
+    while (i < len && depth > 0) {
+      const ch = input[i];
+      if (ch === '\\' && i + 1 < len) {
+        // preserve escape sequences verbatim (e.g. `\{`, `\}`, `\\`).
+        body += ch + input[i + 1];
+        i += 2;
+        continue;
+      }
+      if (ch === '{') depth += 1;
+      else if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) break;
+      }
+      body += ch;
+      i += 1;
+    }
+    // Replace Arabic runs inside the body.
+    const cleaned = body.replace(ARABIC_RUN, '{\\rm\\,}');
+    out += cleaned;
+    if (i < len && input[i] === '}') {
+      out += '}';
+      i += 1;
+    }
+  }
+  return out;
+}
+
 /**
  * Top-level sanitizer — applies delimiter normalization + artifact repair.
  *
@@ -122,7 +186,7 @@ function repairArtifacts(input: string): string {
  */
 export function sanitizeLatex(input: string): string {
   if (!input) return input;
-  return repairArtifacts(normalizeDelimiters(input));
+  return stripArabicInTextMacros(repairArtifacts(normalizeDelimiters(input)));
 }
 
 /**
