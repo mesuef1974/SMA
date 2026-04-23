@@ -122,10 +122,25 @@
 - **المرجع:** DEC-SMA-011 (MVP = الفصل الثاني فقط) | DEC-SMA-049
 - **DoD:** ~50 صفحة إضافية JSON مُهيكلة + ingested
 
+### BL-026 — إشعار المعلم عند تغيّر حالة المراجعة
+- **الأولوية:** P1 | Engineering + UX | لم يبدأ
+- **المرجع:** PR #11 (session audit — إكمال حلقة المستشار)
+- **DoD:** المعلم يتلقّى إشعاراً (toast/badge على dashboard) عند قرار approved/changes_requested/rejected بدون refresh يدوي
+
+### BL-027 — SSR لـ AdvisorFeedbackPanel
+- **الأولوية:** P2 | Engineering | لم يبدأ
+- **المرجع:** PR #11 — حالياً client-side fetch في useEffect
+- **DoD:** جلب أحدث مراجعة server-side في `prepare/page.tsx` وتمريرها prop، لتحسين TTFB وإزالة loading flash
+
+### BL-028 — تغطية اختبارات لحلقة إرسال-مراجعة الخطة
+- **الأولوية:** P1 | Engineering + QA | لم يبدأ
+- **المرجع:** PR #11 — endpoint + components بدون tests
+- **DoD:** integration test لـ `POST /submit-for-review` (draft→in_review، 403 لغير المعلم، 409 من in_review) + snapshot/interaction tests لـ `SubmitForReviewButton` و `AdvisorFeedbackPanel`
+
 ---
 
 ## إحصاء سريع
 - P0: 5 (2 لم يبدأ BL-003/BL-004) — (5 مكتملة: BL-001/BL-002/BL-005/BL-006/BL-019) — **النشط = 2**
-- P1: 10 (9 لم يبدأ — BL-007..BL-013 + BL-020 + BL-024، 1 مكتمل BL-021)
-- P2: 8 (كلها لم يبدأ — BL-014..BL-018 + BL-022 + BL-023 + BL-025)
-- **المجموع النشط:** 19 بنداً (+ 6 مكتملة = 25 إجمالي تاريخياً)
+- P1: 12 (11 لم يبدأ — BL-007..BL-013 + BL-020 + BL-024 + BL-026 + BL-028، 1 مكتمل BL-021)
+- P2: 9 (كلها لم يبدأ — BL-014..BL-018 + BL-022 + BL-023 + BL-025 + BL-027)
+- **المجموع النشط:** 22 بنداً (+ 6 مكتملة = 28 إجمالي تاريخياً)
