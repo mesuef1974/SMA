@@ -7,7 +7,7 @@ const intlMiddleware = createIntlMiddleware(routing);
 
 // Paths that require authentication (checked after locale prefix is stripped)
 const protectedPaths = ['/dashboard'];
-const protectedApiPaths = ['/api/bloom', '/api/misconceptions', '/api/chat', '/api/lesson-plans', '/api/reports', '/api/challenges'];
+const protectedApiPaths = ['/api/bloom', '/api/misconceptions', '/api/chat', '/api/lesson-plans', '/api/reports', '/api/challenges', '/api/teacher'];
 
 function stripLocale(pathname: string): string {
   for (const locale of routing.locales) {
