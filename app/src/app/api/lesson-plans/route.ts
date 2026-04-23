@@ -38,6 +38,12 @@ const sectionDataSchema = z.object({
   title: z.string().min(1).max(200),
   minutes: z.number().min(0).max(180),
   body: z.string().max(20000).default(''),
+  // Optional structured extras edited via ComposerField — kept permissive
+  // so legacy payloads without them still pass validation.
+  objectives: z.string().max(20000).optional(),
+  materials: z.string().max(20000).optional(),
+  assessment: z.string().max(20000).optional(),
+  homework: z.string().max(20000).optional(),
 });
 
 export type SectionData = z.infer<typeof sectionDataSchema>;

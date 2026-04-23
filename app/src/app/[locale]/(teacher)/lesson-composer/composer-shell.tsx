@@ -23,9 +23,16 @@ import { cn } from "@/lib/utils";
 //     ("كيف يتضاعف عدد خلايا البكتيريا") on a math lesson — removed.
 //   • If no `lessonId` is supplied we show a friendly empty state that
 //     deep-links to /dashboard/lessons for lesson selection.
-//   • Save / publish are TODO stubs backed by an inline toast banner —
-//     no generic POST endpoint exists yet (only AI generation / template
-//     routes). The banner tells the teacher "جارٍ الحفظ... (قيد التطوير)".
+//
+// P0.7 (2026-04-22):
+//   • Persistence wired to POST /api/lesson-plans and PATCH
+//     /api/lesson-plans/[id] with debounced auto-save + manual save/publish.
+//
+// P0.7-fix (2026-04-23):
+//   • ComposerField used local useState, so objectives/materials/assessment/
+//     homework were silently dropped from the payload. State is now lifted
+//     to the parent and stored on each Section via optional structured
+//     fields, plus round-tripped through priorPlan hydration.
 // ---------------------------------------------------------------------------
 
 type Section = {
@@ -33,6 +40,12 @@ type Section = {
   title: string;
   minutes: number;
   body: string;
+  // Structured extras — each editable via a dedicated ComposerField. All
+  // optional so older persisted plans keep hydrating cleanly.
+  objectives?: string;
+  materials?: string;
+  assessment?: string;
+  homework?: string;
 };
 
 export type ComposerLessonSeed = {
@@ -61,6 +74,23 @@ type PlanSectionShape = {
   activity_ar?: string;
   concept_ar?: string;
   challenge_ar?: string;
+  objectives?: string;
+  materials?: string;
+  assessment?: string;
+  homework?: string;
+};
+
+// Shape persisted by the Composer itself (POST/PATCH payload sections).
+// When hydrating we prefer this when present — it round-trips verbatim.
+type ComposerSectionShape = {
+  id?: string;
+  title?: string;
+  minutes?: number;
+  body?: string;
+  objectives?: string;
+  materials?: string;
+  assessment?: string;
+  homework?: string;
 };
 
 type PriorPlanShape = {
@@ -117,6 +147,37 @@ function truncate(s: string | undefined, max = 240): string {
   return s.length > max ? s.slice(0, max - 1) + "…" : s;
 }
 
+function sectionsFromComposerShape(
+  raw: unknown,
+): Section[] | null {
+  if (!raw || typeof raw !== "object") return null;
+  const container = raw as { sections?: unknown };
+  if (!Array.isArray(container.sections)) return null;
+  const out: Section[] = [];
+  for (const item of container.sections as ComposerSectionShape[]) {
+    if (!item || typeof item !== "object") continue;
+    const id =
+      typeof item.id === "string" && item.id.length > 0
+        ? item.id
+        : `sec-${out.length}-${Date.now()}`;
+    out.push({
+      id,
+      title: typeof item.title === "string" ? item.title : "قسم",
+      minutes: typeof item.minutes === "number" ? item.minutes : 5,
+      body: typeof item.body === "string" ? item.body : "",
+      objectives:
+        typeof item.objectives === "string" ? item.objectives : undefined,
+      materials:
+        typeof item.materials === "string" ? item.materials : undefined,
+      assessment:
+        typeof item.assessment === "string" ? item.assessment : undefined,
+      homework:
+        typeof item.homework === "string" ? item.homework : undefined,
+    });
+  }
+  return out.length > 0 ? out : null;
+}
+
 function sectionsFromPrior(prior: PriorPlanShape): Section[] {
   const get = (k: keyof PriorPlanShape) =>
     prior[k] as PlanSectionShape | undefined;
@@ -128,6 +189,10 @@ function sectionsFromPrior(prior: PriorPlanShape): Section[] {
       title: "تهيئة وتحفيز",
       minutes: secondsFrom(warm) || 5,
       body: truncate(warm.activity_ar),
+      objectives: warm.objectives,
+      materials: warm.materials,
+      assessment: warm.assessment,
+      homework: warm.homework,
     });
   const explore = get("explore");
   if (explore)
@@ -136,6 +201,10 @@ function sectionsFromPrior(prior: PriorPlanShape): Section[] {
       title: "استكشاف",
       minutes: secondsFrom(explore) || 10,
       body: truncate(explore.activity_ar),
+      objectives: explore.objectives,
+      materials: explore.materials,
+      assessment: explore.assessment,
+      homework: explore.homework,
     });
   const explain = get("explain");
   if (explain)
@@ -144,6 +213,10 @@ function sectionsFromPrior(prior: PriorPlanShape): Section[] {
       title: "شرح المفهوم",
       minutes: secondsFrom(explain) || 12,
       body: truncate(explain.concept_ar),
+      objectives: explain.objectives,
+      materials: explain.materials,
+      assessment: explain.assessment,
+      homework: explain.homework,
     });
   const practice = prior.practice;
   if (practice)
@@ -168,6 +241,10 @@ function sectionsFromPrior(prior: PriorPlanShape): Section[] {
       title: "إثراء (اختياري)",
       minutes: secondsFrom(extend) || 5,
       body: truncate(extend.challenge_ar),
+      objectives: extend.objectives,
+      materials: extend.materials,
+      assessment: extend.assessment,
+      homework: extend.homework,
     });
   return result.length > 0 ? result : DEFAULT_SECTIONS;
 }
@@ -235,9 +312,18 @@ function ComposerShellBody({
   locale: string;
   user?: ChromeUser;
 }) {
-  const initialSections = seed.priorPlan?.sectionData
-    ? sectionsFromPrior(seed.priorPlan.sectionData as PriorPlanShape)
-    : DEFAULT_SECTIONS;
+  // Hydration priority:
+  //   1. Composer-native `{ sections: [...] }` payload (from a prior
+  //      POST/PATCH by this same UI) — round-trips all extras verbatim.
+  //   2. AI/advisor 8-section shape — mapped via sectionsFromPrior.
+  //   3. DEFAULT_SECTIONS placeholder skeleton.
+  const initialSections = (() => {
+    const raw = seed.priorPlan?.sectionData;
+    if (!raw) return DEFAULT_SECTIONS;
+    const composerNative = sectionsFromComposerShape(raw);
+    if (composerNative) return composerNative;
+    return sectionsFromPrior(raw as PriorPlanShape);
+  })();
 
   const [sections, setSections] = React.useState<Section[]>(initialSections);
   const [activeId, setActiveId] = React.useState<string>(initialSections[0].id);
@@ -300,6 +386,10 @@ function ComposerShellBody({
         title: s.title,
         minutes: s.minutes,
         body: s.body,
+        objectives: s.objectives ?? "",
+        materials: s.materials ?? "",
+        assessment: s.assessment ?? "",
+        homework: s.homework ?? "",
       }));
       try {
         if (planId) {
@@ -526,10 +616,14 @@ function ComposerShellBody({
             <ComposerField
               label="الأهداف (بلوم)"
               placeholder="1. يُعرّف الطالب… 2. يطبّق الطالب…"
+              value={active.objectives ?? ""}
+              onChange={(v) => patchActive({ objectives: v })}
             />
             <ComposerField
               label="المواد والأدوات"
               placeholder="جهاز عرض، ورقة عمل، GeoGebra…"
+              value={active.materials ?? ""}
+              onChange={(v) => patchActive({ materials: v })}
             />
 
             <div className="mb-4">
@@ -548,10 +642,14 @@ function ComposerShellBody({
             <ComposerField
               label="التقييم"
               placeholder="اختبار قصير من 4 أسئلة متعدد المستويات…"
+              value={active.assessment ?? ""}
+              onChange={(v) => patchActive({ assessment: v })}
             />
             <ComposerField
               label="الواجب"
               placeholder="مسائل من الكتاب، ص …"
+              value={active.homework ?? ""}
+              onChange={(v) => patchActive({ homework: v })}
             />
           </section>
         </div>
@@ -622,11 +720,14 @@ function Chip({ children }: { children: React.ReactNode }) {
 function ComposerField({
   label,
   placeholder,
+  value,
+  onChange,
 }: {
   label: string;
   placeholder: string;
+  value: string;
+  onChange: (next: string) => void;
 }) {
-  const [value, setValue] = React.useState("");
   return (
     <div className="mb-4">
       <div className="text-[11px] font-semibold text-primary tracking-wide mb-1.5">
@@ -634,7 +735,7 @@ function ComposerField({
       </div>
       <textarea
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         rows={3}
         placeholder={placeholder}
         className="w-full rounded-[12px] border border-border bg-background p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-ring resize-y"
