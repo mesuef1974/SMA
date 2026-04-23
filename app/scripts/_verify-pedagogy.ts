@@ -15,7 +15,7 @@ async function main() {
   const { db } = await import('../src/db');
   const ped = JSON.parse(
     readFileSync(resolve(process.cwd(), 'docs/unit-5-period-pedagogy-map.json'), 'utf8'),
-  ) as { period_pedagogy_map: Record<string, { total_periods: number; periods: any[] }> };
+  ) as { period_pedagogy_map: Record<string, { total_periods: number; periods: Array<{ period: number; focus_ar?: string; summative_weight?: number }> }> };
 
   const rows = (await db.execute(sql`
     SELECT l.number AS lesson, lp.period_number, lp.status,
@@ -25,14 +25,14 @@ async function main() {
     JOIN chapters c ON c.id=l.chapter_id
     WHERE c.number='5'
     ORDER BY l.number, lp.period_number
-  `)) as Array<{ lesson: string; period_number: number; status: string; data: any }>;
+  `)) as Array<{ lesson: string; period_number: number; status: string; data: Record<string, unknown> & { warm_up?: { activity_ar?: string }; explore?: { activity_ar?: string }; assess?: { items?: unknown[] }; practice?: { items?: unknown[] } } }>;
 
   console.log(`\nTotal plans in DB: ${rows.length}\n`);
 
   const targets = new Set(['5-2 P3', '5-3 P3', '5-3 P4', '5-4 P3']);
   for (const r of rows) {
     const entry = ped.period_pedagogy_map[r.lesson]?.periods.find(
-      (p: any) => p.period === r.period_number,
+      (p) => p.period === r.period_number,
     );
     const tag = `${r.lesson} P${r.period_number}`;
     const mark = targets.has(tag) ? '🆕' : '  ';

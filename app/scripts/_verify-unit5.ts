@@ -14,7 +14,7 @@ async function main() {
     JOIN chapters c ON l.chapter_id = c.id
     WHERE c.number = 5
     ORDER BY l.number, lp.period_number
-  `)) as Array<{ lesson_code: string; period_number: number; status: string; created_at: Date; plan_id: string; section_data: any }>;
+  `)) as Array<{ lesson_code: string; period_number: number; status: string; created_at: Date; plan_id: string; section_data: Record<string, unknown> & { formulas?: unknown } }>;
 
   console.log(`\n========== Unit 5 plans (${rows.length} total) ==========`);
   for (const r of rows) {
@@ -33,7 +33,7 @@ async function main() {
 
     // interaction types
     const interactions: string[] = [];
-    const walk = (obj: any) => {
+    const walk = (obj: unknown) => {
       if (!obj || typeof obj !== 'object') return;
       if (Array.isArray(obj)) { obj.forEach(walk); return; }
       for (const [k, v] of Object.entries(obj)) {

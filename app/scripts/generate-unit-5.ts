@@ -215,7 +215,7 @@ async function main() {
         clearInterval(hb); clearTimeout(timeout);
         const ms = Date.now() - t0;
 
-        let sectionData = filterToLatinNumerals(result.object) as typeof result.object;
+        const sectionData = filterToLatinNumerals(result.object) as typeof result.object;
 
         // Unit sanity check
         if (sectionData.header.unit_number !== unitN) {
