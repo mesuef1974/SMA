@@ -79,6 +79,15 @@ export function AdvisorFeedbackPanel({ planId, status, locale }: Props) {
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
         setReview(sorted[0] ?? null);
+        // BL-026 — opening the plan acknowledges any unread advisor
+        // decisions on it, so clear them from the teacher's bell feed.
+        // Fire-and-forget: next poll reconciles on failure.
+        void fetch('/api/teacher/unread-reviews', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ planId }),
+        }).catch(() => {});
       })
       .catch((err: unknown) => {
         if (cancelled) return;
