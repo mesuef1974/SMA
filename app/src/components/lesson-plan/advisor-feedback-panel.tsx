@@ -65,8 +65,6 @@ export function AdvisorFeedbackPanel({ planId, status, locale }: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
     fetch(`/api/lesson-plans/${planId}/reviews`, { cache: 'no-store' })
       .then(async (res) => {
         if (!res.ok) {
