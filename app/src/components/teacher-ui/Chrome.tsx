@@ -13,7 +13,6 @@ import {
   BarChart3,
   MessageSquare,
   Search,
-  Bell,
   Sparkles,
   HelpCircle,
   ChevronDown,
@@ -42,6 +41,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { CommandPalette } from "./command-palette";
+import { NotificationsBell } from "./notifications-bell";
 
 /** SMA square-mim logo (simplified) */
 function SMAMark({ size = 26 }: { size?: number }) {
@@ -130,27 +130,8 @@ export function Chrome({ user, children }: ChromeProps) {
   const { setTheme, resolvedTheme } = useTheme();
   const mounted = useIsMounted();
 
-  const [notifOpen, setNotifOpen] = React.useState(false);
-  const notifRef = React.useRef<HTMLDivElement | null>(null);
   const [commandOpen, setCommandOpen] = React.useState(false);
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!notifOpen) return;
-    const onDocClick = (e: MouseEvent) => {
-      if (!notifRef.current) return;
-      if (!notifRef.current.contains(e.target as Node)) setNotifOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setNotifOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [notifOpen]);
 
   const otherLocale = locale === "ar" ? "en" : "ar";
   const otherLocaleLabel = locale === "ar" ? "English" : "العربية";
@@ -350,31 +331,8 @@ export function Chrome({ user, children }: ChromeProps) {
           )}
         </button>
 
-        {/* notifications bell + popover */}
-        <div className="relative" ref={notifRef}>
-          <button
-            type="button"
-            onClick={() => setNotifOpen((v) => !v)}
-            aria-haspopup="dialog"
-            aria-expanded={notifOpen}
-            className="w-[34px] h-[34px] rounded-[10px] bg-transparent border border-border text-foreground flex items-center justify-center relative hover:border-primary/60 transition-colors"
-            aria-label="الإشعارات"
-          >
-            <Bell size={15} />
-          </button>
-          {notifOpen ? (
-            <div
-              role="dialog"
-              aria-label="الإشعارات"
-              className="absolute end-0 mt-2 w-[260px] rounded-lg bg-popover text-popover-foreground border border-border shadow-md p-4 z-50"
-            >
-              <div className="text-xs font-semibold mb-1">الإشعارات</div>
-              <div className="text-xs text-muted-foreground">
-                لا إشعارات جديدة
-              </div>
-            </div>
-          ) : null}
-        </div>
+        {/* notifications bell — BL-026 */}
+        <NotificationsBell />
 
         {/* + new lesson — primary/najm */}
         <button

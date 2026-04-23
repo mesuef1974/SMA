@@ -23,6 +23,8 @@ export {
 export {
   createLessonPlanReview,
   getLessonPlanReviewsByPlanId,
+  getUnreadReviewsForTeacher,
+  markReviewsReadForTeacher,
 } from './lesson-plan-reviews';
 
 export {
